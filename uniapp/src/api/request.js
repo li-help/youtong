@@ -18,7 +18,7 @@ function request(options) {
           uni.removeStorageSync('userInfo')
           uni.showToast({ title: '登录已过期', icon: 'none' })
           setTimeout(() => {
-            uni.reLaunch({ url: '/pages/login/index' })
+            uni.reLaunch({ url: '/pages/login/login' })
           }, 800)
           return reject(new Error('Unauthorized'))
         }
