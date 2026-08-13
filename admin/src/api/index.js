@@ -82,3 +82,11 @@ export const serviceApi = {
   save: (d) => request.post('/service', d),
   remove: (id) => request.delete(`/service/${id}`),
 }
+
+export const uploadApi = {
+  upload: (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return request.post('/upload', fd)
+  },
+}
