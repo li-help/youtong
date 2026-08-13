@@ -24,6 +24,17 @@ const columns = [
   { prop: 'created_at', label: '下单时间', width: 160 },
 ]
 
+const formFields = [
+  { prop: 'order_no', label: '订单号', required: true },
+  { prop: 'amount', label: '金额(元)', type: 'number' },
+  { prop: 'status', label: '状态', type: 'select', required: true, options: [
+    { label: '待支付', value: 0 },
+    { label: '已支付', value: 1 },
+    { label: '已核销', value: 2 },
+    { label: '已取消', value: 3 },
+  ] },
+]
+
 function onVerify(row) {
   orderApi.verify(row.id).then(() => {
     ElMessage.success(`订单 ${row.order_no} 已核销`)
@@ -38,7 +49,10 @@ function onVerify(row) {
     title="订单列表"
     :api="orderApi.list"
     :columns="columns"
-    :show-status-filter="false"
+    :form-fields="formFields"
+    :save-api="orderApi.save"
+    :remove-api="orderApi.remove"
+    :status-options="[{ label: '待支付', value: 0 }, { label: '已支付', value: 1 }, { label: '已核销', value: 2 }, { label: '已取消', value: 3 }]"
     keyword-placeholder="订单号"
     @verify="onVerify"
   />

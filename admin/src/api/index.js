@@ -24,6 +24,8 @@ export const userApi = {
 
 export const orderApi = {
   list: (p) => request.get('/order', { params: p }),
+  save: (d) => request.post('/order', d),
+  remove: (id) => request.delete(`/order/${id}`),
   verify: (id) => request.post(`/order/${id}/verify`),
 }
 
