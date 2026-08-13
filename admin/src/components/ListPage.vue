@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { uploadApi } from '../api'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -113,6 +114,19 @@ function onRemove(row) {
 
 function onVerify(row) {
   emit('verify', row)
+}
+
+async function uploadImage(f, options) {
+  if (!options || !options.file) return
+  try {
+    const res = await uploadApi.upload(options.file)
+    form[f.prop] = res.url
+    ElMessage.success('图片上传成功')
+    if (options.onSuccess) options.onSuccess(res)
+  } catch (e) {
+    ElMessage.error('图片上传失败')
+    if (options.onError) options.onError(e)
+  }
 }
 
 onMounted(load)
@@ -261,18 +275,25 @@ defineExpose({ load })
             style="width: 100%"
           />
           <div v-else-if="f.type === 'image'">
-            <el-input
-              v-model="form[f.prop]"
-              :placeholder="`请输入${f.label} URL`"
-              clearable
-            />
-            <div v-if="form[f.prop]" style="margin-top: 8px;">
+            <el-upload
+              :show-file-list="false"
+              :http-request="(opt) => uploadImage(f, opt)"
+              accept="image/*"
+            >
               <el-image
+                v-if="form[f.prop]"
                 :src="form[f.prop]"
-                style="width: 100px; height: 100px; border-radius: 4px; border: 1px solid var(--el-border-color);"
+                class="image-upload-preview"
                 fit="cover"
               />
-            </div>
+              <div v-else class="image-upload-placeholder">+ 点击上传</div>
+            </el-upload>
+            <el-input
+              v-model="form[f.prop]"
+              :placeholder="`或输入${f.label} URL`"
+              clearable
+              style="margin-top: 8px;"
+            />
           </div>
         </el-form-item>
       </el-form>
@@ -294,5 +315,24 @@ defineExpose({ load })
   color: var(--brand) !important;
   font-weight: 700 !important;
   background: var(--brand-bg) !important;
+}
+.image-upload-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 4px;
+  border: 1px solid var(--el-border-color);
+  object-fit: cover;
+  cursor: pointer;
+}
+.image-upload-placeholder {
+  width: 120px;
+  height: 120px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-text-color-placeholder);
+  cursor: pointer;
 }
 </style>
