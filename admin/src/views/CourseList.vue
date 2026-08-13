@@ -5,6 +5,7 @@ import { courseApi } from '../api'
 const columns = [
   { prop: 'id', label: 'ID', width: 70 },
   { prop: 'title', label: '课程标题' },
+  { prop: 'cover', label: '课程封面', type: 'image', width: 90 },
   { prop: 'price', label: '价格(元)', formatter: (r, c, v) => `¥${v}` },
   { prop: 'teacher', label: '讲师' },
   { prop: 'category_id', label: '分类ID', width: 90 },
@@ -13,6 +14,7 @@ const columns = [
 
 const formFields = [
   { prop: 'title', label: '课程标题', required: true },
+  { prop: 'cover', label: '课程封面', type: 'image' },
   { prop: 'price', label: '价格(元)', type: 'number' },
   { prop: 'teacher', label: '讲师' },
   { prop: 'category_id', label: '分类ID', type: 'number' },

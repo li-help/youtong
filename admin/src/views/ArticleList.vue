@@ -5,17 +5,20 @@ import { articleApi } from '../api'
 const columns = [
   { prop: 'id', label: 'ID', width: 70 },
   { prop: 'title', label: '标题' },
+  { prop: 'cover', label: '文章封面', type: 'image', width: 90 },
   { prop: 'author', label: '作者' },
   { prop: 'status', label: '状态', tag: { 1: { text: '已发布', type: 'success' }, 0: { text: '草稿', type: 'danger' } } },
 ]
 
 const formFields = [
   { prop: 'title', label: '标题', required: true },
+  { prop: 'cover', label: '文章封面', type: 'image' },
   { prop: 'author', label: '作者', required: true },
   { prop: 'status', label: '状态', type: 'select', required: true, options: [
     { label: '已发布', value: 1 },
     { label: '草稿', value: 0 },
   ] },
+  { prop: 'content', label: '正文', type: 'textarea', rows: 6, required: true },
 ]
 </script>
 
