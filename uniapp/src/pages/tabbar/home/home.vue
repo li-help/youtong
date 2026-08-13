@@ -10,10 +10,11 @@
     </view>
 
     <scroll-view scroll-y class="scroll" @refresherrefresh="onRefresh" :refresher-enabled="true" :refresher-triggered="refreshing">
-      <!-- Banner 轮播 -->
+      <!-- Banner 轮播（数据来自后台广告位 home_banner） -->
       <swiper class="banner" :indicator-dots="true" :autoplay="true" :interval="3500" :circular="true" indicator-color="rgba(255,255,255,.5)" indicator-active-color="#FFA000">
-        <swiper-item v-for="(b, i) in banners" :key="i">
-          <view class="banner-item" :style="{ background: b.bg }">
+        <swiper-item v-for="(b, i) in banners" :key="i" @click="goBanner(b)">
+          <image v-if="b.image" :src="b.image" mode="aspectFill" class="banner-img" />
+          <view v-else class="banner-item" :style="{ background: b.bg }">
             <text class="b-emoji">{{ b.emoji }}</text>
             <text class="b-title">{{ b.title }}</text>
             <text class="b-sub">{{ b.sub }}</text>
@@ -77,7 +78,8 @@ import { ref, onMounted } from 'vue'
 import { videoApi, categoryApi, storeApi, adApi } from '../../../api/index.js'
 import { coverOf } from '../../../config.js'
 
-const banners = [
+const banners = ref([])
+const fallbackBanners = [
   { title: '优童成长计划', sub: '点亮孩子的每一个小宇宙', emoji: '🌟', bg: 'linear-gradient(135deg,#FFC107,#FF8F00)' },
   { title: '精品课程上线', sub: '名师陪伴，快乐学习', emoji: '📚', bg: 'linear-gradient(135deg,#FFD54F,#FFB300)' },
   { title: '周末亲子活动', sub: '一起探索世界的美好', emoji: '🎈', bg: 'linear-gradient(135deg,#FFE082,#FFA726)' }
@@ -96,16 +98,19 @@ const refreshing = ref(false)
 
 async function loadData() {
   try {
-    const [cat, vid, sto] = await Promise.all([
+    const [cat, vid, sto, ads] = await Promise.all([
       categoryApi.list({ page: 1, pageSize: 8 }),
       videoApi.list({ page: 1, pageSize: 6 }),
-      storeApi.list({ page: 1, pageSize: 5 })
+      storeApi.list({ page: 1, pageSize: 5 }),
+      adApi.byPosition('home_banner')
     ])
-    categories.value = (cat && cat.list) ? cat.list : defaultCategories()
-    videos.value = (vid && vid.list) ? vid.list : []
-    stores.value = (sto && sto.list) ? sto.list : []
+    categories.value = (cat && cat.data && cat.data.list) ? cat.data.list : defaultCategories()
+    videos.value = (vid && vid.data && vid.data.list) ? vid.data.list : []
+    stores.value = (sto && sto.data && sto.data.list) ? sto.data.list : []
+    banners.value = (ads && ads.data && ads.data.length) ? ads.data : fallbackBanners
   } catch (e) {
     categories.value = defaultCategories()
+    banners.value = fallbackBanners
   }
 }
 
@@ -128,6 +133,17 @@ function onRefresh() {
 }
 function goSearch() { uni.showToast({ title: '搜索功能开发中', icon: 'none' }) }
 function goArticle(g) { uni.navigateTo({ url: '/pages/article/detail?id=' + (g.id || '') }) }
+function goBanner(b) {
+  if (!b || !b.url) return
+  if (b.url.startsWith('/')) {
+    uni.navigateTo({ url: b.url })
+  } else if (/^https?:/i.test(b.url)) {
+    uni.setClipboardData({
+      data: b.url,
+      success: () => uni.showToast({ title: '链接已复制', icon: 'none' })
+    })
+  }
+}
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
 function goAge(a) { uni.switchTab({ url: '/pages/tabbar/ai/ai' }) }
@@ -145,6 +161,7 @@ onMounted(loadData)
 .scroll { height: calc(100vh - 180rpx); }
 .banner { height: 300rpx; margin: 16rpx 24rpx; border-radius: 24rpx; overflow: hidden; }
 .banner-item { height: 300rpx; display: flex; flex-direction: column; justify-content: center; padding: 40rpx; color: #fff; }
+.banner-img { width: 100%; height: 100%; }
 .b-emoji { font-size: 80rpx; }
 .b-title { font-size: 40rpx; font-weight: bold; margin-top: 10rpx; }
 .b-sub { font-size: 26rpx; margin-top: 8rpx; opacity: .9; }

@@ -30,13 +30,50 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: '首页'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy_outlined), activeIcon: Icon(Icons.smart_toy), label: '智能'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_fire_department_outlined), activeIcon: Icon(Icons.local_fire_department), label: '课程'),
-          BottomNavigationBarItem(icon: Icon(Icons.article_outlined), activeIcon: Icon(Icons.article), label: '活动'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: '我的'),
+          BottomNavigationBarItem(
+            icon: _TabIcon(icon: 'assets/icons/tab_home.png'),
+            activeIcon: _TabIcon(icon: 'assets/icons/tab_home_active.png'),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: _TabIcon(icon: 'assets/icons/tab_ai.png'),
+            activeIcon: _TabIcon(icon: 'assets/icons/tab_ai_active.png'),
+            label: '智能',
+          ),
+          BottomNavigationBarItem(
+            icon: _TabIcon(icon: 'assets/icons/tab_course.png'),
+            activeIcon: _TabIcon(icon: 'assets/icons/tab_course_active.png'),
+            label: '课程',
+          ),
+          BottomNavigationBarItem(
+            icon: _TabIcon(icon: 'assets/icons/tab_activity.png'),
+            activeIcon: _TabIcon(icon: 'assets/icons/tab_activity_active.png'),
+            label: '活动',
+          ),
+          BottomNavigationBarItem(
+            icon: _TabIcon(icon: 'assets/icons/tab_mine.png'),
+            activeIcon: _TabIcon(icon: 'assets/icons/tab_mine_active.png'),
+            label: '我的',
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// 底部 Tab 图标(固定尺寸的本地图片)
+class _TabIcon extends StatelessWidget {
+  const _TabIcon({required this.icon});
+
+  final String icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      icon,
+      width: 26,
+      height: 26,
+      fit: BoxFit.contain,
     );
   }
 }

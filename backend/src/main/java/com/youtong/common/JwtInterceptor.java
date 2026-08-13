@@ -11,10 +11,12 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
-    /** 无需鉴权的接口 */
+    /** 无需鉴权的接口，末尾 * 表示前缀匹配 */
     private static final String[] WHITE_LIST = {
             "/api/auth/login",
             "/api/auth/logout",
+            "/api/ad/position/*",
+            "/api/banner/*",
     };
 
     @Override
@@ -25,7 +27,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
         String uri = request.getRequestURI();
         for (String w : WHITE_LIST) {
-            if (uri.equals(w)) {
+            if (uri.equals(w) || (w.endsWith("*") && uri.startsWith(w.substring(0, w.length() - 1)))) {
                 return true;
             }
         }

@@ -103,6 +103,9 @@ class ApiService {
   static Future<Map<String, dynamic>> listCategories({int page = 1, int size = 20}) =>
       get('/category', query: {'page': '$page', 'size': '$size'});
 
+  // 首页轮播：后台广告位 home_banner
+  static Future<Map<String, dynamic>> listBanners() => get('/banner/home_banner');
+
   static Future<Map<String, dynamic>> listOrders({int page = 1, int size = 20, int? status}) =>
       get('/order', query: {'page': '$page', 'size': '$size', if (status != null) 'status': '$status'});
 

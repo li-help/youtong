@@ -41,7 +41,8 @@ export const categoryApi = {
 }
 
 export const adApi = {
-  list: (p) => get('/ad', p)
+  list: (p) => get('/ad', p),
+  byPosition: (code) => get(`/banner/${code}`)
 }
 
 export const articleApi = {

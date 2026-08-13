@@ -13,10 +13,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Map<String, dynamic>> _banners = [
-    {'title': '启蒙舞蹈课', 'color': const Color(0xFFFFCC80)},
-    {'title': '亲子游泳体验', 'color': const Color(0xFF90CAF9)},
-    {'title': '创意绘画班', 'color': const Color(0xFFA5D6A7)},
+  List<Map<String, dynamic>> _banners = [];
+  static const List<Color> _bannerColors = [
+    Color(0xFFFFCC80),
+    Color(0xFF90CAF9),
+    Color(0xFFA5D6A7),
   ];
 
   final List<Map<String, dynamic>> _categories = [
@@ -38,9 +39,12 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadData() async {
     try {
+      final bRes = await ApiService.listBanners();
       final vRes = await ApiService.listVideos(page: 1, size: 6);
       final sRes = await ApiService.listStores(page: 1, size: 6);
+      final ads = (bRes['data'] as List?) ?? [];
       setState(() {
+        _banners = ads.whereType<Map<String, dynamic>>().toList();
         _videos = vRes['data']?['list'] ?? [];
         _stores = sRes['data']?['list'] ?? [];
         _loading = false;
@@ -67,20 +71,37 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(
                       height: 180,
                       child: PageView.builder(
-                        itemCount: _banners.length,
-                        itemBuilder: (context, i) => Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: _banners[i]['color'] as Color,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _banners[i]['title'] as String,
-                              style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+                        itemCount: _banners.isEmpty ? 1 : _banners.length,
+                        itemBuilder: (context, i) {
+                          final img = _banners.isEmpty ? null : _banners[i]['image']?.toString();
+                          if (img != null && img.isNotEmpty) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFE0B2),
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.network(img, fit: BoxFit.cover, width: double.infinity),
+                            );
+                          }
+                          final title = _banners.isEmpty
+                              ? '优童成长计划'
+                              : (_banners[i]['title']?.toString() ?? '优童成长计划');
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: _banners.isEmpty ? const Color(0xFFFFCC80) : _bannerColors[i % _bannerColors.length],
+                              borderRadius: BorderRadius.circular(24),
                             ),
-                          ),
-                        ),
+                            child: Center(
+                              child: Text(
+                                title,
+                                style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 8),
