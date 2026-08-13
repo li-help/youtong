@@ -49,6 +49,12 @@ public abstract class CrudController<T, ID extends Serializable> {
         return R.ok();
     }
 
+    @GetMapping("/{id}")
+    public R detail(@PathVariable ID id) {
+        T entity = service.getById(id);
+        return R.ok(entity);
+    }
+
     @DeleteMapping("/{id}")
     public R remove(@PathVariable ID id) {
         service.removeById(id);

@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 @RequestMapping("/api/order")
@@ -55,6 +56,33 @@ public class OrderController {
     public R save(@RequestBody Order entity) {
         service.saveOrUpdate(entity);
         return R.ok();
+    }
+
+    @PostMapping("/create")
+    public R create(@RequestBody Map<String, Object> body) {
+        Order o = new Order();
+        o.setOrderNo(generateOrderNo());
+        if (body.get("courseId") != null) {
+            o.setCourseId(Long.valueOf(body.get("courseId").toString()));
+        }
+        o.setCourseName(body.get("courseName") == null ? null : body.get("courseName").toString());
+        o.setAmount(body.get("price") == null ? BigDecimal.ZERO : new BigDecimal(body.get("price").toString()));
+        o.setContactName(body.get("contactName") == null ? null : body.get("contactName").toString());
+        o.setContactPhone(body.get("contactPhone") == null ? null : body.get("contactPhone").toString());
+        o.setAgeRange(body.get("ageRange") == null ? null : body.get("ageRange").toString());
+        o.setRemark(body.get("remark") == null ? null : body.get("remark").toString());
+        o.setStatus(0);
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        o.setCreatedAt(now);
+        o.setUpdatedAt(now);
+        service.save(o);
+        fillText(o);
+        return R.ok(o);
+    }
+
+    private String generateOrderNo() {
+        return "YT" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", ThreadLocalRandom.current().nextInt(10000));
     }
 
     @DeleteMapping("/{id}")
