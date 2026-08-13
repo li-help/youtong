@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+*/node_modules/
+
+# 构建产物
+dist/
+*/dist/
+target/
+*/target/
+build/
+out/
+
+# Java 编译
+*.class
+
+# 日志
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 本地临时
+gen_tmp/
+*.done

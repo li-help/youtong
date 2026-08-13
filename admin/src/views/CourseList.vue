@@ -1,0 +1,36 @@
+<script setup>
+import ListPage from '../components/ListPage.vue'
+import { courseApi } from '../api'
+
+const columns = [
+  { prop: 'id', label: 'ID', width: 70 },
+  { prop: 'title', label: '课程标题' },
+  { prop: 'price', label: '价格(元)', formatter: (r, c, v) => `¥${v}` },
+  { prop: 'teacher', label: '讲师' },
+  { prop: 'category_id', label: '分类ID', width: 90 },
+  { prop: 'status', label: '状态', tag: { 1: { text: '在售', type: 'success' }, 0: { text: '下架', type: 'danger' } } },
+]
+
+const formFields = [
+  { prop: 'title', label: '课程标题', required: true },
+  { prop: 'price', label: '价格(元)', type: 'number' },
+  { prop: 'teacher', label: '讲师' },
+  { prop: 'category_id', label: '分类ID', type: 'number' },
+  { prop: 'status', label: '状态', type: 'select', required: true, options: [
+    { label: '在售', value: 1 },
+    { label: '下架', value: 0 },
+  ] },
+]
+</script>
+
+<template>
+  <ListPage
+    title="课程列表"
+    :api="courseApi.list"
+    :columns="columns"
+    :form-fields="formFields"
+    :save-api="courseApi.save"
+    :remove-api="courseApi.remove"
+    keyword-placeholder="课程标题"
+  />
+</template>

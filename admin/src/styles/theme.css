@@ -1,0 +1,49 @@
+:root {
+  /* 优童成长社 主题色 - 粉白配色 */
+  --brand: #ff7a9c;
+  --brand-light: #ffd9e3;
+  --brand-dark: #f25c84;
+  --brand-bg: #fff5f8;
+  --text: #4a4453;
+  --text-secondary: #8a8493;
+  --text-heading: #2b2632;
+  --bg: #f7f8fa;
+  --bg-white: #ffffff;
+  --border: #f0e6ec;
+  --sidebar-bg: #ffffff;
+  --sidebar-active: #ffe4ec;
+  --success: #52c41a;
+  --warning: #faad14;
+  --danger: #ff4d4f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 14px;
+}
+
+/* Element Plus 主题覆盖 */
+:root {
+  --el-color-primary: var(--brand);
+  --el-color-primary-light-3: #ff9bb4;
+  --el-color-primary-light-5: var(--brand-light);
+  --el-color-primary-light-7: #ffe4ec;
+  --el-color-primary-light-8: #fff0f5;
+  --el-color-primary-light-9: var(--brand-bg);
+  --el-color-primary-dark-2: var(--brand-dark);
+  --el-border-radius-base: 8px;
+}
