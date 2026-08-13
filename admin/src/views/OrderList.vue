@@ -10,14 +10,24 @@ const columns = [
   { prop: 'id', label: 'ID', width: 80 },
   { prop: 'order_no', label: '订单号', width: 200 },
   { prop: 'amount', label: '金额(元)', formatter: (r, c, v) => `¥${v}` },
-  { prop: 'status_text', label: '状态', tag: {
-    '待支付': { text: '待支付', type: 'warning' },
-    '已支付': { text: '已支付', type: 'primary' },
-    '已核销': { text: '已核销', type: 'success' },
-    '已取消': { text: '已取消', type: 'danger' },
-    '未知': { text: '未知', type: 'info' },
+  { prop: 'status', label: '状态', tag: {
+    0: { text: '待支付', type: 'warning' },
+    1: { text: '已支付', type: 'primary' },
+    2: { text: '已核销', type: 'success' },
+    3: { text: '已取消', type: 'danger' },
   } },
   { prop: 'created_at', label: '下单时间', width: 160 },
+]
+
+const formFields = [
+  { prop: 'order_no', label: '订单号', required: true },
+  { prop: 'amount', label: '金额(元)', type: 'number' },
+  { prop: 'status', label: '状态', type: 'select', required: true, options: [
+    { label: '待支付', value: 0 },
+    { label: '已支付', value: 1 },
+    { label: '已核销', value: 2 },
+    { label: '已取消', value: 3 },
+  ] },
 ]
 
 function onVerify(row) {
@@ -34,7 +44,10 @@ function onVerify(row) {
     title="订单列表"
     :api="orderApi.list"
     :columns="columns"
-    :show-status-filter="false"
+    :form-fields="formFields"
+    :save-api="orderApi.save"
+    :remove-api="orderApi.remove"
+    :status-options="[{ label: '待支付', value: 0 }, { label: '已支付', value: 1 }, { label: '已核销', value: 2 }, { label: '已取消', value: 3 }]"
     keyword-placeholder="订单号"
     @verify="onVerify"
   />
