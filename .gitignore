@@ -28,3 +28,19 @@ Thumbs.db
 # 本地临时
 gen_tmp/
 *.done
+
+# Node.js 本地开发日志与本地环境变量文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# Eclipse 或者是 STS 开发工具配置
+.project
+.classpath
+.settings/
+.factorypath
