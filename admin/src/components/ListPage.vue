@@ -164,6 +164,17 @@ defineExpose({ load })
               :effect="(col.tag[row[col.prop]] || {}).effect || 'light'"
             >{{ (col.tag[row[col.prop]] || {}).text ?? row[col.prop] }}</el-tag>
           </template>
+          <template v-else-if="col.type === 'image'" #default="{ row }">
+            <el-image
+              v-if="row[col.prop]"
+              :src="row[col.prop]"
+              style="width: 50px; height: 50px; border-radius: 4px; display: block;"
+              :preview-src-list="[row[col.prop]]"
+              preview-teleported
+              fit="cover"
+            />
+            <span v-else style="color: var(--el-text-color-placeholder)">-</span>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
@@ -218,7 +229,7 @@ defineExpose({ load })
             v-else-if="f.type === 'textarea'"
             v-model="form[f.prop]"
             type="textarea"
-            :rows="3"
+            :rows="f.rows || 3"
             :placeholder="`请输入${f.label}`"
           />
           <el-input-number
@@ -241,6 +252,28 @@ defineExpose({ load })
               :value="opt.value"
             />
           </el-select>
+          <el-date-picker
+            v-else-if="f.type === 'datetime'"
+            v-model="form[f.prop]"
+            type="datetime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            :placeholder="`请选择${f.label}`"
+            style="width: 100%"
+          />
+          <div v-else-if="f.type === 'image'">
+            <el-input
+              v-model="form[f.prop]"
+              :placeholder="`请输入${f.label} URL`"
+              clearable
+            />
+            <div v-if="form[f.prop]" style="margin-top: 8px;">
+              <el-image
+                :src="form[f.prop]"
+                style="width: 100px; height: 100px; border-radius: 4px; border: 1px solid var(--el-border-color);"
+                fit="cover"
+              />
+            </div>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
