@@ -40,39 +40,43 @@ class _MinePageState extends State<MinePage> {
   Widget build(BuildContext context) {
     final nickname = _user?['nickname']?.toString() ?? '去登录';
     final username = _user?['username']?.toString() ?? '登录后体验更多功能';
+    final loggedIn = _user != null;
     return Scaffold(
       backgroundColor: AppStyles.bg,
       body: SafeArea(
         child: Column(
           children: [
             const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('我的', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xFFFFECB3), AppStyles.primaryLight]),
-                borderRadius: BorderRadius.all(Radius.circular(24)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                    child: const Icon(Icons.person_outline, size: 36, color: AppStyles.textSub),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(nickname, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFB86E00))),
-                        Text(username, style: const TextStyle(fontSize: 13, color: Color(0xFF9E7E3A))),
-                      ],
+            GestureDetector(
+              onTap: loggedIn ? null : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())),
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [Color(0xFFFFECB3), AppStyles.primaryLight]),
+                  borderRadius: BorderRadius.all(Radius.circular(24)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: const Icon(Icons.person_outline, size: 36, color: AppStyles.textSub),
                     ),
-                  ),
-                  const Icon(Icons.cloud, size: 28),
-                ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(nickname, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFB86E00))),
+                          Text(username, style: const TextStyle(fontSize: 13, color: Color(0xFF9E7E3A))),
+                        ],
+                      ),
+                    ),
+                    Icon(loggedIn ? Icons.cloud : Icons.chevron_right, size: 28),
+                  ],
+                ),
               ),
             ),
             Container(
@@ -105,17 +109,18 @@ class _MinePageState extends State<MinePage> {
               ),
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: _logout,
-                  style: TextButton.styleFrom(foregroundColor: AppStyles.danger),
-                  child: const Text('退出登录'),
+            if (loggedIn)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _logout,
+                    style: TextButton.styleFrom(foregroundColor: AppStyles.danger),
+                    child: const Text('退出登录'),
+                  ),
                 ),
               ),
-            ),
             const Spacer(),
             const Text('🌟 陪伴宝宝快乐成长 🌟', style: TextStyle(color: AppStyles.textLight)),
             const SizedBox(height: 16),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'login_page.dart';
 
@@ -40,18 +41,56 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  void _register() {
-    if (_password.text != _confirm.text) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('两次密码不一致')));
+  Future<void> _register() async {
+    final phone = _username.text.trim();
+    final pwd = _password.text;
+    final confirm = _confirm.text;
+    final code = _code.text.trim();
+
+    if (phone.isEmpty) {
+      _toast('请输入手机号');
       return;
     }
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      _toast('请输入有效的手机号');
+      return;
+    }
+    if (pwd.length < 6) {
+      _toast('密码长度不能少于6位');
+      return;
+    }
+    if (pwd != confirm) {
+      _toast('两次密码不一致');
+      return;
+    }
+    if (code.isEmpty) {
+      _toast('请输入验证码');
+      return;
+    }
+    if (code != '1234') {
+      _toast('验证码错误');
+      return;
+    }
+
     setState(() => _loading = true);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('注册成功')));
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
-    });
+    try {
+      final res = await ApiService.register(phone, pwd);
+      if (res['code'] == 0) {
+        if (!mounted) return;
+        _toast('注册成功，请登录');
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+      } else {
+        _toast(res['msg']?.toString() ?? '注册失败');
+      }
+    } catch (e) {
+      _toast('网络异常，请检查网络后重试');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
   }
 
   @override

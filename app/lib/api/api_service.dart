@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3001/api';
+  static String get baseUrl {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:3001/api';
+    }
+    if (Platform.isIOS) {
+      return 'http://localhost:3001/api';
+    }
+    return 'http://localhost:3001/api';
+  }
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -81,33 +90,37 @@ class ApiService {
     return post('/auth/login', body: {'username': username, 'password': password});
   }
 
+  static Future<Map<String, dynamic>> register(String username, String password) async {
+    return post('/auth/register', body: {'username': username, 'password': password});
+  }
+
   static Future<Map<String, dynamic>> logout() => post('/auth/logout');
   static Future<Map<String, dynamic>> info() => post('/auth/info');
 
   // Resources
-  static Future<Map<String, dynamic>> listVideos({int page = 1, int size = 20}) =>
-      get('/video', query: {'page': '$page', 'size': '$size'});
+  static Future<Map<String, dynamic>> listVideos({int page = 1, int pageSize = 20}) =>
+      get('/video', query: {'page': '$page', 'pageSize': '$pageSize'});
   static Future<Map<String, dynamic>> videoDetail(int id) => get('/video/$id');
 
-  static Future<Map<String, dynamic>> listCourses({int page = 1, int size = 20}) =>
-      get('/course', query: {'page': '$page', 'size': '$size'});
+  static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20}) =>
+      get('/course', query: {'page': '$page', 'pageSize': '$pageSize'});
   static Future<Map<String, dynamic>> courseDetail(int id) => get('/course/$id');
 
-  static Future<Map<String, dynamic>> listActivities({int page = 1, int size = 20}) =>
-      get('/activity', query: {'page': '$page', 'size': '$size'});
+  static Future<Map<String, dynamic>> listActivities({int page = 1, int pageSize = 20}) =>
+      get('/activity', query: {'page': '$page', 'pageSize': '$pageSize'});
   static Future<Map<String, dynamic>> activityDetail(int id) => get('/activity/$id');
 
-  static Future<Map<String, dynamic>> listStores({int page = 1, int size = 20}) =>
-      get('/store', query: {'page': '$page', 'size': '$size'});
+  static Future<Map<String, dynamic>> listStores({int page = 1, int pageSize = 20}) =>
+      get('/store', query: {'page': '$page', 'pageSize': '$pageSize'});
 
-  static Future<Map<String, dynamic>> listCategories({int page = 1, int size = 20}) =>
-      get('/category', query: {'page': '$page', 'size': '$size'});
+  static Future<Map<String, dynamic>> listCategories({int page = 1, int pageSize = 20}) =>
+      get('/category', query: {'page': '$page', 'pageSize': '$pageSize'});
 
   // 首页轮播：后台广告位 home_banner
   static Future<Map<String, dynamic>> listBanners() => get('/banner/home_banner');
 
-  static Future<Map<String, dynamic>> listOrders({int page = 1, int size = 20, int? status}) =>
-      get('/order', query: {'page': '$page', 'size': '$size', if (status != null) 'status': '$status'});
+  static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, int? status}) =>
+      get('/order', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': '$status'});
 
   static Future<Map<String, dynamic>> createOrder(Map<String, dynamic> body) =>
       post('/order/create', body: body);

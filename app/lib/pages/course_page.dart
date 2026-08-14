@@ -22,8 +22,8 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Future<void> _load() async {
-    final cRes = await ApiService.listCourses(page: 1, size: 20);
-    final catRes = await ApiService.listCategories(page: 1, size: 20);
+    final cRes = await ApiService.listCourses(page: 1, pageSize: 20);
+    final catRes = await ApiService.listCategories(page: 1, pageSize: 20);
     setState(() {
       _courses = cRes['data']?['list'] ?? [];
       _categories = catRes['data']?['list'] ?? [];

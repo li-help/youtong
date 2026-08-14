@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_network_image.dart';
 import 'video_page.dart';
 import 'smart_page.dart';
 import 'course_page.dart';
@@ -40,8 +41,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadData() async {
     try {
       final bRes = await ApiService.listBanners();
-      final vRes = await ApiService.listVideos(page: 1, size: 6);
-      final sRes = await ApiService.listStores(page: 1, size: 6);
+      final vRes = await ApiService.listVideos(page: 1, pageSize: 6);
+      final sRes = await ApiService.listStores(page: 1, pageSize: 6);
       final ads = (bRes['data'] as List?) ?? [];
       setState(() {
         _banners = ads.whereType<Map<String, dynamic>>().toList();
@@ -82,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(24),
                               ),
                               clipBehavior: Clip.antiAlias,
-                              child: Image.network(img, fit: BoxFit.cover, width: double.infinity),
+                              child: AppNetworkImage(url: img, fit: BoxFit.cover, width: double.infinity),
                             );
                           }
                           final title = _banners.isEmpty

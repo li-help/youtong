@@ -22,7 +22,7 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<void> _load() async {
-    final res = await ApiService.listOrders(page: 1, size: 20, status: _tab == 0 ? null : _tab - 1);
+    final res = await ApiService.listOrders(page: 1, pageSize: 20, status: _tab == 0 ? null : _tab - 1);
     setState(() {
       _orders = res['data']?['list'] ?? [];
       _loading = false;

@@ -21,7 +21,7 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Future<void> _load() async {
-    final res = await ApiService.listActivities(page: 1, size: 20);
+    final res = await ApiService.listActivities(page: 1, pageSize: 20);
     setState(() {
       _activities = res['data']?['list'] ?? [];
       _loading = false;

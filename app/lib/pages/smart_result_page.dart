@@ -24,7 +24,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
   }
 
   Future<void> _load() async {
-    final res = await ApiService.listCourses(page: 1, size: 20);
+    final res = await ApiService.listCourses(page: 1, pageSize: 20);
     setState(() {
       _courses = res['data']?['list'] ?? [];
       _loading = false;

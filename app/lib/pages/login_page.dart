@@ -17,13 +17,23 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
 
   Future<void> _login() async {
-    if (_username.text.isEmpty || _password.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请填写账号和密码')));
+    final phone = _username.text.trim();
+    final pwd = _password.text;
+    if (phone.isEmpty || pwd.isEmpty) {
+      _toast('请填写手机号和密码');
+      return;
+    }
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      _toast('请输入有效的手机号');
+      return;
+    }
+    if (pwd.length < 6) {
+      _toast('密码长度不能少于6位');
       return;
     }
     setState(() => _loading = true);
     try {
-      final res = await ApiService.login(_username.text, _password.text);
+      final res = await ApiService.login(phone, pwd);
       if (res['code'] == 0) {
         final data = res['data'] as Map<String, dynamic>;
         await ApiService.setToken(data['token'] as String);
@@ -31,13 +41,17 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainPage()));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['msg'] ?? '登录失败')));
+        _toast(res['msg']?.toString() ?? '登录失败');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      _toast('网络异常，请检查网络后重试');
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
   }
 
   @override

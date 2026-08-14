@@ -14,6 +14,7 @@ public class JwtInterceptor implements HandlerInterceptor {
     /** 无需鉴权的接口，末尾 * 表示前缀匹配 */
     private static final String[] WHITE_LIST = {
             "/api/auth/login",
+            "/api/auth/register",
             "/api/auth/logout",
             "/api/ad/position/*",
             "/api/banner/*",

@@ -51,6 +51,9 @@ async function onSubmit() {
     localStorage.setItem('user', JSON.stringify(user))
     ElMessage.success('登录成功')
     router.replace('/')
+  } catch (err) {
+    const msg = err?.response?.data?.msg || err?.message || '登录失败，请检查用户名或密码'
+    ElMessage.error(msg)
   } finally {
     loading.value = false
   }
