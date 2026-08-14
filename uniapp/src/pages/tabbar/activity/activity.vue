@@ -11,7 +11,7 @@
         <view class="a-body">
           <text class="a-title">{{ a.title }}</text>
           <view class="a-meta">
-            <text class="a-time">🕐 {{ a.startTime || '时间待定' }}</text>
+            <text class="a-time">🕐 {{ a.start_time || '时间待定' }}</text>
             <text class="a-status" v-if="a.status === 1">报名中</text>
           </view>
           <text class="a-desc text-muted">{{ a.intro || '精彩亲子活动，快来参与吧～' }}</text>

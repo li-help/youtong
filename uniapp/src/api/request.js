@@ -31,10 +31,12 @@ function request(options) {
           uni.showToast({ title: msg, icon: 'none' })
           return reject(new Error(msg))
         }
-        if (res.data && res.data.code !== 0) {
-          uni.showToast({ title: res.data.msg || '请求失败', icon: 'none' })
+        const body = res.data || {}
+        if (body.code !== undefined && body.code !== 0) {
+          uni.showToast({ title: body.msg || '请求失败', icon: 'none' })
+          return reject(new Error(body.msg || '请求失败'))
         }
-        resolve(res.data)
+        resolve(body.data)
       },
       fail: (err) => {
         uni.showToast({ title: '网络错误', icon: 'none' })

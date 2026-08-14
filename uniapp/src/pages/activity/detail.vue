@@ -4,7 +4,7 @@
     <view class="body">
       <text class="title">{{ activity.title }}</text>
       <view class="meta">
-        <text class="m-item">🕐 {{ activity.startTime || '时间待定' }}</text>
+        <text class="m-item">🕐 {{ activity.start_time || '时间待定' }}</text>
         <text class="m-item">📍 {{ activity.address || '优童活动中心' }}</text>
       </view>
       <view class="section">
