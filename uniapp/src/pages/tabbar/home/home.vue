@@ -155,14 +155,35 @@ function goSearch() { uni.showToast({ title: '搜索功能开发中', icon: 'non
 function goArticle(g) { uni.navigateTo({ url: '/pages/article/detail?id=' + (g.id || '') }) }
 function goBanner(b) {
   if (!b || !b.url) return
-  if (b.url.startsWith('/')) {
-    uni.navigateTo({ url: b.url })
-  } else if (/^https?:/i.test(b.url)) {
+  const url = b.url
+  if (/^https?:/i.test(url)) {
     uni.setClipboardData({
-      data: b.url,
+      data: url,
       success: () => uni.showToast({ title: '链接已复制', icon: 'none' })
     })
+    return
   }
+  const page = bannerUrlToPage(url)
+  if (page) {
+    uni.navigateTo({ url: page })
+  } else if (url.startsWith('/pages/')) {
+    uni.navigateTo({ url })
+  } else {
+    uni.showToast({ title: '链接暂不可用', icon: 'none' })
+  }
+}
+
+// 后台广告跳转链接形如 /course/2、/activity/1，需映射为小程序页面路径
+function bannerUrlToPage(url) {
+  const map = {
+    course: '/pages/course/detail',
+    activity: '/pages/activity/detail',
+    video: '/pages/video/play',
+    store: '/pages/store/detail',
+    article: '/pages/article/detail'
+  }
+  const m = url.match(/^\/(course|activity|video|store|article)\/(\d+)\/?$/)
+  return m ? `${map[m[1]]}?id=${m[2]}` : ''
 }
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
