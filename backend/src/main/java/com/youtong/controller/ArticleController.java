@@ -28,7 +28,7 @@ public class ArticleController extends CrudController<Article, Long> {
                        @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Article> p = new Page<>(page, pageSize);
         QueryWrapper<Article> qw = new QueryWrapper<>();
-        qw.eq("status", 1).orderByDesc("publish_time", "id");
+        qw.eq("status", 1).orderByDesc("created_at", "id");
         p = articleService.page(p, qw);
         return R.ok(R.page(p.getTotal(), p.getRecords(), p.getCurrent(), p.getSize()));
     }

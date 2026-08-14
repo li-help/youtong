@@ -72,7 +72,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _courses.length,
                       itemBuilder: (context, i) => GestureDetector(
-                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: _courses[i]['id'] as int))),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: (_courses[i]['id'] is num ? (_courses[i]['id'] as num).toInt() : int.tryParse(_courses[i]['id']?.toString() ?? '') ?? 0))),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),

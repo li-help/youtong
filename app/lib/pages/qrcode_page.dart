@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 
@@ -24,10 +25,11 @@ class _QrcodePageState extends State<QrcodePage> {
     setState(() => _user = u);
   }
 
-  bool _isBlack(int i) {
-    final seed = (_user?['id'] ?? 1) + i;
-    final v = (sin(seed * 12.9898) * 43758.5453) % 1;
-    return (v < 0 ? v + 1 : v) > 0.4;
+  // 生成可被扫码识别的真实内容（包含用户唯一标识）
+  String get _qrData {
+    final id = _user?['id'];
+    final username = _user?['username']?.toString() ?? '';
+    return 'youtong:user:${id ?? 0}:$username';
   }
 
   @override
@@ -63,12 +65,14 @@ class _QrcodePageState extends State<QrcodePage> {
                     height: 200,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(border: Border.all(color: AppStyles.primary, width: 8), borderRadius: BorderRadius.circular(16)),
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8, crossAxisSpacing: 2, mainAxisSpacing: 2),
-                      itemCount: 64,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, i) => Container(color: _isBlack(i) ? Colors.black : Colors.white),
-                    ),
+                    child: _user == null
+                        ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
+                        : QrImageView(
+                            data: _qrData,
+                            version: QrVersions.auto,
+                            size: 176,
+                            backgroundColor: Colors.white,
+                          ),
                   ),
                 ],
               ),

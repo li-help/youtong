@@ -55,3 +55,5 @@ export const get = (url, params = {}) => request({ url, method: 'GET', data: par
 export const post = (url, data = {}) => request({ url, method: 'POST', data })
 export const put = (url, data = {}) => request({ url, method: 'PUT', data })
 export const del = (url) => request({ url, method: 'DELETE' })
+
+export default { get, post, put, del }

@@ -112,7 +112,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('¥${o['amount'] ?? 0}', style: const TextStyle(color: Color(0xFFFF6F00), fontWeight: FontWeight.bold)),
-                                  if (status == 0) ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: AppStyles.primaryLight, foregroundColor: const Color(0xFFB86E00)), child: const Text('去支付')),
+                                  if (status == 'pending') ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: AppStyles.primaryLight, foregroundColor: const Color(0xFFB86E00)), child: const Text('去支付')),
                                 ],
                               ),
                             ],

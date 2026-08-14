@@ -4,10 +4,11 @@ import request from './request.js'
 // 约定：后端返回结构为 { code, msg, data }，data 中列表接口为分页对象 {list,total,...}
 
 function parsePage(res) {
-  // 兼容后端 R.ok(data) 与 Page 结构
-  const d = (res && res.data) || {}
-  if (d && Array.isArray(d.list)) return d
-  if (d && Array.isArray(d.records)) return { list: d.records, total: d.total || d.records.length }
+  // request 已解析为 R.data，即后端 R.page 返回的分页对象 {list,total,...}
+  const d = res || {}
+  if (Array.isArray(d.list)) return d
+  if (Array.isArray(d.records)) return { list: d.records, total: d.total || d.records.length }
+  if (Array.isArray(d)) return { list: d, total: d.length }
   return { list: [], total: 0 }
 }
 
@@ -28,7 +29,7 @@ export const userApi = {
 // 课程（C 端公开列表 / 推荐；详情需登录）
 export const courseApi = {
   list: (params) => request.get('/course/list', params).then(parsePage),
-  recommend: (size = 5) => request.get('/course/recommend', { size }).then(r => (r && r.data) || []),
+  recommend: (size = 5) => request.get('/course/recommend', { size }).then(r => (r && Array.isArray(r.list) ? r.list : (r && Array.isArray(r) ? r : []))),
   detail: (id) => request.get('/course/' + id, {})
 }
 
@@ -69,7 +70,7 @@ export const categoryApi = {
 
 // 轮播/banner（公开）
 export const bannerApi = {
-  home: (code = 'home_banner') => request.get('/banner/' + code, {}).then(r => (r && r.data) || [])
+  home: (code = 'home_banner') => request.get('/banner/' + code, {}).then(r => (r && Array.isArray(r.list) ? r.list : (r && Array.isArray(r) ? r : [])))
 }
 
 // 订单（需登录）

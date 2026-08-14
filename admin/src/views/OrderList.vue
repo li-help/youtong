@@ -52,6 +52,7 @@ function onVerify(row) {
     :form-fields="formFields"
     :save-api="orderApi.save"
     :remove-api="orderApi.remove"
+    :show-verify="true"
     :status-options="[{ label: '待支付', value: 0 }, { label: '已支付', value: 1 }, { label: '已核销', value: 2 }, { label: '已取消', value: 3 }]"
     keyword-placeholder="订单号"
     @verify="onVerify"

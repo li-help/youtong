@@ -76,10 +76,6 @@
       "style": { "navigationBarTitleText": "店铺详情" }
     },
     {
-      "path": "pages/article/detail",
-      "style": { "navigationBarTitleText": "学习天地" }
-    },
-    {
       "path": "pages/order/list",
       "style": { "navigationBarTitleText": "我的订单" }
     },

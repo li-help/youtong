@@ -15,6 +15,10 @@ const props = defineProps({
   formFields: { type: Array, default: () => [] },
   saveApi: { type: Function, default: null },     // (data) => Promise
   removeApi: { type: Function, default: null },   // (id) => Promise
+  // 是否显示「核销」按钮（@verify 事件由父组件监听）
+  showVerify: { type: Boolean, default: false },
+  // 图片列地址前缀：开发用 ''（走 devServer proxy），生产填后端地址如 'http://domain:3001'
+  imageBase: { type: String, default: '' },
 })
 
 const loading = ref(false)
@@ -62,7 +66,26 @@ function openDialog(mode, row) {
   })
   if (row) form.id = row.id
   else delete form.id
+  // 打开弹窗时清空本地预览缓存
+  props.formFields.forEach((f) => {
+    if (f.type === 'image') localPreview[f.prop] = ''
+  })
   dialogVisible.value = true
+}
+
+// 上传前校验：仅允许图片类型，限制 5MB
+function beforeImageUpload(file) {
+  const okType = file.type.startsWith('image/')
+  if (!okType) {
+    ElMessage.error('只能上传图片文件')
+    return false
+  }
+  const okSize = file.size / 1024 / 1024 <= 5
+  if (!okSize) {
+    ElMessage.error('图片大小不能超过 5MB')
+    return false
+  }
+  return true
 }
 
 function onAdd() {
@@ -116,16 +139,32 @@ function onVerify(row) {
   emit('verify', row)
 }
 
+// 本地预览地址（selected 文件立即展示，无需等待服务器）
+const localPreview = reactive({})
+// 上传中状态，按字段区分，避免多个图片字段互相影响
+const uploadingMap = reactive({})
+
 async function uploadImage(f, options) {
   if (!options || !options.file) return
+  const file = options.file
+  // 1) 立即生成本地预览（从本地电脑选取的文件，直接读出 base64 展示）
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    localPreview[f.prop] = e.target.result
+  }
+  reader.readAsDataURL(file)
+  // 2) 上传到服务器
+  uploadingMap[f.prop] = true
   try {
-    const res = await uploadApi.upload(options.file)
+    const res = await uploadApi.upload(file)
     form[f.prop] = res.url
     ElMessage.success('图片上传成功')
     if (options.onSuccess) options.onSuccess(res)
   } catch (e) {
     ElMessage.error('图片上传失败')
     if (options.onError) options.onError(e)
+  } finally {
+    uploadingMap[f.prop] = false
   }
 }
 
@@ -170,6 +209,7 @@ defineExpose({ load })
           :prop="col.prop"
           :label="col.label"
           :width="col.width"
+          :formatter="col.formatter"
           show-overflow-tooltip
         >
           <template v-if="col.tag" #default="{ row }">
@@ -181,9 +221,9 @@ defineExpose({ load })
           <template v-else-if="col.type === 'image'" #default="{ row }">
             <el-image
               v-if="row[col.prop]"
-              :src="row[col.prop]"
+              :src="imageBase + row[col.prop]"
               style="width: 50px; height: 50px; border-radius: 4px; display: block;"
-              :preview-src-list="[row[col.prop]]"
+              :preview-src-list="[imageBase + row[col.prop]]"
               preview-teleported
               fit="cover"
             />
@@ -193,7 +233,7 @@ defineExpose({ load })
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="onEdit(row)">编辑</el-button>
-            <el-button link type="success" v-if="$attrs.onVerify" @click="onVerify(row)">核销</el-button>
+            <el-button link type="success" v-if="showVerify" @click="onVerify(row)">核销</el-button>
             <el-button link type="danger" @click="onRemove(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -279,21 +319,17 @@ defineExpose({ load })
               :show-file-list="false"
               :http-request="(opt) => uploadImage(f, opt)"
               accept="image/*"
+              :before-upload="(file) => beforeImageUpload(file)"
             >
               <el-image
-                v-if="form[f.prop]"
-                :src="form[f.prop]"
+                v-if="localPreview[f.prop] || form[f.prop]"
+                :src="localPreview[f.prop] || form[f.prop]"
                 class="image-upload-preview"
                 fit="cover"
               />
               <div v-else class="image-upload-placeholder">+ 点击上传</div>
             </el-upload>
-            <el-input
-              v-model="form[f.prop]"
-              :placeholder="`或输入${f.label} URL`"
-              clearable
-              style="margin-top: 8px;"
-            />
+            <div class="image-upload-tip" v-if="uploadingMap[f.prop]">上传中…</div>
           </div>
         </el-form-item>
       </el-form>
@@ -323,6 +359,11 @@ defineExpose({ load })
   border: 1px solid var(--el-border-color);
   object-fit: cover;
   cursor: pointer;
+}
+.image-upload-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--el-color-primary);
 }
 .image-upload-placeholder {
   width: 120px;

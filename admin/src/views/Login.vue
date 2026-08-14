@@ -52,8 +52,8 @@ async function onSubmit() {
     ElMessage.success('登录成功')
     router.replace('/')
   } catch (err) {
-    const msg = err?.response?.data?.msg || err?.message || '登录失败，请检查用户名或密码'
-    ElMessage.error(msg)
+    // 业务错误信息已由 request 拦截器统一弹出，这里不再重复提示
+    console.warn('login failed:', err?.message)
   } finally {
     loading.value = false
   }

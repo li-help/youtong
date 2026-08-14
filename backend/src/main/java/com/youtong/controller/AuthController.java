@@ -34,7 +34,14 @@ public class AuthController {
         }
         SysAccount account = accountService.getOne(
                 new QueryWrapper<SysAccount>().eq("username", username));
-        if (account == null || !PasswordEncoder.matches(password, account.getPassword())) {
+        boolean passwordOk = false;
+        try {
+            passwordOk = account != null && PasswordEncoder.matches(password, account.getPassword());
+        } catch (IllegalArgumentException e) {
+            // 库中密码非合法 BCrypt 密文（如手动改库），按密码错误处理
+            passwordOk = false;
+        }
+        if (account == null || !passwordOk) {
             return R.fail("用户名或密码错误");
         }
         if (account.getStatus() != null && account.getStatus() == 0) {
