@@ -17,6 +17,8 @@ CREATE TABLE `sys_account` (
   `username`    VARCHAR(64)  NOT NULL COMMENT '登录账号',
   `password`    VARCHAR(128) NOT NULL COMMENT '密码(加密存储)',
   `nickname`    VARCHAR(64)  DEFAULT '' COMMENT '昵称',
+  `phone`       VARCHAR(20)  DEFAULT '' COMMENT '手机号',
+  `avatar`      VARCHAR(255) DEFAULT '' COMMENT '头像',
   `role`        VARCHAR(32)  DEFAULT 'operator' COMMENT '角色: admin/operator',
   `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态: 1启用 0禁用',
   `remark`      VARCHAR(255) DEFAULT '' COMMENT '备注',

@@ -1,0 +1,5 @@
+Flutter assets will be downloaded from https://storage.googleapis.com. Make sure you trust this source!
+Analyzing app...                                                
+No issues found! (ran in 2.1s)
+
+c:\Users\48027\Desktop\youxiu\app>

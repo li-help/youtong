@@ -13,7 +13,9 @@ class _OrdersPageState extends State<OrdersPage> {
   int _tab = 0;
   List<dynamic> _orders = [];
   bool _loading = true;
-  final _tabs = ['全部', '待支付', '已支付', '已核销'];
+  // 与后端 OrderController 状态枚举对齐：pending/paid/completed/cancelled
+  final _tabs = ['全部', '待支付', '已支付', '已核销', '已取消'];
+  final _statusValues = [null, 'pending', 'paid', 'completed', 'cancelled'];
 
   @override
   void initState() {
@@ -22,28 +24,30 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<void> _load() async {
-    final res = await ApiService.listOrders(page: 1, pageSize: 20, status: _tab == 0 ? null : _tab - 1);
+    final res = await ApiService.listOrders(page: 1, pageSize: 20, status: _statusValues[_tab]);
     setState(() {
       _orders = res['data']?['list'] ?? [];
       _loading = false;
     });
   }
 
-  String _statusText(int? s) {
-    switch (s) {
-      case 0: return '待支付';
-      case 1: return '已支付';
-      case 2: return '已核销';
-      case 3: return '已取消';
+  String _statusText(dynamic s) {
+    switch (s?.toString()) {
+      case 'pending': return '待支付';
+      case 'paid': return '已支付';
+      case 'completed': return '已核销';
+      case 'cancelled': return '已取消';
       default: return '未知';
     }
   }
 
-  Color _statusColor(int? s) {
-    if (s == 0) return AppStyles.primary;
-    if (s == 1) return Colors.blue;
-    if (s == 2) return Colors.green;
-    return AppStyles.danger;
+  Color _statusColor(dynamic s) {
+    switch (s?.toString()) {
+      case 'pending': return AppStyles.primary;
+      case 'paid': return Colors.blue;
+      case 'completed': return Colors.green;
+      default: return AppStyles.danger;
+    }
   }
 
   @override
@@ -75,7 +79,7 @@ class _OrdersPageState extends State<OrdersPage> {
                       itemCount: _orders.length,
                       itemBuilder: (context, i) {
                         final o = _orders[i];
-                        final status = o['status'] as int?;
+                        final status = o['status'];
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),

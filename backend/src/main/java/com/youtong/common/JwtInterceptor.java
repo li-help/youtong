@@ -18,6 +18,11 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/api/auth/logout",
             "/api/ad/position/*",
             "/api/banner/*",
+            "/api/course/recommend",
+            "/api/article/published",
+            "/api/article/view/*",
+            "/api/store/list",
+            "/api/service/list",
     };
 
     @Override

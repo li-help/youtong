@@ -102,8 +102,14 @@ class ApiService {
       get('/video', query: {'page': '$page', 'pageSize': '$pageSize'});
   static Future<Map<String, dynamic>> videoDetail(int id) => get('/video/$id');
 
-  static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20}) =>
-      get('/course', query: {'page': '$page', 'pageSize': '$pageSize'});
+  static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20, String? keyword, int? categoryId}) =>
+      get('/course',
+          query: {
+            'page': '$page',
+            'pageSize': '$pageSize',
+            if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
+            if (categoryId != null) 'categoryId': '$categoryId',
+          });
   static Future<Map<String, dynamic>> courseDetail(int id) => get('/course/$id');
 
   static Future<Map<String, dynamic>> listActivities({int page = 1, int pageSize = 20}) =>
@@ -111,16 +117,33 @@ class ApiService {
   static Future<Map<String, dynamic>> activityDetail(int id) => get('/activity/$id');
 
   static Future<Map<String, dynamic>> listStores({int page = 1, int pageSize = 20}) =>
-      get('/store', query: {'page': '$page', 'pageSize': '$pageSize'});
+      get('/store/list', query: {'page': '$page', 'pageSize': '$pageSize'});
+
+  static Future<Map<String, dynamic>> listServices({int page = 1, int pageSize = 20}) =>
+      get('/service/list', query: {'page': '$page', 'pageSize': '$pageSize'});
 
   static Future<Map<String, dynamic>> listCategories({int page = 1, int pageSize = 20}) =>
       get('/category', query: {'page': '$page', 'pageSize': '$pageSize'});
 
+  // C 端课程推荐
+  static Future<Map<String, dynamic>> recommendCourses({int size = 6}) =>
+      get('/course/recommend', query: {'size': '$size'});
+
+  // C 端资讯
+  static Future<Map<String, dynamic>> listArticles({int page = 1, int pageSize = 10}) =>
+      get('/article/published', query: {'page': '$page', 'pageSize': '$pageSize'});
+  static Future<Map<String, dynamic>> articleDetail(int id) => get('/article/view/$id');
+
+  // 当前用户信息 / 修改资料（对接后端 sys_account）
+  static Future<Map<String, dynamic>> userMe() => get('/user/me');
+  static Future<Map<String, dynamic>> updateProfile(String nickname) =>
+      post('/user/profile', body: {'nickname': nickname});
+
   // 首页轮播：后台广告位 home_banner
   static Future<Map<String, dynamic>> listBanners() => get('/banner/home_banner');
 
-  static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, int? status}) =>
-      get('/order', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': '$status'});
+  static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, String? status}) =>
+      get('/order', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': status});
 
   static Future<Map<String, dynamic>> createOrder(Map<String, dynamic> body) =>
       post('/order/create', body: body);

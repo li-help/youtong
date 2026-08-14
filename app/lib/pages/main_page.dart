@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'smart_page.dart';
 import 'course_page.dart';
+import 'article_page.dart';
 import 'activity_page.dart';
 import 'mine_page.dart';
 
@@ -18,6 +19,7 @@ class _MainPageState extends State<MainPage> {
     HomePage(),
     SmartPage(),
     CoursePage(),
+    ArticlePage(),
     ActivityPage(),
     MinePage(),
   ];
@@ -45,6 +47,7 @@ class _MainPageState extends State<MainPage> {
             activeIcon: _TabIcon(icon: 'assets/icons/tab_course_active.png'),
             label: '课程',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.article_outlined), activeIcon: Icon(Icons.article), label: '资讯'),
           BottomNavigationBarItem(
             icon: _TabIcon(icon: 'assets/icons/tab_activity.png'),
             activeIcon: _TabIcon(icon: 'assets/icons/tab_activity_active.png'),

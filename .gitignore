@@ -29,6 +29,14 @@ Thumbs.db
 gen_tmp/
 *.done
 
+# 大文件/构建缓存（不应入库）
+app/gradle.zip
+*.zip
+*.txt
+app/analyze_out.txt
+app/build_res.txt
+backend/run_out.txt
+
 # Node.js 本地开发日志与本地环境变量文件
 npm-debug.log*
 yarn-debug.log*
