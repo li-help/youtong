@@ -6,8 +6,7 @@ export const userStore = reactive({
   info: uni.getStorageSync('userInfo') || null,
 
   async login(username, password) {
-    const res = await authApi.login(username, password)
-    const data = res.data || {}
+    const data = (await authApi.login(username, password)) || {}
     this.token = data.token || ''
     this.info = data.user || null
     uni.setStorageSync('token', this.token)
@@ -16,8 +15,8 @@ export const userStore = reactive({
   },
 
   async fetchInfo() {
-    const res = await authApi.info()
-    this.info = res.data || null
+    const info = await authApi.info()
+    this.info = info || null
     uni.setStorageSync('userInfo', this.info)
     return this.info
   },
