@@ -11,11 +11,11 @@
     <scroll-view scroll-y class="scroll">
       <view class="card order-card" v-for="o in list" :key="o.id">
         <view class="o-top">
-          <text class="o-no">订单号：{{ o.orderNo || ('YT' + o.id) }}</text>
-          <text class="o-status" :class="'s' + o.status">{{ o.statusText || statusText(o.status) }}</text>
+          <text class="o-no">订单号：{{ o.order_no || ('YT' + o.id) }}</text>
+          <text class="o-status" :class="'s' + o.status">{{ o.status_text || statusText(o.status) }}</text>
         </view>
         <view class="o-amount">金额：<text class="price">¥{{ o.amount || '0' }}</text></view>
-        <view class="o-time text-muted">下单时间：{{ o.createdAt || '—' }}</view>
+        <view class="o-time text-muted">下单时间：{{ o.created_at || '—' }}</view>
         <view class="o-actions" v-if="o.status === 1">
           <text class="verify-btn" @click="onVerify(o)">核销</text>
         </view>
@@ -38,12 +38,14 @@ function statusText(s) {
 
 async function load() {
   try {
-    const r = await orderApi.list({ page: 1, pageSize: 30, status: active.value === '' ? undefined : active.value })
+    const params = { page: 1, pageSize: 30 }
+    if (active.value !== '') params.status = active.value
+    const r = await orderApi.list(params)
     list.value = (r && r.list) ? r.list : []
   } catch (e) {
     list.value = [
-      { id: 1, orderNo: 'YT20260101001', status: 1, statusText: '已支付', amount: '199', createdAt: '2026-01-01 10:00' },
-      { id: 2, orderNo: 'YT20260102002', status: 0, statusText: '待支付', amount: '299', createdAt: '2026-01-02 14:00' }
+      { id: 1, order_no: 'YT20260101001', status: 1, status_text: '已支付', amount: '199', created_at: '2026-01-01 10:00' },
+      { id: 2, order_no: 'YT20260102002', status: 0, status_text: '待支付', amount: '299', created_at: '2026-01-02 14:00' }
     ]
   }
 }

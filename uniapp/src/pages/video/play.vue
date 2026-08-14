@@ -1,9 +1,12 @@
 <template>
   <view class="play">
     <view class="status-bar"></view>
-    <view class="player">
+    <view class="back-btn" @click.stop="goBack">
+      <text class="back-icon">‹</text>
+    </view>
+    <view class="player" @click="onTogglePlay">
       <image :src="coverOf(video)" mode="aspectFill" class="poster" />
-      <view class="play-btn" @click="onPlay">
+      <view v-if="showBtn" class="play-btn">
         <text class="play-icon">{{ playing ? '⏸' : '▶' }}</text>
       </view>
       <view class="bar">
@@ -30,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { videoApi } from '../../api/index.js'
 import { coverOf } from '../../config.js'
 
@@ -40,6 +43,7 @@ const playing = ref(false)
 const progress = ref(0)
 const currentTime = ref('00:00')
 const durationText = ref('00:00')
+const showBtn = ref(true)
 let timer = null
 
 onMounted(() => {
@@ -69,19 +73,40 @@ function fmt(s) {
   return (m < 10 ? '0' + m : m) + ':' + (sec < 10 ? '0' + sec : sec)
 }
 
-function onPlay() {
-  playing.value = !playing.value
+function onTogglePlay() {
   if (playing.value) {
-    let cur = 0
-    const total = video.value.duration || 120
-    timer = setInterval(() => {
-      cur += 1
-      progress.value = Math.min(100, (cur / total) * 100)
-      currentTime.value = fmt(cur)
-      if (cur >= total) { clearInterval(timer); playing.value = false }
-    }, 1000)
-  } else if (timer) {
+    // 播放中点击 -> 暂停并显示按钮
+    pause()
+  } else {
+    // 暂停中点击 -> 继续播放并隐藏按钮
+    play()
+  }
+}
+
+function play() {
+  playing.value = true
+  showBtn.value = false
+  let cur = 0
+  const total = video.value.duration || 120
+  timer = setInterval(() => {
+    cur += 1
+    progress.value = Math.min(100, (cur / total) * 100)
+    currentTime.value = fmt(cur)
+    if (cur >= total) {
+      clearInterval(timer)
+      timer = null
+      playing.value = false
+      showBtn.value = true
+    }
+  }, 1000)
+}
+
+function pause() {
+  playing.value = false
+  showBtn.value = true
+  if (timer) {
     clearInterval(timer)
+    timer = null
   }
 }
 
@@ -89,14 +114,25 @@ function goVideo(v) {
   if (timer) clearInterval(timer)
   uni.redirectTo({ url: '/pages/video/play?id=' + v.id })
 }
+
+function goBack() {
+  if (timer) clearInterval(timer)
+  uni.navigateBack()
+}
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 </script>
 
 <style scoped>
 .play { min-height: 100vh; background: #1a1a1a; }
 .status-bar { height: 60rpx; }
+.back-btn { position: absolute; top: 80rpx; left: 24rpx; z-index: 10; width: 64rpx; height: 64rpx; border-radius: 50%; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; }
+.back-icon { color: #fff; font-size: 48rpx; line-height: 1; margin-top: -4rpx; }
 .player { position: relative; width: 100%; height: 460rpx; background: #000; display: flex; align-items: center; justify-content: center; }
 .poster { width: 100%; height: 100%; opacity: .6; }
-.play-btn { width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,160,0,.85); display: flex; align-items: center; justify-content: center; }
+.play-btn { position: absolute; top: 120rpx; left: 50%; transform: translateX(-50%); width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,160,0,.85); display: flex; align-items: center; justify-content: center; }
 .play-icon { color: #fff; font-size: 48rpx; }
 .bar { position: absolute; left: 0; right: 0; bottom: 20rpx; height: 8rpx; background: rgba(255,255,255,.3); margin: 0 30rpx; border-radius: 4rpx; }
 .progress { height: 100%; background: #FFA000; border-radius: 4rpx; }

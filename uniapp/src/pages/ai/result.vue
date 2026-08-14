@@ -29,7 +29,7 @@
           <image :src="coverOf(a)" mode="aspectFill" class="a-cover" />
           <view class="a-info">
             <text class="a-title">{{ a.title }}</text>
-            <text class="a-time text-muted">{{ a.startTime || '时间待定' }}</text>
+            <text class="a-time text-muted">{{ a.start_time || '时间待定' }}</text>
           </view>
         </view>
       </view>

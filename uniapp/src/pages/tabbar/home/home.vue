@@ -104,10 +104,10 @@ async function loadData() {
       storeApi.list({ page: 1, pageSize: 5 }),
       adApi.byPosition('home_banner')
     ])
-    categories.value = (cat && cat.data && cat.data.list) ? cat.data.list : defaultCategories()
-    videos.value = (vid && vid.data && vid.data.list) ? vid.data.list : []
-    stores.value = (sto && sto.data && sto.data.list) ? sto.data.list : []
-    banners.value = (ads && ads.data && ads.data.length) ? ads.data : fallbackBanners
+    categories.value = (cat && cat.list && cat.list.length) ? cat.list.map(decorateCategory) : defaultCategories()
+    videos.value = (vid && vid.list) ? vid.list : []
+    stores.value = (sto && sto.list) ? sto.list : []
+    banners.value = (ads && ads.length) ? ads : fallbackBanners
   } catch (e) {
     categories.value = defaultCategories()
     banners.value = fallbackBanners
@@ -127,6 +127,26 @@ function defaultCategories() {
   ]
 }
 
+const CATEGORY_ICONS = {
+  '兴趣培养': { emoji: '🎨', bg: '#FFE0B2' },
+  '学科辅导': { emoji: '📚', bg: '#FFCC80' },
+  '绘画': { emoji: '🎨', bg: '#FFE0B2' },
+  '音乐': { emoji: '🎵', bg: '#FFE082' },
+  '数学': { emoji: '🧮', bg: '#FFB74D' },
+  '英语': { emoji: '💬', bg: '#FFCC80' },
+  '绘本阅读': { emoji: '📖', bg: '#FFE0B2' },
+  '益智游戏': { emoji: '🧩', bg: '#FFCC80' },
+  '科学启蒙': { emoji: '🔬', bg: '#FFB74D' },
+  '艺术创作': { emoji: '🎨', bg: '#FFD54F' },
+  '运动健康': { emoji: '⚽', bg: '#FFB74D' },
+  '音乐律动': { emoji: '🎵', bg: '#FFE082' },
+  '语言表达': { emoji: '💬', bg: '#FFCC80' }
+}
+function decorateCategory(c) {
+  const icon = CATEGORY_ICONS[c.name] || { emoji: '⭐', bg: '#FFE0B2' }
+  return { ...c, emoji: icon.emoji, bg: icon.bg }
+}
+
 function onRefresh() {
   refreshing.value = true
   loadData().finally(() => setTimeout(() => (refreshing.value = false), 600))
@@ -135,14 +155,35 @@ function goSearch() { uni.showToast({ title: '搜索功能开发中', icon: 'non
 function goArticle(g) { uni.navigateTo({ url: '/pages/article/detail?id=' + (g.id || '') }) }
 function goBanner(b) {
   if (!b || !b.url) return
-  if (b.url.startsWith('/')) {
-    uni.navigateTo({ url: b.url })
-  } else if (/^https?:/i.test(b.url)) {
+  const url = b.url
+  if (/^https?:/i.test(url)) {
     uni.setClipboardData({
-      data: b.url,
+      data: url,
       success: () => uni.showToast({ title: '链接已复制', icon: 'none' })
     })
+    return
   }
+  const page = bannerUrlToPage(url)
+  if (page) {
+    uni.navigateTo({ url: page })
+  } else if (url.startsWith('/pages/')) {
+    uni.navigateTo({ url })
+  } else {
+    uni.showToast({ title: '链接暂不可用', icon: 'none' })
+  }
+}
+
+// 后台广告跳转链接形如 /course/2、/activity/1，需映射为小程序页面路径
+function bannerUrlToPage(url) {
+  const map = {
+    course: '/pages/course/detail',
+    activity: '/pages/activity/detail',
+    video: '/pages/video/play',
+    store: '/pages/store/detail',
+    article: '/pages/article/detail'
+  }
+  const m = url.match(/^\/(course|activity|video|store|article)\/(\d+)\/?$/)
+  return m ? `${map[m[1]]}?id=${m[2]}` : ''
 }
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
@@ -153,12 +194,12 @@ onMounted(loadData)
 
 <style scoped>
 .home { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.top { padding: 10rpx 24rpx; background: #FFF8E1; }
-.search { background: #fff; border-radius: 40rpx; height: 72rpx; display: flex; align-items: center; padding: 0 28rpx; box-shadow: 0 4rpx 16rpx rgba(255,160,0,.08); }
+.status-bar { height: 40rpx; position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #FFF8E1; }
+.top { position: fixed; top: 40rpx; left: 0; right: 0; z-index: 100; padding: 4rpx 24rpx; background: #FFF8E1; }
+.search { background: #fff; border-radius: 40rpx; height: 60rpx; display: flex; align-items: center; padding: 0 24rpx; box-shadow: 0 4rpx 16rpx rgba(255,160,0,.08); }
 .s-icon { margin-right: 14rpx; }
 .s-text { color: #bbb; font-size: 28rpx; }
-.scroll { height: calc(100vh - 180rpx); }
+.scroll { height: calc(100vh - 108rpx); margin-top: 108rpx; }
 .banner { height: 300rpx; margin: 16rpx 24rpx; border-radius: 24rpx; overflow: hidden; }
 .banner-item { height: 300rpx; display: flex; flex-direction: column; justify-content: center; padding: 40rpx; color: #fff; }
 .banner-img { width: 100%; height: 100%; }
