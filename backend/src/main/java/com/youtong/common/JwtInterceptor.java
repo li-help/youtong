@@ -11,7 +11,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
-    /** 无需鉴权的接口，末尾 * 表示前缀匹配 */
+    /** 无需鉴权的接口；支持两种写法：
+     *  1) 普通路径："/api/xxx" 或 "/api/xxx/*"（末尾 * 为前缀匹配，不区分方法）
+     *  2) 限定方法：前缀 "METHOD:" 表示仅对指定 HTTP 方法放行，如 "GET:/api/course/*"
+     */
     private static final String[] WHITE_LIST = {
             "/api/auth/login",
             "/api/auth/register",
@@ -19,10 +22,15 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/api/ad/position/*",
             "/api/banner/*",
             "/api/course/recommend",
+            "/api/course/list",
+            "GET:/api/course/*",
             "/api/article/published",
             "/api/article/view/*",
+            "GET:/api/store/*",
             "/api/store/list",
             "/api/service/list",
+            "GET:/api/video/*",
+            "GET:/api/activity/*",
     };
 
     @Override
@@ -32,8 +40,19 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
         String uri = request.getRequestURI();
+        String method = request.getMethod();
         for (String w : WHITE_LIST) {
-            if (uri.equals(w) || (w.endsWith("*") && uri.startsWith(w.substring(0, w.length() - 1)))) {
+            String needMethod = null;
+            String pattern = w;
+            if (w.contains(":")) {
+                int idx = w.indexOf(':');
+                needMethod = w.substring(0, idx);
+                pattern = w.substring(idx + 1);
+            }
+            if (needMethod != null && !needMethod.equalsIgnoreCase(method)) {
+                continue;
+            }
+            if (uri.equals(pattern) || (pattern.endsWith("*") && uri.startsWith(pattern.substring(0, pattern.length() - 1)))) {
                 return true;
             }
         }

@@ -22,7 +22,7 @@ public class CourseController extends CrudController<Course, Long> {
     }
 
     /** C 端课程列表（支持关键词与分类筛选，公开） */
-    @GetMapping
+    @GetMapping("/list")
     public R list(@RequestParam(defaultValue = "1") Integer page,
                   @RequestParam(defaultValue = "20") Integer pageSize,
                   @RequestParam(required = false) String keyword,

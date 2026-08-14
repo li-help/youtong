@@ -1,4 +1,9 @@
-const BASE_URL = 'http://localhost:3001/api'
+// 统一请求封装：自动携带 token、统一错误提示、解析后端 R 结构。
+// 说明：默认使用相对路径 '/api'，由 HBuilderX 运行 H5 时通过 manifest.h5.devServer.proxy 转发到后端。
+// 在 App / 小程序真机调试时，请将下方 BASE_URL 改为你电脑的局域网 IP，例如：
+//   const BASE_URL = 'http://192.168.1.100:3001/api'
+// 当前工程默认以 H5 + 本地后端 (http://localhost:3001) 联调。
+const BASE_URL = '/api'
 
 function request(options) {
   const token = uni.getStorageSync('token')

@@ -103,7 +103,7 @@ class ApiService {
   static Future<Map<String, dynamic>> videoDetail(int id) => get('/video/$id');
 
   static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20, String? keyword, int? categoryId}) =>
-      get('/course',
+      get('/course/list',
           query: {
             'page': '$page',
             'pageSize': '$pageSize',

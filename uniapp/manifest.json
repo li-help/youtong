@@ -40,7 +40,12 @@
     },
     "devServer": {
       "port": 8080,
-      "proxy": {}
+      "proxy": {
+        "/api": {
+          "target": "http://localhost:3001",
+          "changeOrigin": true
+        }
+      }
     }
   },
   "vueVersion": "3"

@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { authApi } from '../api/index.js'
+import { authApi, userApi } from '../api/index.js'
 
 export const userStore = reactive({
   token: uni.getStorageSync('token') || '',
@@ -14,9 +14,25 @@ export const userStore = reactive({
     return data
   },
 
+  async register(username, password, nickname) {
+    return await authApi.register(username, password, nickname)
+  },
+
   async fetchInfo() {
-    const info = await authApi.info()
+    let info
+    try {
+      info = await userApi.me()
+    } catch (e) {
+      info = await authApi.info()
+    }
     this.info = info || null
+    uni.setStorageSync('userInfo', this.info)
+    return this.info
+  },
+
+  async updateProfile(data) {
+    const info = await userApi.updateProfile(data)
+    this.info = info || this.info
     uni.setStorageSync('userInfo', this.info)
     return this.info
   },

@@ -32,6 +32,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { authApi } from '../../api/index.js'
 
 const form = ref({ username: '', nickname: '', password: '', babyAge: '' })
 const loading = ref(false)
@@ -47,10 +48,11 @@ async function onRegister() {
   }
   loading.value = true
   try {
-    // 后端无独立注册接口，这里写入本地演示数据
-    uni.setStorageSync('demoUser', form.value)
+    await authApi.register(form.value.username, form.value.password, form.value.nickname || form.value.username)
     uni.showToast({ title: '注册成功，请登录', icon: 'success' })
     setTimeout(() => uni.navigateBack(), 600)
+  } catch (e) {
+    // 错误提示已由 request 统一处理
   } finally {
     loading.value = false
   }

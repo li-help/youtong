@@ -69,13 +69,23 @@
           </view>
         </view>
       </view>
+
+      <!-- 服务 -->
+      <view class="section">
+        <view class="section-title">服务</view>
+        <view class="service-entry" @click="goService">
+          <text class="service-emoji">🛎️</text>
+          <text class="service-text">查看全部服务项目</text>
+          <text class="service-arrow">›</text>
+        </view>
+      </view>
     </scroll-view>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { videoApi, categoryApi, storeApi, adApi } from '../../../api/index.js'
+import { videoApi, categoryApi, storeApi, bannerApi } from '../../../api/index.js'
 import { coverOf } from '../../../config.js'
 
 const banners = ref([])
@@ -102,7 +112,7 @@ async function loadData() {
       categoryApi.list({ page: 1, pageSize: 8 }),
       videoApi.list({ page: 1, pageSize: 6 }),
       storeApi.list({ page: 1, pageSize: 5 }),
-      adApi.byPosition('home_banner')
+      bannerApi.home('home_banner')
     ])
     categories.value = (cat && cat.list && cat.list.length) ? cat.list.map(decorateCategory) : defaultCategories()
     videos.value = (vid && vid.list) ? vid.list : []
@@ -180,13 +190,15 @@ function bannerUrlToPage(url) {
     activity: '/pages/activity/detail',
     video: '/pages/video/play',
     store: '/pages/store/detail',
-    article: '/pages/article/detail'
+    article: '/pages/article/detail',
+    service: '/pages/service/list'
   }
-  const m = url.match(/^\/(course|activity|video|store|article)\/(\d+)\/?$/)
+  const m = url.match(/^\/(course|activity|video|store|article|service)\/(\d+)\/?$/)
   return m ? `${map[m[1]]}?id=${m[2]}` : ''
 }
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
+function goService() { uni.navigateTo({ url: '/pages/service/list' }) }
 function goAge(a) { uni.switchTab({ url: '/pages/tabbar/ai/ai' }) }
 
 onMounted(loadData)
@@ -228,4 +240,8 @@ onMounted(loadData)
 .store-name { font-size: 30rpx; font-weight: bold; }
 .store-intro { font-size: 24rpx; margin: 8rpx 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
 .store-score { font-size: 24rpx; color: #FFA000; }
+.service-entry { display: flex; align-items: center; background: #fff; border-radius: 18rpx; padding: 28rpx 24rpx; box-shadow: 0 6rpx 20rpx rgba(255,160,0,.10); }
+.service-emoji { font-size: 48rpx; margin-right: 20rpx; }
+.service-text { flex: 1; font-size: 30rpx; font-weight: bold; color: #FF8F00; }
+.service-arrow { font-size: 44rpx; color: #FFA000; }
 </style>

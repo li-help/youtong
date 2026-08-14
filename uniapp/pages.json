@@ -1,9 +1,6 @@
 {
   "easycom": {
-    "autoscan": true,
-    "custom": {
-      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
-    }
+    "autoscan": true
   },
   "pages": [
     {
@@ -101,6 +98,22 @@
     {
       "path": "pages/ai/result",
       "style": { "navigationBarTitleText": "推荐结果" }
+    },
+    {
+      "path": "pages/article/detail",
+      "style": {
+        "navigationBarTitleText": "学习天地",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/service/list",
+      "style": {
+        "navigationBarTitleText": "服务",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
     }
   ],
   "globalStyle": {
