@@ -1,0 +1,153 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/register/register",
+      "style": {
+        "navigationBarTitleText": "注册",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/home/home",
+      "style": {
+        "navigationBarTitleText": "优童",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/tabbar/ai/ai",
+      "style": {
+        "navigationBarTitleText": "智能推荐",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/course/course",
+      "style": {
+        "navigationBarTitleText": "课程",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/tabbar/activity/activity",
+      "style": {
+        "navigationBarTitleText": "活动",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/tabbar/mine/mine",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/course/detail",
+      "style": { "navigationBarTitleText": "课程详情" }
+    },
+    {
+      "path": "pages/course/signup",
+      "style": { "navigationBarTitleText": "课程报名" }
+    },
+    {
+      "path": "pages/activity/detail",
+      "style": { "navigationBarTitleText": "活动详情" }
+    },
+    {
+      "path": "pages/video/play",
+      "style": { "navigationBarTitleText": "视频播放", "navigationStyle": "custom" }
+    },
+    {
+      "path": "pages/store/detail",
+      "style": { "navigationBarTitleText": "店铺详情" }
+    },
+    {
+      "path": "pages/article/detail",
+      "style": { "navigationBarTitleText": "学习天地" }
+    },
+    {
+      "path": "pages/order/list",
+      "style": { "navigationBarTitleText": "我的订单" }
+    },
+    {
+      "path": "pages/mine/profile",
+      "style": { "navigationBarTitleText": "修改个人信息" }
+    },
+    {
+      "path": "pages/mine/qrcode",
+      "style": { "navigationBarTitleText": "我的二维码" }
+    },
+    {
+      "path": "pages/mine/help",
+      "style": { "navigationBarTitleText": "使用说明" }
+    },
+    {
+      "path": "pages/ai/result",
+      "style": { "navigationBarTitleText": "推荐结果" }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "优童",
+    "navigationBarBackgroundColor": "#FFF8E1",
+    "backgroundColor": "#FFF8E1",
+    "app-plus": {
+      "background": "#FFF8E1"
+    }
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#FFA000",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/tabbar/home/home",
+        "text": "首页",
+        "iconPath": "static/tab/home.png",
+        "selectedIconPath": "static/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/ai/ai",
+        "text": "智能",
+        "iconPath": "static/tab/ai.png",
+        "selectedIconPath": "static/tab/ai-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/course/course",
+        "text": "课程",
+        "iconPath": "static/tab/course.png",
+        "selectedIconPath": "static/tab/course-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/activity/activity",
+        "text": "活动",
+        "iconPath": "static/tab/activity.png",
+        "selectedIconPath": "static/tab/activity-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/mine/mine",
+        "text": "我的",
+        "iconPath": "static/tab/mine.png",
+        "selectedIconPath": "static/tab/mine-active.png"
+      }
+    ]
+  }
+}

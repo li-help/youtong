@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class JwtUtil {
 
-    /** 签名密钥（演示用，实际应从配置文件读取） */
-    private static final String SECRET = "youtong-admin-secret-key-2026-please-change-me";
+    /** 签名密钥（优先从环境变量 JWT_SECRET 读取，否则使用默认演示值；生产环境务必外部配置） */
+    private static final String SECRET = System.getenv().getOrDefault("JWT_SECRET", "youtong-admin-secret-key-2026-please-change-me");
     /** 过期时间：2 小时 */
     public static final long EXPIRE_MS = 2 * 60 * 60 * 1000L;
 

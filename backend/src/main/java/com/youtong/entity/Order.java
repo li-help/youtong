@@ -12,8 +12,13 @@ public class Order {
     private String orderNo;
     private Long userId;
     private Long courseId;
+    private String courseName;
     private BigDecimal amount;
     private Integer status;
+    private String contactName;
+    private String contactPhone;
+    private String ageRange;
+    private String remark;
     private String paidAt;
     private String verifyAt;
     private String createdAt;

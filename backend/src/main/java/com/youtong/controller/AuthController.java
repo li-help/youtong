@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -47,6 +50,37 @@ public class AuthController {
         user.put("role", account.getRole());
         result.put("user", user);
         return R.ok(result);
+    }
+
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+
+    @PostMapping("/register")
+    public R register(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String password = body.get("password");
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return R.fail("用户名和密码不能为空");
+        }
+        if (!PHONE_PATTERN.matcher(username).matches()) {
+            return R.fail("请输入有效的手机号");
+        }
+        if (password.length() < 6) {
+            return R.fail("密码长度不能少于6位");
+        }
+        if (accountService.count(new QueryWrapper<SysAccount>().eq("username", username)) > 0) {
+            return R.fail("该手机号已注册");
+        }
+        SysAccount account = new SysAccount();
+        account.setUsername(username);
+        account.setPassword(PasswordEncoder.encode(password));
+        account.setNickname("用户" + username.substring(username.length() - 4));
+        account.setRole("user");
+        account.setStatus(1);
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        account.setCreatedAt(now);
+        account.setUpdatedAt(now);
+        accountService.save(account);
+        return R.ok("注册成功");
     }
 
     @PostMapping("/logout")
