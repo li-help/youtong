@@ -12,9 +12,11 @@ public class SysAccount {
     private String nickname;
     private String phone;
     private String avatar;
+    private String babyAge;
+    private String remark;
+    private String openid;
     private String role;
     private Integer status;
-    private String remark;
     private String createdAt;
     private String updatedAt;
 }

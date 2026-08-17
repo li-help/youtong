@@ -9,7 +9,7 @@ const columns = [
   { prop: 'role', label: '角色', tag: { admin: { text: '管理员', type: 'danger' }, operator: { text: '运营', type: 'info' } } },
   { prop: 'status', label: '状态', tag: { 1: { text: '启用', type: 'success' }, 0: { text: '禁用', type: 'danger' } } },
   { prop: 'remark', label: '备注' },
-  { prop: 'created_at', label: '创建时间', width: 160 },
+  { prop: 'createdAt', label: '创建时间', width: 160 },
 ]
 
 const formFields = [

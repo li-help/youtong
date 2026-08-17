@@ -6,6 +6,7 @@ import com.youtong.common.CrudController;
 import com.youtong.common.R;
 import com.youtong.entity.Store;
 import com.youtong.service.StoreService;
+import com.youtong.service.DataVersionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreController extends CrudController<Store, Long> {
     private final StoreService storeService;
 
-    public StoreController(StoreService service) {
-        super(service, "status", new String[]{"name", "address"});
+    public StoreController(StoreService service, DataVersionService dataVersionService) {
+        super(service, "status", new String[]{"name", "address"}, "store", dataVersionService);
         this.storeService = service;
     }
 

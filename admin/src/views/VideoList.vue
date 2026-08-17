@@ -8,7 +8,7 @@ const columns = [
   { prop: 'cover', label: '视频封面', type: 'image', width: 90 },
   { prop: 'duration', label: '时长(秒)', width: 100 },
   { prop: 'url', label: '视频地址' },
-  { prop: 'category_id', label: '分类ID', width: 90 },
+  { prop: 'categoryId', label: '分类ID', width: 90 },
   { prop: 'status', label: '状态', tag: { 1: { text: '上线', type: 'success' }, 0: { text: '下线', type: 'danger' } } },
 ]
 
@@ -17,7 +17,7 @@ const formFields = [
   { prop: 'cover', label: '视频封面', type: 'image' },
   { prop: 'duration', label: '时长(秒)', type: 'number' },
   { prop: 'url', label: '视频地址', required: true },
-  { prop: 'category_id', label: '分类ID', type: 'number' },
+  { prop: 'categoryId', label: '分类ID', type: 'number' },
   { prop: 'status', label: '状态', type: 'select', required: true, options: [
     { label: '上线', value: 1 },
     { label: '下线', value: 0 },

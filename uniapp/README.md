@@ -63,7 +63,7 @@ uniapp/
 | 活动列表   | GET  /api/activity                | 否   |
 | 视频列表   | GET  /api/video                   | 否   |
 | 资讯列表   | GET  /api/article/published       | 否   |
-| 轮播       | GET  /api/banner/{code}           | 否   |
+| 轮播       | GET  /api/ad?positionId=1&status=1 | 否   |
 | 个人信息   | GET  /api/user/me                 | 是   |
 | 订单列表   | GET  /api/order                   | 是   |
 

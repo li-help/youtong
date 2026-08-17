@@ -1,5 +1,11 @@
 <template>
   <view class="detail" v-if="activity">
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">活动详情</text>
+      </view>
+    </view>
     <image :src="coverOf(activity)" mode="aspectFill" class="banner" />
     <view class="body">
       <text class="title">{{ activity.title }}</text>
@@ -50,19 +56,20 @@ async function load() {
 function onJoin() {
   uni.showToast({ title: '报名成功，请准时参加', icon: 'success' })
 }
+function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.detail { padding-bottom: 140rpx; }
-.banner { width: 100%; height: 420rpx; background: #FFE0B2; }
-.body { padding: 24rpx; }
-.title { font-size: 40rpx; font-weight: bold; display: block; }
-.meta { display: flex; flex-direction: column; margin: 20rpx 0; }
-.m-item { font-size: 26rpx; color: #777; margin: 6rpx 0; }
-.section { margin-top: 30rpx; }
-.intro { font-size: 28rpx; line-height: 1.7; }
-.point { font-size: 28rpx; color: #555; margin: 12rpx 0; }
-.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 16rpx 24rpx; background: #fff; box-shadow: 0 -4rpx 16rpx rgba(0,0,0,.05); }
+.detail { padding-bottom: 150rpx; background: #F5F6FA; min-height: 100vh; }
+.banner { width: 100%; height: 380rpx; background: #FFF3DE; }
+.body { padding: 32rpx; }
+.title { font-size: 40rpx; font-weight: bold; display: block; color: #2D2D2D; }
+.meta { display: flex; flex-direction: column; margin: 24rpx 0; background: #fff; border-radius: 24rpx; padding: 24rpx 32rpx; box-shadow: 0 4rpx 20rpx rgba(0,0,0,.04); }
+.m-item { font-size: 26rpx; color: #888; margin: 8rpx 0; }
+.section { margin-top: 36rpx; }
+.intro { font-size: 28rpx; line-height: 1.7; color: #888; }
+.point { font-size: 28rpx; color: #555; margin: 14rpx 0; }
+.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 18rpx 32rpx; padding-bottom: calc(18rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -6rpx 24rpx rgba(0,0,0,.06); }
 .signup-btn { width: 100%; }
 .loading { text-align: center; padding: 120rpx 0; color: #999; }
 </style>

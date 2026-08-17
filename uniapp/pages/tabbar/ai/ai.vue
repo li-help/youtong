@@ -1,103 +1,144 @@
 <template>
-  <view class="ai">
-    <view class="status-bar"></view>
-    <view class="header">
-      <text class="title">智能推荐</text>
-      <text class="subtitle">告诉我们宝宝的情况，定制成长方案</text>
+  <view class="ai-page">
+    <!-- 顶部标题 -->
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__title">AI 智能助手</text>
+      </view>
     </view>
 
-    <view class="card form-card">
-      <view class="block">
-        <text class="label">宝宝年龄</text>
-        <view class="age-options">
-          <view class="age-opt" v-for="a in ages" :key="a.key"
-                :class="{ active: form.age === a.key }" @click="form.age = a.key">
-            {{ a.label }}（{{ a.key }}岁）
-          </view>
+    <scroll-view scroll-y class="scroll" :scroll-into-view="scrollTo">
+      <!-- 机器人欢迎区 -->
+      <view class="hero">
+        <view class="bot-avatar">
+          <text class="bot-emoji">🤖</text>
+        </view>
+        <text class="hero-title">AI智能体</text>
+        <text class="hero-sub">嗨～我是你的育儿小助手，有什么可以帮你的吗？</text>
+      </view>
+
+      <!-- 对话列表 -->
+      <view v-for="(m, i) in messages" :key="i" :id="'msg-' + i" class="msg-row" :class="m.role === 'user' ? 'right' : 'left'">
+        <view v-if="m.role === 'bot'" class="msg-avatar">🤖</view>
+        <view class="bubble" :class="m.role === 'user' ? 'bubble-user' : 'bubble-bot'">
+          <text class="bubble-text">{{ m.content }}</text>
         </view>
       </view>
 
-      <view class="block">
-        <view class="slider-head">
-          <text class="label">身高</text>
-          <text class="val">{{ form.height }} cm</text>
-        </view>
-        <slider :value="form.height" min="40" max="160" block-size="20" activeColor="#FFA000" @change="(e)=>form.height=e.detail.value" />
-      </view>
-
-      <view class="block">
-        <view class="slider-head">
-          <text class="label">体重</text>
-          <text class="val">{{ form.weight }} kg</text>
-        </view>
-        <slider :value="form.weight" min="3" max="60" block-size="20" activeColor="#FFA000" @change="(e)=>form.weight=e.detail.value" />
-      </view>
-
-      <view class="block">
-        <text class="label">兴趣方向（可多选）</text>
-        <view class="interest-options">
-          <view class="interest-opt" v-for="it in interests" :key="it"
-                :class="{ active: form.interests.includes(it) }" @click="toggleInterest(it)">
-            {{ it }}
-          </view>
+      <view v-if="loading" class="msg-row left">
+        <view class="msg-avatar">🤖</view>
+        <view class="bubble bubble-bot">
+          <text class="bubble-text">正在思考...</text>
         </view>
       </view>
 
-      <button class="btn-primary submit" @click="onRecommend">查 看 推 荐</button>
+      <view class="bottom-space"></view>
+    </scroll-view>
+
+    <!-- 输入栏 -->
+    <view class="input-bar">
+      <input class="chat-input" v-model="inputText" placeholder="输入宝宝年龄、兴趣或问题..." placeholder-class="ph" @confirm="send" />
+      <button class="send-btn" @click="send">发送</button>
     </view>
-
-    <view class="footer-tip">🤖 基于宝宝成长数据，智能匹配课程与活动</view>
   </view>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref, nextTick } from 'vue'
+import { aiApi } from '@/api/index.js'
 
-const ages = [
-  { key: '0-3', label: '启蒙期' },
-  { key: '3-6', label: '幼龄段' },
-  { key: '6-9', label: '学龄段' },
-  { key: '9+', label: '成长段' }
-]
-const interests = ['绘本阅读', '益智游戏', '科学启蒙', '艺术创作', '运动健康', '音乐律动']
+const messages = ref([
+  { role: 'bot', content: '你好呀～我可以根据宝宝的年龄和兴趣，为你推荐合适的课程和活动哦！' }
+])
+const inputText = ref('')
+const loading = ref(false)
+const scrollTo = ref('')
 
-const form = reactive({
-  age: '3-6',
-  height: 110,
-  weight: 20,
-  interests: ['绘本阅读', '益智游戏']
-})
+function send() {
+  const text = inputText.value.trim()
+  if (!text || loading.value) return
+  messages.value.push({ role: 'user', content: text })
+  inputText.value = ''
+  scrollBottom()
 
-function toggleInterest(it) {
-  const i = form.interests.indexOf(it)
-  if (i >= 0) form.interests.splice(i, 1)
-  else form.interests.push(it)
+  loading.value = true
+  const history = messages.value.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+  aiApi.chat(history)
+    .then(res => {
+      const reply = (res && res.content) ? res.content : '抱歉，我暂时无法回答，请稍后再试～'
+      messages.value.push({ role: 'bot', content: reply })
+      scrollBottom()
+    })
+    .catch(() => {
+      messages.value.push({ role: 'bot', content: '网络有点忙，请稍后再问我哦～' })
+      scrollBottom()
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
-function onRecommend() {
-  uni.navigateTo({
-    url: '/pages/ai/result?age=' + form.age + '&height=' + form.height + '&weight=' + form.weight + '&interests=' + encodeURIComponent(form.interests.join(','))
+function scrollBottom() {
+  nextTick(() => {
+    scrollTo.value = 'msg-' + (messages.value.length - 1)
   })
 }
 </script>
 
 <style scoped>
-.ai { min-height: 100vh; background: linear-gradient(180deg, #FFF3E0 0%, #FFF8E1 50%); padding: 0 24rpx; }
-.status-bar { height: 80rpx; }
-.header { padding: 30rpx 12rpx 20rpx; }
-.title { font-size: 44rpx; font-weight: bold; color: #FF8F00; display: block; }
-.subtitle { font-size: 26rpx; color: #B26A00; margin-top: 10rpx; display: block; }
-.form-card { margin-top: 10rpx; }
-.block { margin-bottom: 36rpx; }
-.label { font-size: 30rpx; font-weight: bold; color: #444; display: block; margin-bottom: 18rpx; }
-.age-options { display: flex; flex-wrap: wrap; gap: 16rpx; }
-.age-opt { padding: 14rpx 28rpx; border-radius: 40rpx; background: #FFF3E0; color: #B26A00; font-size: 26rpx; }
-.age-opt.active { background: linear-gradient(90deg, #FFC107, #FFA000); color: #fff; }
-.slider-head { display: flex; justify-content: space-between; align-items: center; }
-.val { color: #FFA000; font-weight: bold; }
-.interest-options { display: flex; flex-wrap: wrap; gap: 16rpx; }
-.interest-opt { padding: 14rpx 28rpx; border-radius: 40rpx; background: #FFF3E0; color: #B26A00; font-size: 26rpx; }
-.interest-opt.active { background: linear-gradient(90deg, #FFC107, #FFA000); color: #fff; }
-.submit { margin-top: 10rpx; }
-.footer-tip { text-align: center; color: #B26A00; font-size: 24rpx; margin-top: 30rpx; }
+.ai-page { min-height: 100vh; background: #F5F6FA; }
+.scroll { height: calc(100vh - 88rpx - 110rpx); }
+
+/* 机器人欢迎区 */
+.hero { padding: 36rpx 32rpx 24rpx; text-align: center; }
+.bot-avatar {
+  width: 120rpx; height: 120rpx; border-radius: 50%;
+  margin: 0 auto 18rpx;
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8rpx 28rpx rgba(246,181,30,.25);
+}
+.bot-emoji { font-size: 60rpx; }
+.hero-title { font-size: 34rpx; font-weight: bold; color: #2D2D2D; display: block; }
+.hero-sub { font-size: 26rpx; color: #888; margin-top: 10rpx; display: block; padding: 0 40rpx; line-height: 1.6; }
+
+/* 消息 */
+.msg-row { display: flex; align-items: flex-start; padding: 16rpx 32rpx; gap: 12rpx; }
+.msg-row.right { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 56rpx; height: 56rpx; border-radius: 50%;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 28rpx; flex-shrink: 0;
+  box-shadow: 0 3rpx 12rpx rgba(0,0,0,.06);
+}
+.bubble { max-width: 72%; padding: 20rpx 26rpx; border-radius: 20rpx; box-shadow: 0 3rpx 14rpx rgba(0,0,0,.06); }
+.bubble-bot { background: #fff; border-radius: 6rpx 20rpx 20rpx 20rpx; }
+.bubble-user { background: linear-gradient(135deg, #FF9F2E, #F6B51E); border-radius: 20rpx 6rpx 20rpx 20rpx; }
+.bubble-user .bubble-text { color: #fff; }
+.bubble-text { font-size: 28rpx; color: #2D2D2D; line-height: 1.5; }
+
+/* 输入栏 */
+.input-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 16rpx;
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 2rpx solid #EEEFF3;
+  box-shadow: 0 -4rpx 18rpx rgba(0,0,0,.04);
+}
+.chat-input {
+  flex: 1; background: #F5F6FA; border-radius: 36rpx;
+  padding: 18rpx 28rpx; font-size: 28rpx; color: #2D2D2D;
+}
+.ph { color: #bbb; }
+.send-btn {
+  width: 128rpx; height: 72rpx; line-height: 72rpx;
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  border-radius: 36rpx; font-size: 28rpx; font-weight: 600;
+  color: #fff; border: none; padding: 0;
+  box-shadow: 0 6rpx 18rpx rgba(246,181,30,.25);
+}
+
+.bottom-space { height: 30rpx; }
 </style>

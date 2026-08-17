@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../api/api_service.dart';
+import '../widgets/app_styles.dart';
+import '../widgets/app_network_image.dart';
+
+class StoreDetailPage extends StatefulWidget {
+  final int id;
+  const StoreDetailPage({super.key, required this.id});
+
+  @override
+  State<StoreDetailPage> createState() => _StoreDetailPageState();
+}
+
+class _StoreDetailPageState extends State<StoreDetailPage> {
+  Map<String, dynamic>? _store;
+  List<dynamic> _services = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final results = await Future.wait([
+        ApiService.request('GET', '/store/${widget.id}'),
+        ApiService.listServices(page: 1, pageSize: 50),
+      ]);
+      final store = results[0]['data'];
+      final allServices = results[1]['data']?['list'] ?? [];
+      setState(() {
+        _store = store is Map<String, dynamic> ? store : null;
+        // 优先使用门店自带的服务；否则展示全部服务
+        final own = _store?['services'];
+        _services = own is List ? own : allServices;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cover = _store == null
+        ? null
+        : (_store!['cover'] ?? _store!['logo'] ?? _store!['image'])?.toString();
+    return Scaffold(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 220,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: cover != null && cover.isNotEmpty
+                        ? AppNetworkImage(url: cover, fit: BoxFit.cover, width: double.infinity)
+                        : Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(colors: [AppStyles.primary, AppStyles.primaryLight]),
+                            ),
+                          ),
+                  ),
+                  leading: const BackButton(color: Colors.white),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_store?['name']?.toString() ?? '门店详情',
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppStyles.textMain)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const FaIcon(FontAwesomeIcons.solidStar, size: 16, color: Colors.amber),
+                            const SizedBox(width: 4),
+                            Text('${_store?['score'] ?? 4.8}', style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const FaIcon(FontAwesomeIcons.locationDot, size: 16, color: AppStyles.textSub),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(_store?['address']?.toString() ?? '暂无地址',
+                                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_store?['phone'] != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const FaIcon(FontAwesomeIcons.phone, size: 16, color: AppStyles.textSub),
+                              const SizedBox(width: 4),
+                              Text(_store!['phone'].toString(), style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        const Text('门店服务', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppStyles.textMain)),
+                        const SizedBox(height: 12),
+                        ..._services.map((s) {
+                          final sv = s as Map<String, dynamic>;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: AppStyles.cardDecoration,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(sv['name']?.toString() ?? '服务',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppStyles.textMain)),
+                                      const SizedBox(height: 4),
+                                      if (sv['description'] != null)
+                                        Text(sv['description'].toString(), maxLines: 2, overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(fontSize: 12, color: AppStyles.textSub)),
+                                    ],
+                                  ),
+                                ),
+                                if (sv['price'] != null)
+                                  Text('¥${sv['price']}', style: const TextStyle(fontSize: 16, color: AppStyles.primary, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        if (_services.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(child: Text('暂无服务', style: TextStyle(color: AppStyles.textLight))),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}

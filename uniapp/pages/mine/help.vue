@@ -1,9 +1,10 @@
 <template>
   <view class="help">
-    <view class="status-bar"></view>
-    <view class="header">
-      <text class="back" @click="goBack">‹</text>
-      <text class="title">使用说明</text>
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">使用说明</text>
+      </view>
     </view>
 
     <view class="section">
@@ -34,19 +35,15 @@ function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.help { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.header { display: flex; align-items: center; padding: 16rpx 24rpx 24rpx; }
-.back { font-size: 56rpx; color: #FF8F00; width: 60rpx; }
-.title { font-size: 38rpx; font-weight: bold; color: #FF8F00; margin-left: 16rpx; }
-.section { margin: 24rpx; }
-.step { display: flex; align-items: center; background: #fff; border-radius: 14rpx; padding: 20rpx; margin-bottom: 14rpx; }
-.num { width: 44rpx; height: 44rpx; border-radius: 50%; background: #FFA000; color: #fff; text-align: center; line-height: 44rpx; font-size: 26rpx; margin-right: 20rpx; }
+.help { min-height: 100vh; background: #F5F6FA; }
+.section { margin: 24rpx 32rpx; }
+.step { display: flex; align-items: center; background: #fff; border-radius: 24rpx; padding: 22rpx; margin-bottom: 16rpx; box-shadow: 0 4rpx 20rpx rgba(0,0,0,.04); }
+.num { width: 44rpx; height: 44rpx; border-radius: 50%; background: linear-gradient(135deg, #FF9F2E, #F6B51E); color: #fff; text-align: center; line-height: 44rpx; font-size: 26rpx; font-weight: bold; margin-right: 20rpx; }
 .txt { font-size: 28rpx; color: #444; }
-.qa { background: #fff; border-radius: 14rpx; padding: 20rpx; margin-bottom: 14rpx; display: flex; flex-direction: column; }
-.q { font-size: 28rpx; font-weight: bold; color: #FF8F00; margin-bottom: 8rpx; }
-.a { font-size: 26rpx; color: #666; line-height: 1.6; }
-.contact { margin: 24rpx; background: linear-gradient(135deg,#FFE082,#FFCC80); border-radius: 20rpx; padding: 30rpx; display: flex; flex-direction: column; }
-.c-title { font-size: 30rpx; font-weight: bold; color: #6D4C00; margin-bottom: 14rpx; }
-.c-text { font-size: 26rpx; color: #6D4C00; margin: 6rpx 0; }
+.qa { background: #fff; border-radius: 24rpx; padding: 22rpx; margin-bottom: 16rpx; display: flex; flex-direction: column; box-shadow: 0 4rpx 20rpx rgba(0,0,0,.04); }
+.q { font-size: 28rpx; font-weight: bold; color: #E89B00; margin-bottom: 8rpx; }
+.a { font-size: 26rpx; color: #888; line-height: 1.6; }
+.contact { margin: 24rpx 32rpx; background: linear-gradient(135deg, #FF9F2E, #F6B51E); border-radius: 24rpx; padding: 30rpx; display: flex; flex-direction: column; box-shadow: 0 8rpx 24rpx rgba(246,181,30,0.30); }
+.c-title { font-size: 30rpx; font-weight: bold; color: #fff; margin-bottom: 14rpx; }
+.c-text { font-size: 26rpx; color: rgba(255, 255, 255, 0.92); margin: 6rpx 0; }
 </style>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'course_order_page.dart';
@@ -48,7 +49,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           Container(
                             height: 260,
                             color: const Color(0xFFFFCC80),
-                            child: const Center(child: Icon(Icons.school, size: 80, color: Colors.white)),
+                            child: const Center(child: FaIcon(FontAwesomeIcons.graduationCap, size: 80, color: Colors.white)),
                           ),
                           Positioned(
                             top: 40,
@@ -64,7 +65,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               color: Colors.white,
-                              child: const Text('少儿篮球兴趣', style: TextStyle(color: AppStyles.primary)),
+                              child: Text(_detail?['categoryName']?.toString() ?? _detail?['category']?.toString() ?? '热门课程', style: const TextStyle(color: AppStyles.primary)),
                             ),
                           ),
                           Positioned(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 
@@ -92,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   width: 56,
                                   height: 56,
                                   decoration: const BoxDecoration(color: Color(0xFFFFECB3), shape: BoxShape.circle),
-                                  child: const Icon(Icons.person_outline, size: 32),
+                                  child: const FaIcon(FontAwesomeIcons.user, size: 32),
                                 ),
                               ],
                             ),

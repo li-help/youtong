@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
@@ -51,7 +52,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                             color: const Color(0xFFE3F2FD),
                             child: cover != null && cover.isNotEmpty
                                 ? AppNetworkImage(url: cover, fit: BoxFit.cover)
-                                : const Center(child: Icon(Icons.article, size: 80, color: AppStyles.primary)),
+                                : const Center(child: FaIcon(FontAwesomeIcons.fileLines, size: 80, color: AppStyles.primary)),
                           ),
                           Positioned(
                             top: 40,

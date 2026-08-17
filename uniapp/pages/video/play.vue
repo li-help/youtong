@@ -127,12 +127,12 @@ onUnmounted(() => {
 
 <style scoped>
 .play { min-height: 100vh; background: #1a1a1a; }
-.status-bar { height: 60rpx; }
-.back-btn { position: absolute; top: 80rpx; left: 24rpx; z-index: 10; width: 64rpx; height: 64rpx; border-radius: 50%; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; }
+.status-bar { height: var(--status-bar-height, 20rpx); }
+.back-btn { position: absolute; top: calc(var(--status-bar-height, 20rpx) + 20rpx); left: 24rpx; z-index: 10; width: 64rpx; height: 64rpx; border-radius: 50%; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; }
 .back-icon { color: #fff; font-size: 48rpx; line-height: 1; margin-top: -4rpx; }
 .player { position: relative; width: 100%; height: 460rpx; background: #000; display: flex; align-items: center; justify-content: center; }
 .poster { width: 100%; height: 100%; opacity: .6; }
-.play-btn { position: absolute; top: 120rpx; left: 50%; transform: translateX(-50%); width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,160,0,.85); display: flex; align-items: center; justify-content: center; }
+.play-btn { position: absolute; top: 120rpx; left: 50%; transform: translateX(-50%); width: 110rpx; height: 110rpx; border-radius: 50%; background: linear-gradient(135deg, #FFB300, #FF9F1C); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 12rpx rgba(255, 159, 28, 0.28), 0 12rpx 32rpx rgba(255, 122, 0, 0.5); }
 .play-icon { color: #fff; font-size: 48rpx; }
 .bar { position: absolute; left: 0; right: 0; bottom: 20rpx; height: 8rpx; background: rgba(255,255,255,.3); margin: 0 30rpx; border-radius: 4rpx; }
 .progress { height: 100%; background: #FFA000; border-radius: 4rpx; }
@@ -145,6 +145,6 @@ onUnmounted(() => {
 .intro { color: #ccc; font-size: 28rpx; line-height: 1.7; }
 .recommend { margin-top: 30rpx; }
 .rec-card { display: flex; align-items: center; margin-bottom: 20rpx; }
-.rec-cover { width: 200rpx; height: 130rpx; border-radius: 12rpx; background: #FFE0B2; }
+.rec-cover { width: 200rpx; height: 130rpx; border-radius: 16rpx; background: #FFF3DE; }
 .rec-title { color: #eee; font-size: 28rpx; margin-left: 20rpx; flex: 1; }
 </style>

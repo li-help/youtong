@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'activity_detail_page.dart';
@@ -54,7 +55,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 width: 100,
                                 height: 75,
                                 decoration: BoxDecoration(color: const Color(0xFFFFE082), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.event, color: Colors.white),
+                                child: const FaIcon(FontAwesomeIcons.calendarDays, color: Colors.white),
                               ),
                               const SizedBox(width: 12),
                               Expanded(

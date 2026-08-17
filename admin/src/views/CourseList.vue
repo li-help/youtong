@@ -8,7 +8,7 @@ const columns = [
   { prop: 'cover', label: '课程封面', type: 'image', width: 90 },
   { prop: 'price', label: '价格(元)', formatter: (r, c, v) => `¥${v}` },
   { prop: 'teacher', label: '讲师' },
-  { prop: 'category_id', label: '分类ID', width: 90 },
+  { prop: 'categoryId', label: '分类ID', width: 90 },
   { prop: 'status', label: '状态', tag: { 1: { text: '在售', type: 'success' }, 0: { text: '下架', type: 'danger' } } },
 ]
 
@@ -17,7 +17,7 @@ const formFields = [
   { prop: 'cover', label: '课程封面', type: 'image' },
   { prop: 'price', label: '价格(元)', type: 'number' },
   { prop: 'teacher', label: '讲师' },
-  { prop: 'category_id', label: '分类ID', type: 'number' },
+  { prop: 'categoryId', label: '分类ID', type: 'number' },
   { prop: 'status', label: '状态', type: 'select', required: true, options: [
     { label: '在售', value: 1 },
     { label: '下架', value: 0 },

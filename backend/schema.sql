@@ -19,13 +19,16 @@ CREATE TABLE `sys_account` (
   `nickname`    VARCHAR(64)  DEFAULT '' COMMENT '昵称',
   `phone`       VARCHAR(20)  DEFAULT '' COMMENT '手机号',
   `avatar`      VARCHAR(255) DEFAULT '' COMMENT '头像',
+  `baby_age`    VARCHAR(32)  DEFAULT '' COMMENT '宝宝年龄(如: 2岁6个月)',
+  `openid`      VARCHAR(128) DEFAULT '' COMMENT '微信openid',
   `role`        VARCHAR(32)  DEFAULT 'operator' COMMENT '角色: admin/operator',
   `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态: 1启用 0禁用',
   `remark`      VARCHAR(255) DEFAULT '' COMMENT '备注',
   `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username` (`username`)
+  UNIQUE KEY `uk_username` (`username`),
+  KEY `idx_openid` (`openid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统账号';
 
 -- ------------------------------------------------------------

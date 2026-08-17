@@ -41,12 +41,6 @@ export const categoryApi = {
   remove: (id) => request.delete(`/category/${id}`),
 }
 
-export const adPositionApi = {
-  list: (p) => request.get('/ad/position', { params: p }),
-  save: (d) => request.post('/ad/position', d),
-  remove: (id) => request.delete(`/ad/position/${id}`),
-}
-
 export const adApi = {
   list: (p) => request.get('/ad', { params: p }),
   save: (d) => request.post('/ad', d),

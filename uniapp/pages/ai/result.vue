@@ -1,6 +1,11 @@
 <template>
   <view class="result">
-    <view class="status-bar"></view>
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">推荐结果</text>
+      </view>
+    </view>
     <view class="header">
       <text class="title">为您推荐</text>
       <text class="sub">根据宝宝 {{ age }}岁 · 身高{{ height }}cm · 体重{{ weight }}kg</text>
@@ -50,61 +55,65 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { courseApi, activityApi, videoApi } from '../../api/index.js'
+import { aiApi } from '../../api/index.js'
 import { coverOf } from '../../config.js'
 
 const age = ref('')
 const height = ref('')
 const weight = ref('')
 const interests = ref([])
-const summary = ref('')
+const summary = ref('正在为你生成专属推荐…')
 const courses = ref([])
 const activities = ref([])
 const videos = ref([])
 
 onMounted(() => {
-  const q = uni.getSystemInfoSync ? {} : {}
   const pages = getCurrentPages()
   const opt = pages[pages.length - 1].options
   age.value = opt.age || ''
   height.value = opt.height || ''
   weight.value = opt.weight || ''
   interests.value = opt.interests ? decodeURIComponent(opt.interests).split(',') : []
-  summary.value = `结合宝宝当前成长阶段（${age.value}岁）及兴趣偏好，我们为您精选了以下${interests.value.join('、') || '综合素养'}相关的内容，助力全面发展。`
   loadData()
 })
 
 async function loadData() {
   try {
-    const [c, a, v] = await Promise.all([
-      courseApi.list({ page: 1, pageSize: 4 }),
-      activityApi.list({ page: 1, pageSize: 3 }),
-      videoApi.list({ page: 1, pageSize: 3 })
-    ])
-    courses.value = (c && c.list) ? c.list : []
-    activities.value = (a && a.list) ? a.list : []
-    videos.value = (v && v.list) ? v.list : []
-  } catch (e) {}
+    const res = await aiApi.recommend({
+      age: age.value,
+      height: height.value,
+      weight: weight.value,
+      interests: interests.value
+    })
+    if (res) {
+      summary.value = res.summary || summary.value
+      courses.value = res.courses || []
+      activities.value = res.activities || []
+      videos.value = res.videos || []
+    }
+  } catch (e) {
+    summary.value = `结合宝宝当前成长阶段（${age.value}岁）及兴趣偏好（${interests.value.join('、') || '综合素养'}），我们为您精选了以下内容，助力全面发展。`
+  }
 }
 
 function goCourse(c) { uni.navigateTo({ url: '/pages/course/detail?id=' + c.id }) }
 function goActivity(a) { uni.navigateTo({ url: '/pages/activity/detail?id=' + a.id }) }
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
+function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.result { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.header { padding: 20rpx 24rpx 10rpx; }
-.title { font-size: 40rpx; font-weight: bold; color: #FF8F00; display: block; }
-.sub { font-size: 24rpx; color: #B26A00; margin-top: 8rpx; display: block; }
-.scroll { height: calc(100vh - 180rpx); padding: 0 24rpx; }
-.summary { background: linear-gradient(135deg,#FFE082,#FFCC80); }
-.summary-text { font-size: 28rpx; color: #6D4C00; line-height: 1.6; }
+.result { min-height: 100vh; background: #F5F6FA; }
+.header { padding: 24rpx 32rpx 10rpx; }
+.title { font-size: 40rpx; font-weight: bold; color: #E89B00; display: block; }
+.sub { font-size: 24rpx; color: #888; margin-top: 8rpx; display: block; }
+.scroll { height: calc(100vh - var(--status-bar-height, 20rpx) - 88rpx - 150rpx); padding: 0 32rpx; }
+.summary { background: linear-gradient(135deg, #FF9F2E, #F6B51E); }
+.summary-text { font-size: 28rpx; color: #fff; line-height: 1.6; }
 .section { margin-top: 24rpx; }
 .course-card, .activity-card, .video-card { display: flex; align-items: center; }
-.c-cover, .a-cover, .v-cover { width: 140rpx; height: 100rpx; border-radius: 12rpx; background: #FFE0B2; flex-shrink: 0; }
+.c-cover, .a-cover, .v-cover { width: 140rpx; height: 100rpx; border-radius: 14rpx; background: #FFF3DE; flex-shrink: 0; }
 .c-info, .a-info, .v-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; }
-.c-title, .a-title, .v-title { font-size: 30rpx; font-weight: bold; }
-.c-teacher, .a-time, .v-dur { font-size: 24rpx; margin: 8rpx 0; }
+.c-title, .a-title, .v-title { font-size: 30rpx; font-weight: bold; color: #2D2D2D; }
+.c-teacher, .a-time, .v-dur { font-size: 24rpx; margin: 8rpx 0; color: #888; }
 </style>

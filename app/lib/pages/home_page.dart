@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
@@ -6,6 +7,8 @@ import 'video_page.dart';
 import 'smart_page.dart';
 import 'course_page.dart';
 import 'course_detail_page.dart';
+import 'store_detail_page.dart';
+import 'service_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,10 +26,10 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
 
   final List<Map<String, dynamic>> _categories = [
-    {'name': '视频课程', 'icon': Icons.play_circle_outline, 'color': const Color(0xFFFFECB3)},
-    {'name': '创意绘画', 'icon': Icons.palette_outlined, 'color': const Color(0xFFF8BBD0)},
-    {'name': '音乐启蒙', 'icon': Icons.music_note_outlined, 'color': const Color(0xFFE1BEE7)},
-    {'name': '益智游戏', 'icon': Icons.extension_outlined, 'color': const Color(0xFFC5CAE9)},
+    {'name': '视频课程', 'icon': FontAwesomeIcons.circlePlay, 'color': const Color(0xFFFFECB3)},
+    {'name': '创意绘画', 'icon': FontAwesomeIcons.palette, 'color': const Color(0xFFF8BBD0)},
+    {'name': '音乐启蒙', 'icon': FontAwesomeIcons.music, 'color': const Color(0xFFE1BEE7)},
+    {'name': '益智游戏', 'icon': FontAwesomeIcons.puzzlePiece, 'color': const Color(0xFFC5CAE9)},
   ];
 
   @override
@@ -46,7 +49,11 @@ class _HomePageState extends State<HomePage> {
       ]);
       setState(() {
         final banners = results[0]['data'];
-        _banners = banners is List ? banners : [];
+        _banners = banners is List
+            ? banners
+            : (banners is Map
+                ? (banners['list'] is List ? banners['list'] as List : [])
+                : []);
         _videos = results[1]['data']?['list'] ?? [];
         _stores = results[2]['data']?['list'] ?? [];
         _services = results[3]['data']?['list'] ?? [];
@@ -186,7 +193,21 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(24)),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFB74D), Color(0xFFFF8A65)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withValues(alpha: 0.25),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -195,14 +216,17 @@ class _HomePageState extends State<HomePage> {
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                                child: const Column(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('2-3岁', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppStyles.primary)),
-                                    SizedBox(height: 8),
-                                    Text('养成生活习惯\n发展语言与动作', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
-                                    SizedBox(height: 12),
-                                    Chip(label: Text('了解课程', style: TextStyle(color: Color(0xFFB86E00))), backgroundColor: Color(0xFFFFE082)),
+                                    const Text('2-3岁',
+                                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFF57C00))),
+                                    const SizedBox(height: 8),
+                                    const Text('养成生活习惯\n发展语言与动作',
+                                        style: TextStyle(fontSize: 13, color: Color(0xFF8A6D3B))),
+                                    const SizedBox(height: 12),
+                                    const Text('了解详情 ›',
+                                        style: TextStyle(fontSize: 13, color: Color(0xFFF57C00), fontWeight: FontWeight.w600)),
                                   ],
                                 ),
                               ),
@@ -216,14 +240,17 @@ class _HomePageState extends State<HomePage> {
                                 ['4-5岁', '5-6岁'],
                               ].map((row) => Row(
                                 children: row.map((age) => Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => null,
-                                    child: Container(
-                                      margin: const EdgeInsets.all(4),
-                                      padding: const EdgeInsets.symmetric(vertical: 18),
-                                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                                      child: Text(age, textAlign: TextAlign.center,
-                                          style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
+                                  child: Builder(
+                                    builder: (ctx) => GestureDetector(
+                                      onTap: () => Navigator.of(ctx).push(
+                                          MaterialPageRoute(builder: (_) => SmartPage(initialAge: age))),
+                                      child: Container(
+                                        margin: const EdgeInsets.all(4),
+                                        padding: const EdgeInsets.symmetric(vertical: 18),
+                                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                                        child: Text(age, textAlign: TextAlign.center,
+                                            style: const TextStyle(color: Color(0xFFF57C00), fontWeight: FontWeight.bold)),
+                                      ),
                                     ),
                                   ),
                                 )).toList(),
@@ -233,7 +260,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    _sectionTitle('🏪 附近门店'),
+                    _sectionTitle('🏪 附近门店', onMore: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServicePage(title: '附近门店')))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: GridView.builder(
@@ -246,58 +273,69 @@ class _HomePageState extends State<HomePage> {
                           childAspectRatio: 1.1,
                         ),
                         itemCount: _stores.length,
-                        itemBuilder: (context, i) => Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: AppStyles.cardDecoration,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: AppNetworkImage(
-                                    url: _stores[i]['image']?.toString(),
-                                    width: double.infinity,
-                                    height: double.infinity,
+                        itemBuilder: (context, i) => GestureDetector(
+                          onTap: () {
+                            final id = _stores[i]['id'];
+                            if (id != null) {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => StoreDetailPage(id: id)));
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: AppStyles.cardDecoration,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
+                                    child: AppNetworkImage(
+                                      url: (_stores[i]['cover'] ?? _stores[i]['image'] ?? _stores[i]['logo'])?.toString(),
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(_stores[i]['name']?.toString() ?? '门店', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              Row(
-                                children: [
-                                  Icon(Icons.star, size: 14, color: Colors.amber),
-                                  const SizedBox(width: 4),
-                                  Text('${_stores[i]['score'] ?? 4.7}', style: const TextStyle(color: AppStyles.primary, fontSize: 13)),
-                                ],
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                Text(_stores[i]['name']?.toString() ?? '门店', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Row(
+                                  children: [
+                                    const Icon(FontAwesomeIcons.solidStar, size: 14, color: Colors.amber),
+                                    const SizedBox(width: 4),
+                                    Text('${_stores[i]['score'] ?? 4.7}', style: const TextStyle(color: AppStyles.primary, fontSize: 13)),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    _sectionTitle('💡 热门服务'),
+                    _sectionTitle('💡 热门服务', onMore: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServicePage()))),
                     SizedBox(
                       height: 120,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         itemCount: _services.length,
-                        itemBuilder: (context, i) => Container(
-                          width: 160,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          padding: const EdgeInsets.all(14),
-                          decoration: AppStyles.cardDecoration,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_services[i]['name']?.toString() ?? '服务', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 6),
-                              Text(_services[i]['description']?.toString() ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppStyles.textSub)),
-                              const Spacer(),
-                              Text(_services[i]['phone']?.toString() ?? '', style: const TextStyle(fontSize: 12, color: AppStyles.primary)),
-                            ],
+                        itemBuilder: (context, i) => GestureDetector(
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServicePage())),
+                          child: Container(
+                            width: 160,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.all(14),
+                            decoration: AppStyles.cardDecoration,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_services[i]['name']?.toString() ?? '服务', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6),
+                                Text(_services[i]['description']?.toString() ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppStyles.textSub)),
+                                const Spacer(),
+                                Text(_services[i]['phone']?.toString() ?? '', style: const TextStyle(fontSize: 12, color: AppStyles.primary)),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -309,14 +347,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(String title, {VoidCallback? onMore}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       child: Row(
         children: [
           Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppStyles.textMain)),
           const Spacer(),
-          const Text('查看更多 >', style: TextStyle(fontSize: 13, color: AppStyles.primary)),
+          if (onMore != null)
+            GestureDetector(
+              onTap: onMore,
+              child: const Text('查看更多 >', style: TextStyle(fontSize: 13, color: AppStyles.primary)),
+            ),
         ],
       ),
     );
@@ -331,7 +373,7 @@ class _HomePageState extends State<HomePage> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(color: c['color'] as Color, borderRadius: BorderRadius.circular(30)),
-            child: Icon(c['icon'] as IconData, color: AppStyles.textMain),
+            child: FaIcon(c['icon'] as IconData, color: AppStyles.textMain),
           ),
           const SizedBox(height: 6),
           Text(c['name'] as String, style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),

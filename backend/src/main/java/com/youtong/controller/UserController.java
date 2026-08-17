@@ -38,19 +38,33 @@ public class UserController extends CrudController<User, Long> {
         data.put("nickname", account.getNickname());
         data.put("phone", account.getPhone());
         data.put("avatar", account.getAvatar());
+        data.put("babyAge", account.getBabyAge());
+        data.put("remark", account.getRemark());
+        data.put("status", account.getStatus());
         data.put("role", account.getRole());
         return R.ok(data);
     }
 
-    /** 更新当前账号昵称（App 端修改资料） */
+    /** 更新当前账号资料（昵称/手机号/头像/宝宝年龄/备注） */
     @PostMapping("/profile")
     public R profile(@RequestAttribute("username") String username, @RequestBody Map<String, String> body) {
         if (username == null) return R.fail("未登录");
         SysAccount account = accountService.getByUsername(username);
         if (account == null) return R.fail("用户不存在");
-        String nickname = body.get("nickname");
-        if (nickname != null && !nickname.trim().isEmpty()) {
-            account.setNickname(nickname.trim());
+        if (body.containsKey("nickname") && !body.get("nickname").trim().isEmpty()) {
+            account.setNickname(body.get("nickname").trim());
+        }
+        if (body.containsKey("phone") && !body.get("phone").trim().isEmpty()) {
+            account.setPhone(body.get("phone").trim());
+        }
+        if (body.containsKey("avatar")) {
+            account.setAvatar(body.get("avatar"));
+        }
+        if (body.containsKey("babyAge")) {
+            account.setBabyAge(body.get("babyAge"));
+        }
+        if (body.containsKey("remark")) {
+            account.setRemark(body.get("remark"));
         }
         accountService.updateById(account);
         return R.ok("保存成功");

@@ -1,63 +1,139 @@
 <template>
   <view class="activity">
-    <view class="status-bar"></view>
-    <view class="header">
-      <text class="title">活动</text>
+    <!-- 顶部标题 -->
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__title">活动</text>
+      </view>
     </view>
 
     <scroll-view scroll-y class="scroll" @refresherrefresh="onRefresh" :refresher-enabled="true" :refresher-triggered="refreshing">
-      <view class="card act-card" v-for="a in list" :key="a.id" @click="goDetail(a)">
-        <image :src="coverOf(a)" mode="aspectFill" class="a-cover" />
-        <view class="a-body">
-          <text class="a-title">{{ a.title }}</text>
-          <view class="a-meta">
-            <text class="a-time">🕐 {{ a.start_time || '时间待定' }}</text>
-            <text class="a-status" v-if="a.status === 1">报名中</text>
+      <!-- 分类筛选 -->
+      <view class="filter-bar">
+        <view class="filter-tag" :class="{ active: curFilter === '' }" @click="selectFilter('')">全部</view>
+        <view class="filter-tag" :class="{ active: curFilter === 'ongoing' }" @click="selectFilter('ongoing')">进行中</view>
+        <view class="filter-tag" :class="{ active: curFilter === 'upcoming' }" @click="selectFilter('upcoming')">即将开始</view>
+      </view>
+
+      <!-- 活动卡片列表 -->
+      <view class="act-list">
+        <view class="act-card" v-for="item in list" :key="item.id" @click="goDetail(item)">
+          <image :src="coverOf(item)" mode="aspectFill" class="act-cover" />
+          <view class="act-tag" v-if="item.status">{{ item.status }}</view>
+          <view class="act-info">
+            <text class="act-name">{{ item.title }}</text>
+            <text class="act-time">🕐 {{ item.time || item.startTime || '时间待定' }}</text>
+            <text class="act-loc">📍 {{ item.location || item.address || '线上/线下' }}</text>
+            <view class="act-bottom">
+              <text class="act-price">{{ item.price ? '¥' + item.price : '免费' }}</text>
+              <text class="act-join">{{ item.joinCount || item.signupCount || 0 }}人参与</text>
+            </view>
           </view>
-          <text class="a-desc text-muted">{{ a.intro || '精彩亲子活动，快来参与吧～' }}</text>
         </view>
       </view>
-      <view v-if="!list.length" class="empty">暂无活动数据</view>
+
+      <view v-if="!list.length" class="empty">
+        <text>暂无活动～</text>
+      </view>
+
+      <view class="bottom-space"></view>
     </scroll-view>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import { activityApi } from '../../../api/index.js'
 import { coverOf } from '../../../config.js'
+import { useRealtime } from '../../../utils/realtime.js'
 
 const list = ref([])
+const curFilter = ref('')
 const refreshing = ref(false)
 
 async function loadList() {
   try {
-    const r = await activityApi.list({ page: 1, pageSize: 20 })
-    list.value = (r && r.list) ? r.list : []
-  } catch (e) { list.value = [] }
+    const params = { page: 1, pageSize: 20 }
+    if (curFilter.value) params.status = curFilter.value
+    const res = await activityApi.list(params)
+    list.value = (res && res.list) ? res.list : []
+  } catch (e) {
+    list.value = []
+  }
+}
+
+function selectFilter(f) {
+  curFilter.value = f
+  loadList()
 }
 function onRefresh() {
   refreshing.value = true
-  loadList().finally(() => setTimeout(() => (refreshing.value = false), 500))
+  loadList().finally(() => setTimeout(() => (refreshing.value = false), 600))
 }
-function goDetail(a) { uni.navigateTo({ url: '/pages/activity/detail?id=' + a.id }) }
+function goDetail(item) {
+  uni.navigateTo({ url: '/pages/activity/detail?id=' + item.id })
+}
+
+// 后台活动变更时实时刷新
+const realtime = useRealtime('activity', loadList)
 
 onMounted(loadList)
+onShow(() => realtime.start())
+onHide(() => realtime.stop())
 </script>
 
 <style scoped>
-.activity { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.header { padding: 20rpx 24rpx; }
-.title { font-size: 40rpx; font-weight: bold; color: #FF8F00; }
-.scroll { height: calc(100vh - 180rpx); padding: 0 24rpx; }
-.act-card { display: flex; }
-.a-cover { width: 220rpx; height: 160rpx; border-radius: 16rpx; background: #FFE0B2; flex-shrink: 0; }
-.a-body { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; }
-.a-title { font-size: 30rpx; font-weight: bold; }
-.a-meta { display: flex; align-items: center; justify-content: space-between; margin: 10rpx 0; }
-.a-time { font-size: 24rpx; color: #777; }
-.a-status { font-size: 22rpx; color: #fff; background: #FFA000; border-radius: 20rpx; padding: 2rpx 16rpx; }
-.a-desc { font-size: 24rpx; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.empty { text-align: center; color: #999; padding: 80rpx 0; }
+.activity { min-height: 100vh; background: #F5F6FA; }
+.scroll { height: calc(100vh - 88rpx); }
+
+/* 筛选栏 */
+.filter-bar { display: flex; gap: 16rpx; padding: 24rpx 32rpx; }
+.filter-tag {
+  padding: 14rpx 36rpx;
+  border-radius: 30rpx;
+  background: #fff;
+  font-size: 26rpx; color: #777;
+  border: 2rpx solid #EEEFF3;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,.03);
+}
+.filter-tag.active {
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  color: #fff; border-color: transparent;
+  font-weight: bold;
+  box-shadow: 0 6rpx 20rpx rgba(246,181,30,.28);
+}
+
+/* 活动列表 */
+.act-list { padding: 0 32rpx; }
+.act-card {
+  position: relative;
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  margin-bottom: 28rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.05);
+}
+.act-cover { width: 100%; height: 280rpx; background: #EEEFF3; }
+.act-tag {
+  position: absolute; top: 16rpx; left: 16rpx;
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  color: #fff; font-size: 22rpx;
+  padding: 6rpx 20rpx; border-radius: 20rpx;
+  box-shadow: 0 4rpx 14rpx rgba(246,181,30,.30);
+}
+.act-info { padding: 24rpx 28rpx; }
+.act-name { font-size: 32rpx; font-weight: bold; color: #2D2D2D; display: block; }
+.act-time { font-size: 25rpx; color: #888; margin-top: 14rpx; display: block; }
+.act-loc { font-size: 25rpx; color: #888; margin-top: 8rpx; display: block; }
+.act-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 18rpx; padding-top: 18rpx;
+  border-top: 2rpx solid #F5F6FA;
+}
+.act-price { font-size: 34rpx; font-weight: bold; color: #FF7043; }
+.act-join { font-size: 23rpx; color: #bbb; }
+
+.empty { text-align: center; padding: 80rpx 0; color: #bbb; font-size: 28rpx; }
+.bottom-space { height: 40rpx; }
 </style>

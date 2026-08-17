@@ -6,6 +6,7 @@ import com.youtong.common.CrudController;
 import com.youtong.common.R;
 import com.youtong.entity.Article;
 import com.youtong.service.ArticleService;
+import com.youtong.service.DataVersionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleController extends CrudController<Article, Long> {
     private final ArticleService articleService;
 
-    public ArticleController(ArticleService service) {
-        super(service, "status", new String[]{"title", "author"});
+    public ArticleController(ArticleService service, DataVersionService dataVersionService) {
+        super(service, "status", new String[]{"title", "author"}, "article", dataVersionService);
         this.articleService = service;
     }
 

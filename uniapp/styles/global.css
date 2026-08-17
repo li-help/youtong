@@ -1,0 +1,144 @@
+/* ============================================
+   优童成长 —— 全局设计系统（实色值版）
+   放弃 CSS 变量，确保微信小程序 100% 兼容
+   ============================================ */
+
+page {
+  background: #F5F6FA;
+  color: #2D2D2D;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+view, text, input, button, image, scroll-view, swiper, swiper-item {
+  box-sizing: border-box;
+}
+
+/* ===== 统一顶部栏 ===== */
+.app-nav {
+  position: relative;
+  z-index: 100;
+  padding-top: var(--status-bar-height, 20rpx);
+  background: #fff;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.app-nav--gradient {
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  border-bottom: none;
+}
+.app-nav__inner {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 32rpx;
+}
+.app-nav__title {
+  color: #2D2D2D;
+  font-size: 36rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+.app-nav--gradient .app-nav__title {
+  color: #fff;
+}
+.app-nav__back {
+  width: 64rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64rpx;
+  line-height: 1;
+  color: #2D2D2D;
+  margin-right: 8rpx;
+}
+.app-nav--gradient .app-nav__back {
+  color: #fff;
+}
+
+/* ===== 页面容器 ===== */
+.page {
+  min-height: 100vh;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+/* ===== 卡片 ===== */
+.card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  padding: 32rpx;
+}
+
+/* ===== 区块标题 ===== */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 20rpx;
+}
+.section-head__title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #2D2D2D;
+  position: relative;
+  padding-left: 24rpx;
+}
+.section-head__title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8rpx;
+  height: 32rpx;
+  border-radius: 4rpx;
+  background: linear-gradient(180deg, #FF9F2E, #F6B51E);
+}
+.section-head__more {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* ===== 按钮 ===== */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  border-radius: 46rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  border: none;
+}
+.btn::after { border: none; }
+.btn--primary {
+  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(246, 181, 30, 0.30);
+}
+.btn--ghost {
+  background: #fff;
+  color: #E89B00;
+  border: 2rpx solid #F6B51E;
+}
+
+/* ===== 空态 ===== */
+.empty {
+  text-align: center;
+  color: #bbb;
+  padding: 80rpx 0;
+  font-size: 28rpx;
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  background: #FFF6E5;
+  color: #E89B00;
+}

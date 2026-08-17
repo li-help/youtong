@@ -1,9 +1,10 @@
 <template>
   <view class="article">
-    <view class="status-bar"></view>
-    <view class="header">
-      <text class="back" @click="goBack">‹</text>
-      <text class="title">学习天地</text>
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">学习天地</text>
+      </view>
     </view>
     <scroll-view scroll-y class="scroll">
       <view class="list">
@@ -54,16 +55,12 @@ function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.article { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.header { display: flex; align-items: center; padding: 16rpx 24rpx 24rpx; }
-.back { font-size: 56rpx; color: #FF8F00; width: 60rpx; }
-.title { font-size: 38rpx; font-weight: bold; color: #FF8F00; margin-left: 16rpx; }
-.scroll { height: calc(100vh - 200rpx); padding: 0 24rpx; }
+.article { min-height: 100vh; background: #F5F6FA; }
+.scroll { height: calc(100vh - 88rpx - var(--status-bar-height, 20rpx)); padding: 24rpx 32rpx; }
 .article-card { display: flex; align-items: center; }
-.a-cover { width: 180rpx; height: 130rpx; border-radius: 14rpx; background: #FFE0B2; flex-shrink: 0; }
+.a-cover { width: 180rpx; height: 130rpx; border-radius: 16rpx; background: #FFF3DE; flex-shrink: 0; }
 .a-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; }
-.a-title { font-size: 30rpx; font-weight: bold; }
-.a-author { font-size: 24rpx; margin-top: 10rpx; }
+.a-title { font-size: 30rpx; font-weight: bold; color: #2D2D2D; }
+.a-author { font-size: 24rpx; margin-top: 10rpx; color: #bbb; }
 .empty { text-align: center; color: #999; padding: 80rpx 0; }
 </style>

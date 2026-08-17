@@ -19,6 +19,8 @@ const props = defineProps({
   showVerify: { type: Boolean, default: false },
   // 图片列地址前缀：开发用 ''（走 devServer proxy），生产填后端地址如 'http://domain:3001'
   imageBase: { type: String, default: '' },
+  // 额外固定查询参数（如按广告位筛选），合并进列表请求
+  extraParams: { type: Object, default: () => ({}) },
 })
 
 const loading = ref(false)
@@ -37,6 +39,8 @@ async function load() {
     const params = { page: page.value, pageSize: pageSize.value }
     if (keyword.value) params.keyword = keyword.value
     if (status.value !== '' && status.value !== null && status.value !== undefined) params.status = status.value
+    // 合并父组件传入的额外固定筛选条件（如广告位）
+    if (props.extraParams) Object.assign(params, props.extraParams)
     const res = await props.api(params)
     const d = res || {}
     list.value = d.list || []
@@ -104,11 +108,9 @@ async function onSubmit() {
     formLoading.value = true
     try {
       const payload = { ...form }
-      // 密码类字段：留空则不提交（编辑时保留原密码）
-      props.formFields.forEach((f) => {
-        if (f.type === 'password' && payload[f.prop] === '') {
-          delete payload[f.prop]
-        }
+      // 空字符串字段（日期/图片清空时）转为 undefined，避免把 '' 写入 datetime 等类型列导致 500
+      Object.keys(payload).forEach((k) => {
+        if (payload[k] === '' || payload[k] === null) delete payload[k]
       })
       await props.saveApi(payload)
       ElMessage.success(dialogMode.value === 'add' ? '新增成功' : '保存成功')

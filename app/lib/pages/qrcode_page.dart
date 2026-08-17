@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
@@ -54,7 +54,7 @@ class _QrcodePageState extends State<QrcodePage> {
                     width: 70,
                     height: 70,
                     decoration: const BoxDecoration(color: Color(0xFFFFECB3), shape: BoxShape.circle),
-                    child: const Icon(Icons.person_outline, size: 40),
+                    child: const FaIcon(FontAwesomeIcons.user, size: 40),
                   ),
                   const SizedBox(height: 12),
                   Text(_user?['nickname']?.toString() ?? _user?['username']?.toString() ?? '优童用户', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

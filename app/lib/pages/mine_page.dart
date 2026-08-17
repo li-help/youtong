@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'login_page.dart';
@@ -62,7 +63,7 @@ class _MinePageState extends State<MinePage> {
                       width: 60,
                       height: 60,
                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const Icon(Icons.person_outline, size: 36, color: AppStyles.textSub),
+                      child: const FaIcon(FontAwesomeIcons.user, size: 36, color: AppStyles.textSub),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -74,7 +75,7 @@ class _MinePageState extends State<MinePage> {
                         ],
                       ),
                     ),
-                    Icon(loggedIn ? Icons.cloud : Icons.chevron_right, size: 28),
+                    Icon(loggedIn ? FontAwesomeIcons.cloud : FontAwesomeIcons.chevronRight, size: 28),
                   ],
                 ),
               ),
@@ -85,10 +86,10 @@ class _MinePageState extends State<MinePage> {
               decoration: AppStyles.cardDecoration,
               child: Row(
                 children: [
-                  const Icon(Icons.child_care, color: AppStyles.primary, size: 32),
+                  const FaIcon(FontAwesomeIcons.baby, color: AppStyles.primary, size: 32),
                   const SizedBox(width: 12),
                   const Expanded(child: Text('完善宝宝档案', style: TextStyle(fontWeight: FontWeight.bold))),
-                  const Icon(Icons.chevron_right, color: AppStyles.textLight),
+                  const FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight),
                 ],
               ),
             ),
@@ -99,7 +100,7 @@ class _MinePageState extends State<MinePage> {
               decoration: AppStyles.cardDecoration,
               child: Column(
                 children: [
-                  const Row(children: [Icon(Icons.star, color: AppStyles.primary), SizedBox(width: 6), Text('我的服务', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]),
+                  const Row(children: [FaIcon(FontAwesomeIcons.solidStar, color: AppStyles.primary), SizedBox(width: 6), Text('我的服务', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]),
                   const SizedBox(height: 8),
                   _menu('📦', '我的订单', '查看', () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrdersPage()))),
                   _menu('📱', '我的二维码', '查看', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QrcodePage()))),
@@ -139,7 +140,7 @@ class _MinePageState extends State<MinePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(action, style: const TextStyle(color: AppStyles.primary)),
-          const Icon(Icons.chevron_right, color: AppStyles.textLight),
+          const FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight),
         ],
       ),
       onTap: onTap,

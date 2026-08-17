@@ -1,6 +1,11 @@
 <template>
   <view class="orders">
-    <view class="status-bar"></view>
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">我的订单</text>
+      </view>
+    </view>
     <view class="tabs">
       <view class="tab" :class="{ active: active === '' }" @click="change('')">全部</view>
       <view class="tab" :class="{ active: active === 0 }" @click="change(0)">待支付</view>
@@ -51,6 +56,7 @@ async function load() {
 }
 
 function change(s) { active.value = s; load() }
+function goBack() { uni.navigateBack() }
 
 async function onVerify(o) {
   try {
@@ -66,23 +72,22 @@ onMounted(load)
 </script>
 
 <style scoped>
-.orders { min-height: 100vh; background: #FFF8E1; }
-.status-bar { height: 80rpx; }
-.tabs { display: flex; padding: 20rpx 24rpx; background: #FFF8E1; }
-.tab { flex: 1; text-align: center; font-size: 28rpx; color: #777; padding: 12rpx 0; }
-.tab.active { color: #FF8F00; font-weight: bold; border-bottom: 4rpx solid #FFA000; }
-.scroll { height: calc(100vh - 200rpx); padding: 0 24rpx; }
+.orders { min-height: 100vh; background: #F5F6FA; }
+.tabs { display: flex; gap: 16rpx; padding: 24rpx 32rpx; }
+.tab { flex: 1; text-align: center; font-size: 28rpx; color: #888; padding: 14rpx 0; background: #fff; border-radius: 36rpx; box-shadow: 0 4rpx 14rpx rgba(0,0,0,0.03); }
+.tab.active { color: #fff; font-weight: bold; background: linear-gradient(135deg, #FF9F2E, #F6B51E); box-shadow: 0 8rpx 24rpx rgba(246,181,30,0.30); }
+.scroll { height: calc(100vh - 88rpx - var(--status-bar-height, 20rpx) - 120rpx); padding: 0 32rpx; }
 .order-card { display: flex; flex-direction: column; }
 .o-top { display: flex; justify-content: space-between; align-items: center; }
-.o-no { font-size: 26rpx; color: #555; }
-.o-status { font-size: 24rpx; padding: 4rpx 16rpx; border-radius: 20rpx; }
+.o-no { font-size: 26rpx; color: #888; }
+.o-status { font-size: 24rpx; padding: 4rpx 18rpx; border-radius: 20rpx; }
 .s0 { color: #FF7043; background: #FFE0B2; }
 .s1 { color: #FFA000; background: #FFF3E0; }
 .s2 { color: #43a047; background: #E8F5E9; }
 .s3 { color: #999; background: #EEE; }
-.o-amount { font-size: 28rpx; margin: 12rpx 0; }
-.o-time { font-size: 24rpx; }
+.o-amount { font-size: 28rpx; margin: 12rpx 0; color: #2D2D2D; }
+.o-time { font-size: 24rpx; color: #bbb; }
 .o-actions { display: flex; justify-content: flex-end; margin-top: 12rpx; }
-.verify-btn { font-size: 26rpx; color: #fff; background: #FFA000; border-radius: 30rpx; padding: 8rpx 28rpx; }
+.verify-btn { font-size: 26rpx; color: #fff; background: linear-gradient(135deg, #FF9F2E, #F6B51E); border-radius: 36rpx; padding: 10rpx 32rpx; box-shadow: 0 8rpx 24rpx rgba(246,181,30,0.30); }
 .empty { text-align: center; color: #999; padding: 80rpx 0; }
 </style>

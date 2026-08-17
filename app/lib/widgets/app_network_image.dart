@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../api/api_service.dart';
 import 'app_styles.dart';
@@ -62,7 +63,7 @@ class AppNetworkImage extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.broken_image_outlined, size: 16, color: AppStyles.textSub),
+                  const FaIcon(FontAwesomeIcons.image, size: 16, color: AppStyles.textSub),
                   const SizedBox(width: 4),
                   Text(hint, style: const TextStyle(fontSize: 12, color: AppStyles.textSub)),
                 ],

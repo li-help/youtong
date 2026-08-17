@@ -1,5 +1,11 @@
 <template>
   <view class="signup">
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">课程报名</text>
+      </view>
+    </view>
     <view class="card course-summary" v-if="course">
       <image :src="coverOf(course)" mode="aspectFill" class="cs-cover" />
       <view class="cs-info">
@@ -55,6 +61,8 @@ async function load() {
   }
 }
 
+function goBack() { uni.navigateBack() }
+
 async function onSubmit() {
   if (!form.babyName || !form.phone) {
     uni.showToast({ title: '请填写宝宝姓名和电话', icon: 'none' })
@@ -83,18 +91,23 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-.signup { padding-bottom: 160rpx; background: #FFF8E1; min-height: 100vh; }
-.card { margin: 24rpx; }
-.course-summary { display: flex; align-items: center; }
-.cs-cover { width: 160rpx; height: 120rpx; border-radius: 14rpx; background: #FFE0B2; flex-shrink: 0; }
-.cs-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; }
-.cs-title { font-size: 32rpx; font-weight: bold; }
-.form-item { margin-bottom: 28rpx; }
-.label { font-size: 28rpx; color: #555; display: block; margin-bottom: 12rpx; }
-.input { background: #FFF8E1; border-radius: 12rpx; padding: 20rpx; font-size: 28rpx; }
-.textarea { background: #FFF8E1; border-radius: 12rpx; padding: 20rpx; font-size: 28rpx; width: 100%; height: 160rpx; }
-.ph { color: #ccc; }
-.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; padding: 16rpx 24rpx; background: #fff; box-shadow: 0 -4rpx 16rpx rgba(0,0,0,.05); }
-.total { flex: 1; font-size: 28rpx; }
-.pay-btn { width: 320rpx; }
+.signup { padding-bottom: 180rpx; background: #F5F6FA; min-height: 100vh; }
+.card { margin: 24rpx 32rpx; }
+.course-summary { display: flex; align-items: center; padding: 28rpx 32rpx; }
+.cs-cover { width: 170rpx; height: 130rpx; border-radius: 18rpx; background: #FFF3DE; flex-shrink: 0; }
+.cs-info { flex: 1; margin-left: 24rpx; display: flex; flex-direction: column; justify-content: center; }
+.cs-title { font-size: 34rpx; font-weight: bold; color: #2D2D2D; }
+.form { padding: 36rpx 32rpx; }
+.form-item { margin-bottom: 32rpx; }
+.form-item:last-child { margin-bottom: 0; }
+.label { font-size: 28rpx; color: #555; display: block; margin-bottom: 14rpx; font-weight: 500; }
+.input { background: #F5F6FA; border: 2rpx solid #E8E8E8; border-radius: 18rpx; padding: 24rpx 28rpx; font-size: 30rpx; color: #2D2D2D; transition: border-color .2s; }
+.input:focus { border-color: #F6B51E; }
+.textarea { background: #F5F6FA; border: 2rpx solid #E8E8E8; border-radius: 18rpx; padding: 24rpx 28rpx; font-size: 30rpx; width: 100%; height: 200rpx; color: #2D2D2D; line-height: 1.6; }
+.ph { color: #bbb; }
+.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 20rpx 32rpx; padding-bottom: calc(20rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4rpx 20rpx rgba(0,0,0,.08); }
+.total { flex: 1; font-size: 30rpx; color: #555; }
+.total .price { font-size: 40rpx; font-weight: bold; color: #E89B00; margin-left: 8rpx; }
+.pay-btn { min-width: 280rpx; height: 88rpx; line-height: 88rpx; border-radius: 44rpx; font-size: 32rpx; font-weight: 600; letter-spacing: 2rpx; background: linear-gradient(135deg, #FF9F2E, #F6B51E); color: #fff; box-shadow: 0 10rpx 28rpx rgba(246,181,30,0.35); border: none; }
+.pay-btn::after { border: none; }
 </style>

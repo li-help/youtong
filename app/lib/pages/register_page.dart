@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'login_page.dart';
@@ -124,7 +125,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   color: Colors.white,
                   border: Border.all(color: AppStyles.primaryLight, width: 3),
                 ),
-                child: const Icon(Icons.person_outline, size: 64, color: AppStyles.textSub),
+                child: const FaIcon(FontAwesomeIcons.user, size: 64, color: AppStyles.textSub),
               ),
             ),
             const SizedBox(height: 50),

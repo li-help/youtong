@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'course_detail_page.dart';
@@ -72,7 +73,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _courses.length,
                       itemBuilder: (context, i) => GestureDetector(
-                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: (_courses[i]['id'] is num ? (_courses[i]['id'] as num).toInt() : int.tryParse(_courses[i]['id']?.toString() ?? '') ?? 0))),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: (_courses[i]['id'] is num ? (_courses[i]['id'] as num).toInt() : int.tryParse(_courses[i]['id']?.toString() ?? '') ?? 0)))),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
@@ -86,7 +87,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
                                   color: [const Color(0xFFFFCC80), const Color(0xFFEF9A9A), const Color(0xFFA5D6A7), const Color(0xFFFFF59D)][i % 4],
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.school, color: Colors.white),
+                                child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
                               ),
                               const SizedBox(width: 12),
                               Expanded(

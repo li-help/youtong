@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:video_player/video_player.dart';
 import '../api/api_service.dart';
 
@@ -55,7 +56,7 @@ class _VideoPageState extends State<VideoPage> {
                   : const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.play_circle_fill, size: 64, color: Colors.white54),
+                        FaIcon(FontAwesomeIcons.circlePlay, size: 64, color: Colors.white54),
                         SizedBox(height: 12),
                         Text('暂无视频源', style: TextStyle(color: Colors.grey)),
                       ],

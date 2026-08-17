@@ -6,6 +6,7 @@ import com.youtong.common.CrudController;
 import com.youtong.common.R;
 import com.youtong.entity.Course;
 import com.youtong.service.CourseService;
+import com.youtong.service.DataVersionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class CourseController extends CrudController<Course, Long> {
     private final CourseService courseService;
 
-    public CourseController(CourseService service) {
-        super(service, "status", new String[]{"title", "teacher"});
+    public CourseController(CourseService service, DataVersionService dataVersionService) {
+        super(service, "status", new String[]{"title", "teacher"}, "course", dataVersionService);
         this.courseService = service;
     }
 

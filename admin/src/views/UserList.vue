@@ -9,7 +9,7 @@ const columns = [
   { prop: 'phone', label: '手机号' },
   { prop: 'status', label: '状态', tag: { 1: { text: '正常', type: 'success' }, 0: { text: '禁用', type: 'danger' } } },
   { prop: 'remark', label: '备注' },
-  { prop: 'updated_at', label: '更新时间', width: 160 },
+  { prop: 'updatedAt', label: '更新时间', width: 160 },
 ]
 
 const formFields = [

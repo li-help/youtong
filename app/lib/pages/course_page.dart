@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
@@ -53,7 +54,7 @@ class _CoursePageState extends State<CoursePage> {
                       onSubmitted: (_) => _load(),
                       decoration: InputDecoration(
                         hintText: '课程名称',
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass),
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -68,7 +69,7 @@ class _CoursePageState extends State<CoursePage> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(color: AppStyles.primaryLight, borderRadius: BorderRadius.circular(24)),
-                      child: const Icon(Icons.search, color: Colors.white),
+                      child: const FaIcon(FontAwesomeIcons.magnifyingGlass, color: Colors.white),
                     ),
                   ),
                 ],
@@ -180,7 +181,7 @@ class _CoursePageState extends State<CoursePage> {
                 color: active ? AppStyles.primary : AppStyles.primaryLight,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.category, color: Colors.white),
+              child: const FaIcon(FontAwesomeIcons.borderAll, color: Colors.white),
             ),
             const SizedBox(height: 6),
             Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),

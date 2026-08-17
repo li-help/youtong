@@ -9,7 +9,6 @@ const routes = [
     redirect: '/system/account',
     children: [
       { path: '/system/account', name: '账号管理', component: () => import('../views/SystemAccount.vue') },
-      { path: '/ad/position', name: '广告位', component: () => import('../views/AdPosition.vue') },
       { path: '/ad/list', name: '广告列表', component: () => import('../views/AdList.vue') },
       { path: '/video/list', name: '视频列表', component: () => import('../views/VideoList.vue') },
       { path: '/store/list', name: '店铺列表', component: () => import('../views/StoreList.vue') },

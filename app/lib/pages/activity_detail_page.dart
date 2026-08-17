@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import 'orders_page.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   final int id;
@@ -28,10 +30,30 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     });
   }
 
+  Future<void> _book() async {
+    try {
+      await ApiService.createOrder({
+        'type': 'activity',
+        'targetId': widget.id,
+        'title': _detail?['title'] ?? '',
+        'price': _detail?['price'] ?? 0,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('报名成功，可在「我的订单」查看')));
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrdersPage()));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('报名失败：${e.toString()}')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = _detail?['title']?.toString() ?? '活动详情';
     final views = _detail?['viewCount'] ?? 0;
+    final price = _detail?['price'];
     return Scaffold(
       backgroundColor: AppStyles.bg,
       body: _loading
@@ -39,7 +61,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           : Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 96),
                   child: Column(
                     children: [
                       Stack(
@@ -47,7 +69,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                           Container(
                             height: 260,
                             color: const Color(0xFFFFCC80),
-                            child: const Center(child: Icon(Icons.celebration, size: 80, color: Colors.white)),
+                            child: const Center(child: FaIcon(FontAwesomeIcons.cakeCandles, size: 80, color: Colors.white)),
                           ),
                           Positioned(
                             top: 40,
@@ -82,6 +104,37 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, -4))]),
+                    child: Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('活动价', style: TextStyle(fontSize: 12, color: AppStyles.textLight)),
+                            Text(price != null ? '¥$price' : '免费', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppStyles.primary)),
+                          ],
+                        ),
+                        const Spacer(),
+                        ElevatedButton(
+                          onPressed: _book,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppStyles.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          ),
+                          child: const Text('立即报名', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

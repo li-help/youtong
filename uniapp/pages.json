@@ -57,15 +57,15 @@
     },
     {
       "path": "pages/course/detail",
-      "style": { "navigationBarTitleText": "课程详情" }
+      "style": { "navigationBarTitleText": "课程详情", "navigationStyle": "custom" }
     },
     {
       "path": "pages/course/signup",
-      "style": { "navigationBarTitleText": "课程报名" }
+      "style": { "navigationBarTitleText": "课程报名", "navigationStyle": "custom" }
     },
     {
       "path": "pages/activity/detail",
-      "style": { "navigationBarTitleText": "活动详情" }
+      "style": { "navigationBarTitleText": "活动详情", "navigationStyle": "custom" }
     },
     {
       "path": "pages/video/play",
@@ -73,27 +73,27 @@
     },
     {
       "path": "pages/store/detail",
-      "style": { "navigationBarTitleText": "店铺详情" }
+      "style": { "navigationBarTitleText": "店铺详情", "navigationStyle": "custom" }
     },
     {
       "path": "pages/order/list",
-      "style": { "navigationBarTitleText": "我的订单" }
+      "style": { "navigationBarTitleText": "我的订单", "navigationStyle": "custom" }
     },
     {
       "path": "pages/mine/profile",
-      "style": { "navigationBarTitleText": "修改个人信息" }
+      "style": { "navigationBarTitleText": "修改个人信息", "navigationStyle": "custom" }
     },
     {
       "path": "pages/mine/qrcode",
-      "style": { "navigationBarTitleText": "我的二维码" }
+      "style": { "navigationBarTitleText": "我的二维码", "navigationStyle": "custom" }
     },
     {
       "path": "pages/mine/help",
-      "style": { "navigationBarTitleText": "使用说明" }
+      "style": { "navigationBarTitleText": "使用说明", "navigationStyle": "custom" }
     },
     {
       "path": "pages/ai/result",
-      "style": { "navigationBarTitleText": "推荐结果" }
+      "style": { "navigationBarTitleText": "推荐结果", "navigationStyle": "custom" }
     },
     {
       "path": "pages/article/detail",
@@ -115,15 +115,15 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "优童",
-    "navigationBarBackgroundColor": "#FFF8E1",
-    "backgroundColor": "#FFF8E1",
+    "navigationBarBackgroundColor": "#FFF9EC",
+    "backgroundColor": "#FFF9EC",
     "app-plus": {
-      "background": "#FFF8E1"
+      "background": "#FFF9EC"
     }
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#FFA000",
+    "color": "#9A9A9A",
+    "selectedColor": "#FF8F00",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "black",
     "list": [

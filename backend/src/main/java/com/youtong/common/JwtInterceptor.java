@@ -18,9 +18,16 @@ public class JwtInterceptor implements HandlerInterceptor {
     private static final String[] WHITE_LIST = {
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/wechatLogin",
+            "/api/auth/scanLogin/create",
+            "/api/auth/scanLogin/check",
+            "/api/auth/scanLogin/confirm",
+            "/api/auth/qrcode/*",
             "/api/auth/logout",
             "/api/ad/position/*",
-            "/api/banner/*",
+            "GET:/api/ad/*",
+            "GET:/api/ad",
+            "GET:/api/ad/list",
             "/api/course/recommend",
             "/api/course/list",
             "GET:/api/course/*",
@@ -31,6 +38,12 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/api/service/list",
             "GET:/api/video/*",
             "GET:/api/activity/*",
+            "GET:/api/video/list",
+            "GET:/api/activity/list",
+            "GET:/api/category/list",
+            "GET:/api/category/*",
+            "/api/ai/**",
+            "/api/sync/*",
     };
 
     @Override

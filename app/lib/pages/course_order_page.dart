@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'main_page.dart';
@@ -101,7 +102,7 @@ class _CourseOrderPageState extends State<CourseOrderPage> {
                                   width: 80,
                                   height: 80,
                                   decoration: BoxDecoration(color: const Color(0xFFFFCC80), borderRadius: BorderRadius.circular(12)),
-                                  child: const Icon(Icons.school, color: Colors.white),
+                                  child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
                                 ),
                                 const SizedBox(width: 16),
                                 Column(

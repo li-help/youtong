@@ -1,5 +1,11 @@
 <template>
   <view class="detail" v-if="course">
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">课程详情</text>
+      </view>
+    </view>
     <image :src="coverOf(course)" mode="aspectFill" class="banner" />
     <view class="body">
       <text class="title">{{ course.title }}</text>
@@ -56,21 +62,22 @@ async function load() {
 function goSignup() {
   uni.navigateTo({ url: '/pages/course/signup?id=' + id.value })
 }
+function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.detail { padding-bottom: 140rpx; }
-.banner { width: 100%; height: 420rpx; background: #FFE0B2; }
-.body { padding: 24rpx; }
-.title { font-size: 40rpx; font-weight: bold; display: block; }
+.detail { padding-bottom: 150rpx; background: #F5F6FA; min-height: 100vh; }
+.banner { width: 100%; height: 380rpx; background: #FFF3DE; }
+.body { padding: 32rpx; }
+.title { font-size: 40rpx; font-weight: bold; display: block; color: #2D2D2D; }
 .meta { display: flex; align-items: center; justify-content: space-between; margin: 20rpx 0; }
-.teacher { font-size: 26rpx; }
+.teacher { font-size: 26rpx; color: #888; }
 .tags { display: flex; flex-wrap: wrap; gap: 14rpx; margin-bottom: 10rpx; }
-.tag { font-size: 24rpx; color: #FF8F00; background: #FFF3E0; border-radius: 20rpx; padding: 6rpx 18rpx; }
+.tag { font-size: 24rpx; color: #E89B00; background: #FFF6E5; border-radius: 20rpx; padding: 6rpx 20rpx; }
 .section { margin-top: 30rpx; }
-.intro { font-size: 28rpx; line-height: 1.7; }
+.intro { font-size: 28rpx; line-height: 1.7; color: #888; }
 .point { font-size: 28rpx; color: #555; margin: 12rpx 0; }
-.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 16rpx 24rpx; background: #fff; box-shadow: 0 -4rpx 16rpx rgba(0,0,0,.05); }
+.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 16rpx 24rpx; padding-bottom: calc(16rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -6rpx 24rpx rgba(0,0,0,.06); }
 .signup-btn { width: 100%; }
 .loading { text-align: center; padding: 120rpx 0; color: #999; }
 </style>

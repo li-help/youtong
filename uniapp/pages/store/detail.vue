@@ -1,5 +1,11 @@
 <template>
   <view class="store" v-if="store">
+    <view class="app-nav">
+      <view class="app-nav__inner">
+        <text class="app-nav__back" @click="goBack">‹</text>
+        <text class="app-nav__title">店铺详情</text>
+      </view>
+    </view>
     <view class="banner" :style="{ background: 'linear-gradient(135deg,#FFC107,#FF8F00)' }">
       <text class="s-emoji">🏫</text>
       <text class="s-name">{{ store.name }}</text>
@@ -59,23 +65,24 @@ async function load() {
 }
 
 function goCourse(c) { uni.navigateTo({ url: '/pages/course/detail?id=' + c.id }) }
+function goBack() { uni.navigateBack() }
 </script>
 
 <style scoped>
-.store { min-height: 100vh; background: #FFF8E1; }
-.banner { height: 280rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+.store { min-height: 100vh; background: #F5F6FA; }
+.banner { height: 300rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; border-radius: 0 0 32rpx 32rpx; box-shadow: 0 16rpx 40rpx rgba(255, 143, 0, 0.25); }
 .s-emoji { font-size: 90rpx; }
 .s-name { font-size: 40rpx; font-weight: bold; margin-top: 10rpx; }
-.s-score { font-size: 28rpx; margin-top: 10rpx; }
-.body { padding: 24rpx; }
-.info-row { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 2rpx solid #FFF3E0; }
-.i-label { width: 160rpx; font-size: 28rpx; color: #777; }
+.s-score { font-size: 28rpx; margin-top: 10rpx; background: rgba(255,255,255,0.22); padding: 4rpx 24rpx; border-radius: 36rpx; }
+.body { padding: 32rpx; }
+.info-row { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 2rpx solid #F0F0F0; }
+.i-label { width: 160rpx; font-size: 28rpx; color: #888; }
 .i-val { flex: 1; font-size: 28rpx; color: #444; }
 .section { margin-top: 30rpx; }
-.intro { font-size: 28rpx; line-height: 1.7; }
-.course-card { display: flex; align-items: center; background: #fff; border-radius: 16rpx; padding: 16rpx; margin-bottom: 16rpx; }
-.c-cover { width: 140rpx; height: 100rpx; border-radius: 12rpx; background: #FFE0B2; }
+.intro { font-size: 28rpx; line-height: 1.7; color: #888; }
+.course-card { display: flex; align-items: center; background: #fff; border-radius: 24rpx; padding: 24rpx; margin-bottom: 16rpx; box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04); }
+.c-cover { width: 140rpx; height: 100rpx; border-radius: 14rpx; background: #FFF3DE; }
 .c-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; }
-.c-title { font-size: 28rpx; font-weight: bold; }
+.c-title { font-size: 28rpx; font-weight: bold; color: #2D2D2D; }
 .loading { text-align: center; padding: 120rpx 0; color: #999; }
 </style>

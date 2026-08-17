@@ -4,7 +4,6 @@ export const menus = [
     { path: '/system/account', title: '账号管理' },
   ]},
   { path: '/ad', title: '广告管理', icon: 'Picture', children: [
-    { path: '/ad/position', title: '广告位' },
     { path: '/ad/list', title: '广告列表' },
   ]},
   { path: '/video', title: '视频管理', icon: 'VideoCamera', children: [

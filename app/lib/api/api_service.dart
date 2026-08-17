@@ -139,8 +139,9 @@ class ApiService {
   static Future<Map<String, dynamic>> updateProfile(String nickname) =>
       post('/user/profile', body: {'nickname': nickname});
 
-  // 首页轮播：后台广告位 home_banner
-  static Future<Map<String, dynamic>> listBanners() => get('/banner/home_banner');
+  // 首页轮播：后台广告位 home_banner（统一走 /api/ad，与 uniapp 端一致）
+  static Future<Map<String, dynamic>> listBanners() =>
+      get('/ad/list', query: {'positionId': '1', 'status': '1'});
 
   static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, String? status}) =>
       get('/order', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': status});

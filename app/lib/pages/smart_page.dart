@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/app_styles.dart';
 import 'smart_result_page.dart';
 
 class SmartPage extends StatefulWidget {
-  const SmartPage({super.key});
+  /// 从首页「小宇宙计划」带入的初始年龄段（如 "2-3岁"），自动选中相近档位
+  final String? initialAge;
+  const SmartPage({super.key, this.initialAge});
 
   @override
   State<SmartPage> createState() => _SmartPageState();
@@ -15,11 +18,24 @@ class _SmartPageState extends State<SmartPage> {
   double _weight = 22;
 
   final List<Map<String, dynamic>> _ages = [
-    {'label': '0-1岁', 'icon': Icons.child_care},
-    {'label': '1-3岁', 'icon': Icons.face},
-    {'label': '3-6岁', 'icon': Icons.boy},
-    {'label': '6岁以上', 'icon': Icons.school},
+    {'label': '0-1岁', 'icon': FontAwesomeIcons.baby},
+    {'label': '1-3岁', 'icon': FontAwesomeIcons.child},
+    {'label': '3-6岁', 'icon': FontAwesomeIcons.childReaching},
+    {'label': '6岁以上', 'icon': FontAwesomeIcons.school},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialAge != null) {
+      // 根据带入的年龄段（如 "2-3岁"）匹配最接近的档位
+      final lower = int.tryParse(widget.initialAge!.split('-').first) ?? 0;
+      if (lower <= 1) _selectedAge = 0;
+      else if (lower <= 3) _selectedAge = 1;
+      else if (lower <= 6) _selectedAge = 2;
+      else _selectedAge = 3;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +59,7 @@ class _SmartPageState extends State<SmartPage> {
                   children: [
                     IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).maybePop()),
                     const Text('推荐', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const Icon(Icons.favorite, color: Colors.red),
+                    const FaIcon(FontAwesomeIcons.solidHeart, color: Colors.red),
                   ],
                 ),
                 Container(
@@ -94,7 +110,7 @@ class _SmartPageState extends State<SmartPage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(_ages[i]['icon'] as IconData, color: AppStyles.primary, size: 32),
+                                FaIcon(_ages[i]['icon'] as IconData, color: AppStyles.primary, size: 32),
                                 Text(_ages[i]['label'] as String, style: const TextStyle(color: AppStyles.textSub)),
                               ],
                             ),
