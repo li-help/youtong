@@ -73,12 +73,18 @@ Environment=APP_UPLOAD_DIR=$UPLOAD_DIR
 Environment=SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/youtong?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
 Environment=SPRING_DATASOURCE_USERNAME=youtong
 Environment=SPRING_DATASOURCE_PASSWORD=${DB_PASS}
-Environment=WECHAT_SECRET=${WECHAT_SECRET}
-Environment=DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-
 [Install]
 WantedBy=multi-user.target
 SVC
+
+# 仅在显式提供时注入敏感环境变量，避免空值覆盖 application.yml 默认值
+if [ -n "$WECHAT_SECRET" ]; then
+  echo "Environment=WECHAT_SECRET=${WECHAT_SECRET}" >> /etc/systemd/system/youtong.service
+fi
+if [ -n "$DEEPSEEK_API_KEY" ]; then
+  echo "Environment=DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}" >> /etc/systemd/system/youtong.service
+fi
+
 systemctl daemon-reload
 systemctl enable youtong
 
