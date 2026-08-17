@@ -47,8 +47,13 @@ if [ -z "$DB_PASS" ]; then
   read -sp "请输入新数据库密码: " DB_PASS
   echo ""
 fi
+# 若 root 已有密码，通过 MYSQL_ROOT_PASSWORD 传入；否则使用 root 免密登录
+MYSQL_ROOT_CMD="mysql -uroot"
+if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
+  MYSQL_ROOT_CMD="mysql -uroot -p${MYSQL_ROOT_PASSWORD}"
+fi
 # 创建数据库与账号（先尝试执行，若已存在则忽略报错）
-mysql -uroot <<SQL || true
+$MYSQL_ROOT_CMD <<SQL || true
 CREATE DATABASE IF NOT EXISTS youtong DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'youtong'@'localhost' IDENTIFIED BY '${DB_PASS}';
 CREATE USER IF NOT EXISTS 'youtong'@'%' IDENTIFIED BY '${DB_PASS}';
