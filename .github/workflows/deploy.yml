@@ -1,0 +1,117 @@
+# ============================================================
+# 优童成长社 GitHub Actions CI/CD 流水线
+# 触发：push 到 main 分支 或 手动运行（Actions 页面 Run workflow）
+# 流程：构建后端 jar → 构建后台 dist → 部署到生产服务器
+# 依赖 GitHub Secrets（Settings → Secrets and variables → Actions）：
+#   SERVER_HOST      服务器 IP（如 123.56.160.50）
+#   SERVER_USER      SSH 登录用户（如 root）
+#   SSH_PRIVATE_KEY  服务器 SSH 私钥内容（含 ----BEGIN/END----）
+#   APP_UPLOAD_DIR   上传目录（如 /opt/youtong/uploads）
+# ============================================================
+
+name: 优童成长社 CI/CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------- 1. 构建后端 ----------
+  build-backend:
+    name: 构建后端 jar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 缓存 Maven 依赖
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Maven 打包
+        run: cd backend && mvn clean package -DskipTests
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/youtong-admin-backend-1.0.0.jar
+          retention-days: 7
+
+  # ---------- 2. 构建后台前端 ----------
+  build-admin:
+    name: 构建后台前端
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: 安装依赖
+        run: cd admin && npm install --registry=https://registry.npmmirror.com
+
+      - name: 构建
+        run: cd admin && npm run build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-dist
+          path: admin/dist/
+          retention-days: 7
+
+  # ---------- 3. 部署到生产服务器 ----------
+  deploy:
+    name: 部署到生产服务器
+    needs: [build-backend, build-admin]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./backend-jar
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: admin-dist
+          path: ./admin-dist
+
+      - name: 部署
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          APP_UPLOAD_DIR: ${{ secrets.APP_UPLOAD_DIR }}
+        run: |
+          set -e
+          # 准备 SSH 私钥
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+          # 安装 rsync（ubuntu-latest 默认不带）
+          sudo apt-get update -qq && sudo apt-get install -y -qq rsync
+
+          # 1) 创建服务器目标目录
+          ssh $SERVER_USER@$SERVER_HOST "mkdir -p /opt/youtong/app /opt/youtong/admin $APP_UPLOAD_DIR"
+          # 2) 上传后端 jar（替换旧包）
+          rsync -avz -e ssh ./backend-jar/youtong-admin-backend-1.0.0.jar $SERVER_USER@$SERVER_HOST:/opt/youtong/app/app.jar
+          # 3) 上传后台 dist
+          rsync -avz -e ssh --delete ./admin-dist/ $SERVER_USER@$SERVER_HOST:/opt/youtong/admin/
+          # 4) 重启后端服务
+          ssh $SERVER_USER@$SERVER_HOST "systemctl restart youtong 2>/dev/null || echo 'service-not-found'"
+
+          rm -f ~/.ssh/id_rsa
