@@ -25,6 +25,8 @@ workflow:
 build-backend:
   stage: build-backend
   image: maven:3.9-eclipse-temurin-17
+  tags:
+    - youtong
   script:
     - cd backend
     - mvn clean package -DskipTests
@@ -39,6 +41,8 @@ build-backend:
 build-admin:
   stage: build-admin
   image: node:20-alpine
+  tags:
+    - youtong
   script:
     - cd admin
     - npm install --registry=https://registry.npmmirror.com
@@ -54,6 +58,8 @@ build-admin:
 deploy:
   stage: deploy
   image: alpine:3.19
+  tags:
+    - youtong
   before_script:
     - apk add --no-cache openssh-client rsync bash
     - mkdir -p ~/.ssh
