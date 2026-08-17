@@ -1,0 +1,77 @@
+# ============================================================
+# 优童成长社 GitLab CI/CD 流水线
+# 触发：push 到 main 分支 → 构建后端 jar + 后台 dist → 部署到生产服务器
+# 依赖 GitLab CI/CD 变量（Settings → CI/CD → Variables）：
+#   SERVER_HOST      服务器 IP（如 123.56.160.50）
+#   SERVER_USER      SSH 登录用户（如 root）
+#   SSH_PRIVATE_KEY  服务器 SSH 私钥（ID_RSA 私钥内容，含 ----BEGIN/END----）
+#   APP_UPLOAD_DIR   上传目录（如 /opt/youtong/uploads）
+#   MYSQL_PASSWORD   生产库密码（可选，用于服务环境变量）
+# ============================================================
+
+stages:
+  - build-backend
+  - build-admin
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---------- 1. 构建后端 ----------
+build-backend:
+  stage: build-backend
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - cd backend
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/target/youtong-admin-backend-1.0.0.jar
+    expire_in: 1 week
+  only:
+    - main
+
+# ---------- 2. 构建后台前端 ----------
+build-admin:
+  stage: build-admin
+  image: node:20-alpine
+  script:
+    - cd admin
+    - npm install --registry=https://registry.npmmirror.com
+    - npm run build
+  artifacts:
+    paths:
+      - admin/dist/
+    expire_in: 1 week
+  only:
+    - main
+
+# ---------- 3. 部署到生产服务器 ----------
+deploy:
+  stage: deploy
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache openssh-client rsync bash
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    # 1) 创建服务器目标目录
+    - ssh $SERVER_USER@$SERVER_HOST "mkdir -p /opt/youtong/app /opt/youtong/admin $APP_UPLOAD_DIR"
+    # 2) 上传后端 jar（替换旧包）
+    - rsync -avz -e ssh backend/target/youtong-admin-backend-1.0.0.jar $SERVER_USER@$SERVER_HOST:/opt/youtong/app/app.jar
+    # 3) 上传后台 dist
+    - rsync -avz -e ssh --delete admin/dist/ $SERVER_USER@$SERVER_HOST:/opt/youtong/admin/
+    # 4) 重启后端服务
+    - ssh $SERVER_USER@$SERVER_HOST "systemctl restart youtong 2>/dev/null || echo 'service-not-found'"
+  after_script:
+    - rm -f ~/.ssh/id_rsa
+  environment:
+    name: production
+    url: http://$SERVER_HOST
+  only:
+    - main
+  when: manual   # 部署默认手动触发，避免每次 push 都直接上生产（可改为 on_success）
