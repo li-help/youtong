@@ -70,6 +70,8 @@ GitLab 项目 → **Settings → CI/CD → Variables** 新增：
 | `SSH_PRIVATE_KEY` | （服务器 `~/.ssh/id_rsa` 私钥全文） | 部署免密 |
 | `APP_UPLOAD_DIR` | `/opt/youtong/uploads` | 上传目录 |
 | `MYSQL_PASSWORD` | 第 2 步设的密码 | 服务环境变量（可选） |
+| `WECHAT_SECRET` | 微信小程序 secret | 建议生产注入（不注入则用代码内默认值） |
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | 建议生产注入（不注入则用代码内默认值） |
 
 所有变量勾选 **Masked**（SSH_PRIVATE_KEY 需 Protected+Masked）。
 

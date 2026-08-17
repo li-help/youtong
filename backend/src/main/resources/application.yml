@@ -34,14 +34,16 @@ app:
 
 wechat:
   miniapp:
-    appid: wx4b9c2156878deb40
-    secret: cb30c674051d90f0ef721f7fbc8a0596
+    appid: ${WECHAT_APPID:wx4b9c2156878deb40}
+    # secret 优先取环境变量，生产环境务必通过 WECHAT_SECRET 注入，勿使用默认值
+    secret: ${WECHAT_SECRET:cb30c674051d90f0ef721f7fbc8a0596}
 
 # 大模型（OpenAI 兼容协议，DeepSeek）
 # 注意：api-key 为敏感凭证，请勿提交到公开仓库。
+# 生产环境务必通过 DEEPSEEK_API_KEY 环境变量注入
 ai:
-  base-url: https://api.deepseek.com/v1
-  api-key: sk-3d556eecd914478490323daa2396e545
+  base-url: ${AI_BASE_URL:https://api.deepseek.com/v1}
+  api-key: ${DEEPSEEK_API_KEY:sk-3d556eecd914478490323daa2396e545}
   model: deepseek-v4-flash
   # 单次请求最长等待时间（毫秒），大模型响应较慢，建议留足
   timeout-ms: 60000

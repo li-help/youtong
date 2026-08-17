@@ -15,6 +15,8 @@ fi
 APP_DIR=/opt/youtong
 UPLOAD_DIR=${APP_UPLOAD_DIR:-$APP_DIR/uploads}
 DB_PASS=${MYSQL_PASSWORD:-""}
+WECHAT_SECRET=${WECHAT_SECRET:-""}
+DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-""}
 IP=${SERVER_HOST:-$(curl -s ifconfig.me)}
 
 echo "==> [1/6] 安装依赖 (JDK17 + Nginx + Rsync)"
@@ -71,6 +73,8 @@ Environment=APP_UPLOAD_DIR=$UPLOAD_DIR
 Environment=SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/youtong?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
 Environment=SPRING_DATASOURCE_USERNAME=youtong
 Environment=SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+Environment=WECHAT_SECRET=${WECHAT_SECRET}
+Environment=DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
 
 [Install]
 WantedBy=multi-user.target
