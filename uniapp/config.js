@@ -1,5 +1,16 @@
 // 全局配置
-export const BASE_URL = 'http://localhost:3001/api'
+// ============================================================
+// 【上线必改】后端 API 地址，按部署环境选择：
+//   H5 / 小程序 正式环境:  https://你的域名/api        （走 Nginx 反代，微信要求 HTTPS）
+//   本地开发:              http://localhost:3001/api
+//   App 打包:              http://服务器IP:3001/api  或  https://你的域名/api
+// 优先级：构建环境变量 UNI_APP_API_URL > 下方默认值
+//   命令行打包示例:
+//     H5:   UNI_APP_API_URL=https://youtong.example.com/api npm run build:h5
+//     App:  UNI_APP_API_URL=https://youtong.example.com/api npm run build:app
+// ============================================================
+const ENV_API_URL = typeof process !== 'undefined' && process.env && process.env.UNI_APP_API_URL
+export const BASE_URL = ENV_API_URL || 'http://localhost:3001/api'
 
 // 占位图（本地纯色块，避免使用外部图片素材）
 export const PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(

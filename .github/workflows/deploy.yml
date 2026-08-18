@@ -3,10 +3,11 @@
 # 触发：push 到 main 分支 或 手动运行（Actions 页面 Run workflow）
 # 流程：构建后端 jar → 构建后台 dist → 部署到生产服务器
 # 依赖 GitHub Secrets（Settings → Secrets and variables → Actions）：
-#   SERVER_HOST      服务器 IP（如 123.56.160.50）
-#   SERVER_USER      SSH 登录用户（如 root）
-#   SSH_PRIVATE_KEY  服务器 SSH 私钥内容（含 ----BEGIN/END----）
-#   APP_UPLOAD_DIR   上传目录（如 /opt/youtong/uploads）
+#   SERVER_HOST        服务器 IP（如 123.56.160.50）
+#   SERVER_USER        SSH 登录用户（如 root）
+#   SSH_PRIVATE_KEY    服务器 SSH 私钥内容（含 ----BEGIN/END----）
+#   APP_UPLOAD_DIR     上传目录（如 /opt/youtong/uploads）
+#   MYSQL_PASSWORD     数据库应用账号 youtong 的密码（与 server-init.sh 设置的保持一致）
 # ============================================================
 
 name: 优童成长社 CI/CD
@@ -78,6 +79,8 @@ jobs:
     needs: [build-backend, build-admin]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: backend-jar
@@ -94,6 +97,7 @@ jobs:
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           APP_UPLOAD_DIR: ${{ secrets.APP_UPLOAD_DIR }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
           set -e
           # 准备 SSH 私钥
@@ -105,13 +109,51 @@ jobs:
           # 安装 rsync（ubuntu-latest 默认不带）
           sudo apt-get update -qq && sudo apt-get install -y -qq rsync
 
-          # 1) 创建服务器目标目录
-          ssh $SERVER_USER@$SERVER_HOST "mkdir -p /opt/youtong/app /opt/youtong/admin $APP_UPLOAD_DIR"
-          # 2) 上传后端 jar（替换旧包）
-          rsync -avz -e ssh ./backend-jar/youtong-admin-backend-1.0.0.jar $SERVER_USER@$SERVER_HOST:/opt/youtong/app/app.jar
-          # 3) 上传后台 dist
-          rsync -avz -e ssh --delete ./admin-dist/ $SERVER_USER@$SERVER_HOST:/opt/youtong/admin/
-          # 4) 重启后端服务
+          APP_DIR=/opt/youtong
+
+          # 1) 创建服务器目标目录（含备份目录）
+          ssh $SERVER_USER@$SERVER_HOST "mkdir -p $APP_DIR/app $APP_DIR/admin $APP_DIR/backup $APP_UPLOAD_DIR"
+
+          # 2) 备份当前运行的 jar（保留最近 10 份，便于回滚）
+          ssh $SERVER_USER@$SERVER_HOST \
+            "cd $APP_DIR/app && [ -f app.jar ] && cp app.jar $APP_DIR/backup/app-\$(date +%Y%m%d-%H%M%S).jar && ls -1t $APP_DIR/backup/*.jar 2>/dev/null | tail -n +11 | xargs -r rm -f || true"
+
+          # 3) 上传后端 jar（替换旧包）
+          rsync -avz -e ssh ./backend-jar/youtong-admin-backend-1.0.0.jar $SERVER_USER@$SERVER_HOST:$APP_DIR/app/app.jar
+
+          # 4) 上传数据库脚本与初始化工具
+          rsync -avz -e ssh backend/schema.sql backend/seed.sql $SERVER_USER@$SERVER_HOST:$APP_DIR/app/
+          rsync -avz -e ssh deploy/init-db.sh $SERVER_USER@$SERVER_HOST:$APP_DIR/init-db.sh
+
+          # 5) 上传后台 dist
+          rsync -avz -e ssh --delete ./admin-dist/ $SERVER_USER@$SERVER_HOST:$APP_DIR/admin/
+
+          # 6) 幂等初始化数据库（已存在表则跳过，不会覆盖线上数据）
+          if [ -n "$MYSQL_PASSWORD" ]; then
+            ssh $SERVER_USER@$SERVER_HOST \
+              "MYSQL_PASSWORD='$MYSQL_PASSWORD' bash $APP_DIR/init-db.sh $APP_DIR/app/schema.sql $APP_DIR/app/seed.sql"
+          else
+            echo "警告: 未配置 MYSQL_PASSWORD，跳过数据库初始化（请确认库表已就绪）"
+          fi
+
+          # 7) 重启后端服务
           ssh $SERVER_USER@$SERVER_HOST "systemctl restart youtong 2>/dev/null || echo 'service-not-found'"
+
+          # 8) 健康检查（白名单放行 /api/sync/*，无需登录；60s 内就绪视为成功）
+          set +e
+          HEALTHY=""
+          for i in $(seq 1 30); do
+            HTTP_CODE=$(ssh $SERVER_USER@$SERVER_HOST "curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3001/api/sync/version?channel=health'" 2>/dev/null)
+            if [ "$HTTP_CODE" = "200" ]; then HEALTHY="ok"; break; fi
+            sleep 2
+          done
+          set -e
+          if [ -z "$HEALTHY" ]; then
+            echo "!! 健康检查失败：后端未在 60s 内就绪，请查看服务器日志: journalctl -u youtong -n 100"
+            echo "!! 若为首次部署，请确认已执行 deploy/server-init.sh 并配置好 MySQL 账号"
+            rm -f ~/.ssh/id_rsa
+            exit 1
+          fi
+          echo "健康检查通过：后端已就绪"
 
           rm -f ~/.ssh/id_rsa
