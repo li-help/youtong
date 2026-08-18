@@ -4,12 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
+  /// 后端地址：优先使用编译期注入（flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3001/api），
+  /// 否则按平台回退到本机调试地址（Android 模拟器 10.0.2.2，iOS/桌面 localhost）。
   static String get baseUrl {
+    const fromEnv = String.fromEnvironment('API_BASE_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
     if (Platform.isAndroid) {
       return 'http://10.0.2.2:3001/api';
-    }
-    if (Platform.isIOS) {
-      return 'http://localhost:3001/api';
     }
     return 'http://localhost:3001/api';
   }
@@ -90,16 +91,36 @@ class ApiService {
     return post('/auth/login', body: {'username': username, 'password': password});
   }
 
-  static Future<Map<String, dynamic>> register(String username, String password) async {
-    return post('/auth/register', body: {'username': username, 'password': password});
+  static Future<Map<String, dynamic>> register(String username, String password, {String? nickname, String? code}) async {
+    return post('/auth/register', body: {
+      'username': username,
+      'password': password,
+      if (nickname != null && nickname.isNotEmpty) 'nickname': nickname,
+      if (code != null && code.isNotEmpty) 'code': code,
+    });
+  }
+
+  /// 发送短信验证码（演示环境后端会返回明文验证码，便于联调）
+  static Future<Map<String, dynamic>> sendCode(String phone) async {
+    return post('/auth/sendCode', body: {'phone': phone});
+  }
+
+  /// 校验验证码
+  static Future<Map<String, dynamic>> checkCode(String phone, String code) async {
+    return post('/auth/checkCode', body: {'phone': phone, 'code': code});
+  }
+
+  /// 通过手机号 + 验证码重置密码（忘记密码，无需原密码）
+  static Future<Map<String, dynamic>> resetPwdByCode(String phone, String code, String newPassword) async {
+    return post('/auth/resetPwdByCode', body: {'phone': phone, 'code': code, 'newPassword': newPassword});
   }
 
   static Future<Map<String, dynamic>> logout() => post('/auth/logout');
   static Future<Map<String, dynamic>> info() => post('/auth/info');
 
-  // Resources
+  // Resources（C 端列表统一走公开的 /list 接口，仅返回已上线内容）
   static Future<Map<String, dynamic>> listVideos({int page = 1, int pageSize = 20}) =>
-      get('/video', query: {'page': '$page', 'pageSize': '$pageSize'});
+      get('/video/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
   static Future<Map<String, dynamic>> videoDetail(int id) => get('/video/$id');
 
   static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20, String? keyword, int? categoryId}) =>
@@ -113,7 +134,7 @@ class ApiService {
   static Future<Map<String, dynamic>> courseDetail(int id) => get('/course/$id');
 
   static Future<Map<String, dynamic>> listActivities({int page = 1, int pageSize = 20}) =>
-      get('/activity', query: {'page': '$page', 'pageSize': '$pageSize'});
+      get('/activity/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
   static Future<Map<String, dynamic>> activityDetail(int id) => get('/activity/$id');
 
   static Future<Map<String, dynamic>> listStores({int page = 1, int pageSize = 20}) =>
@@ -123,7 +144,7 @@ class ApiService {
       get('/service/list', query: {'page': '$page', 'pageSize': '$pageSize'});
 
   static Future<Map<String, dynamic>> listCategories({int page = 1, int pageSize = 20}) =>
-      get('/category', query: {'page': '$page', 'pageSize': '$pageSize'});
+      get('/category/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
 
   // C 端课程推荐
   static Future<Map<String, dynamic>> recommendCourses({int size = 6}) =>
@@ -136,16 +157,35 @@ class ApiService {
 
   // 当前用户信息 / 修改资料（对接后端 sys_account）
   static Future<Map<String, dynamic>> userMe() => get('/user/me');
-  static Future<Map<String, dynamic>> updateProfile(String nickname) =>
-      post('/user/profile', body: {'nickname': nickname});
+  static Future<Map<String, dynamic>> updateProfile(String nickname, {String? avatar}) =>
+      post('/user/profile', body: {'nickname': nickname, if (avatar != null) 'avatar': avatar});
 
   // 首页轮播：后台广告位 home_banner（统一走 /api/ad，与 uniapp 端一致）
   static Future<Map<String, dynamic>> listBanners() =>
       get('/ad/list', query: {'positionId': '1', 'status': '1'});
 
   static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, String? status}) =>
-      get('/order', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': status});
+      get('/order/list', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': status});
 
   static Future<Map<String, dynamic>> createOrder(Map<String, dynamic> body) =>
       post('/order/create', body: body);
+
+  /// 订单核销（商家端）
+  static Future<Map<String, dynamic>> verifyOrder(int id) => post('/order/$id/verify');
+
+  /// 模拟支付（待支付 -> 已支付）
+  static Future<Map<String, dynamic>> payOrder(int id) => post('/order/$id/pay');
+
+  // AI 智能推荐（与 uniapp 端一致）
+  static Future<Map<String, dynamic>> aiRecommend({
+    String age = '0-1岁',
+    String interests = '运动',
+  }) async {
+    return post('/ai/recommend', body: {'age': age, 'interests': interests});
+  }
+
+  // 数据版本号（用于轮询实时刷新，与后台编辑同步）
+  static Future<Map<String, dynamic>> fetchVersion(String channel) async {
+    return get('/sync/version', query: {'channel': channel});
+  }
 }

@@ -1,16 +1,14 @@
 // 统一请求封装：自动携带 token、统一错误提示、解析后端 R 结构。
-// 自动区分运行环境：
-//   - H5：使用相对路径 '/api'，由 manifest.h5.devServer.proxy 转发到后端（http://localhost:3001）
-//   - 微信开发者工具：用 127.0.0.1，工具本身就在本机运行，可直达后端
-//   - 真机调试：改成你电脑的局域网 IP（如 192.168.x.x），确保手机与电脑同 WiFi
-const SERVER_IP = '127.0.0.1' // ← 微信开发者工具用本机；真机调试改局域网 IP
-const SERVER_BASE = `http://${SERVER_IP}:3001/api`
+// 后端地址统一在 config.js 的 BASE_URL 配置（真机调试改为电脑局域网 IP）：
+//   - H5：使用相对路径 '/api'，由 manifest.h5.devServer.proxy 转发到后端
+//   - 小程序 / App：直接请求 config.js 中的 BASE_URL
+import { BASE_URL as CONFIG_BASE_URL } from '../config.js'
 
 // #ifdef H5
 const BASE_URL = '/api'
 // #endif
 // #ifndef H5
-const BASE_URL = SERVER_BASE
+const BASE_URL = CONFIG_BASE_URL
 // #endif
 
 function request(options) {

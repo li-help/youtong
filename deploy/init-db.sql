@@ -1,0 +1,6 @@
+CREATE DATABASE IF NOT EXISTS youtong DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'youtong'@'localhost' IDENTIFIED BY 'Youtong2026Db';
+CREATE USER IF NOT EXISTS 'youtong'@'%' IDENTIFIED BY 'Youtong2026Db';
+GRANT ALL PRIVILEGES ON youtong.* TO 'youtong'@'localhost';
+GRANT ALL PRIVILEGES ON youtong.* TO 'youtong'@'%';
+FLUSH PRIVILEGES;

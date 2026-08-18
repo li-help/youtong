@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_network_image.dart';
 import 'login_page.dart';
 import 'profile_page.dart';
 import 'orders_page.dart';
@@ -59,11 +60,17 @@ class _MinePageState extends State<MinePage> {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const FaIcon(FontAwesomeIcons.user, size: 36, color: AppStyles.textSub),
+                    ClipOval(
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: _user?['avatar'] != null && _user!['avatar'].toString().isNotEmpty
+                            ? AppNetworkImage(url: _user!['avatar'].toString(), fit: BoxFit.cover)
+                            : const ColoredBox(
+                                color: Colors.white,
+                                child: FaIcon(FontAwesomeIcons.user, size: 36, color: AppStyles.textSub),
+                              ),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -80,17 +87,22 @@ class _MinePageState extends State<MinePage> {
                 ),
               ),
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: AppStyles.cardDecoration,
-              child: Row(
-                children: [
-                  const FaIcon(FontAwesomeIcons.baby, color: AppStyles.primary, size: 32),
-                  const SizedBox(width: 12),
-                  const Expanded(child: Text('完善宝宝档案', style: TextStyle(fontWeight: FontWeight.bold))),
-                  const FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight),
-                ],
+            GestureDetector(
+              onTap: _user == null
+                  ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage()))
+                  : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage())),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: AppStyles.cardDecoration,
+                child: const Row(
+                  children: [
+                    FaIcon(FontAwesomeIcons.baby, color: AppStyles.primary, size: 32),
+                    SizedBox(width: 12),
+                    Expanded(child: Text('完善宝宝档案', style: TextStyle(fontWeight: FontWeight.bold))),
+                    FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -102,9 +114,9 @@ class _MinePageState extends State<MinePage> {
                 children: [
                   const Row(children: [FaIcon(FontAwesomeIcons.solidStar, color: AppStyles.primary), SizedBox(width: 6), Text('我的服务', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]),
                   const SizedBox(height: 8),
-                  _menu('📦', '我的订单', '查看', () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrdersPage()))),
+                  _menu('📦', '我的订单', '查看', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrdersPage()))),
                   _menu('📱', '我的二维码', '查看', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QrcodePage()))),
-                  _menu('📖', '使用说明', '查看', () {}),
+                  _menu('📖', '使用说明', '查看', () => _showHelp(context)),
                   _menu('👤', '个人信息', '修改', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage()))),
                 ],
               ),
@@ -144,6 +156,28 @@ class _MinePageState extends State<MinePage> {
         ],
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('使用说明'),
+        content: const SingleChildScrollView(
+          child: Text(
+            '1. 首页可查看精选课程、活动、视频与资讯，下滑可刷新。\n\n'
+            '2. 注册登录后可报名课程、参与活动、查看订单。\n\n'
+            '3. 智能推荐：填写宝宝年龄、身高体重后，系统将智能匹配适合的课程。\n\n'
+            '4. 我的订单中可查看报名记录，到店后出示二维码即可核销。\n\n'
+            '5. 如遇问题，请联系门店客服或前往门店详情页拨打电话。',
+            style: TextStyle(fontSize: 14, height: 1.7),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('知道了')),
+        ],
+      ),
     );
   }
 }

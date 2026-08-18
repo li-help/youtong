@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
-import 'login_page.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+/// 忘记密码：手机号 + 验证码 + 新密码 重置密码
+class ResetPwdPage extends StatefulWidget {
+  const ResetPwdPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<ResetPwdPage> createState() => _ResetPwdPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
-  final _confirm = TextEditingController();
+class _ResetPwdPageState extends State<ResetPwdPage> {
+  final _phone = TextEditingController();
   final _code = TextEditingController();
+  final _newPwd = TextEditingController();
+  final _confirm = TextEditingController();
   bool _loading = false;
   bool _counting = false;
   int _count = 60;
 
   Future<void> _sendCode() async {
-    final phone = _username.text.trim();
+    final phone = _phone.text.trim();
     if (phone.isEmpty) {
       _toast('请输入手机号');
       return;
@@ -41,7 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
         _counting = true;
         _count = 60;
       });
-      // 演示环境后端返回明文验证码，便于联调
       _toast(demoCode != null ? '验证码已发送（演示：$demoCode）' : '验证码已发送');
       Future.doWhile(() async {
         await Future.delayed(const Duration(seconds: 1));
@@ -58,14 +56,14 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  Future<void> _register() async {
-    final phone = _username.text.trim();
-    final pwd = _password.text;
-    final confirm = _confirm.text;
+  Future<void> _reset() async {
+    final phone = _phone.text.trim();
     final code = _code.text.trim();
+    final pwd = _newPwd.text;
+    final confirm = _confirm.text;
 
-    if (phone.isEmpty) {
-      _toast('请输入手机号');
+    if (phone.isEmpty || code.isEmpty || pwd.isEmpty) {
+      _toast('请填写完整信息');
       return;
     }
     if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
@@ -73,27 +71,26 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
     if (pwd.length < 6) {
-      _toast('密码长度不能少于6位');
+      _toast('新密码不能少于6位');
       return;
     }
     if (pwd != confirm) {
       _toast('两次密码不一致');
       return;
     }
-    if (code.isEmpty) {
-      _toast('请输入验证码');
-      return;
-    }
 
     setState(() => _loading = true);
     try {
-      final res = await ApiService.register(phone, pwd, nickname: phone, code: code);
+      final res = await ApiService.resetPwdByCode(phone, code, pwd);
       if (res['code'] == 0) {
         if (!mounted) return;
-        _toast('注册成功，请登录');
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+        _toast('密码重置成功，请重新登录');
+        Future.delayed(const Duration(seconds: 1), () {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+        });
       } else {
-        _toast(res['msg']?.toString() ?? '注册失败');
+        _toast(res['msg']?.toString() ?? '重置失败');
       }
     } catch (e) {
       _toast('网络异常，请检查网络后重试');
@@ -126,19 +123,8 @@ class _RegisterPageState extends State<RegisterPage> {
               icon: const Icon(Icons.arrow_back_ios, size: 28),
               onPressed: () => Navigator.of(context).maybePop(),
             ),
-            const Center(child: Text('一键授权', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 40),
-            Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(color: AppStyles.primaryLight, width: 3),
-                ),
-                child: const FaIcon(FontAwesomeIcons.user, size: 64, color: AppStyles.textSub),
-              ),
+            const Center(
+              child: Text('重置密码', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 50),
             Container(
@@ -146,11 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
               decoration: AppStyles.cardDecoration,
               child: Column(
                 children: [
-                  TextField(controller: _username, keyboardType: TextInputType.phone, decoration: _input('请输入手机号')),
-                  const SizedBox(height: 16),
-                  TextField(controller: _password, obscureText: true, decoration: _input('请输入密码')),
-                  const SizedBox(height: 16),
-                  TextField(controller: _confirm, obscureText: true, decoration: _input('请再次输入密码')),
+                  TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: _input('请输入手机号')),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -172,25 +154,19 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  TextField(controller: _newPwd, obscureText: true, decoration: _input('请输入新密码')),
+                  const SizedBox(height: 16),
+                  TextField(controller: _confirm, obscureText: true, decoration: _input('请再次输入新密码')),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: _loading ? null : _register,
+                      onPressed: _loading ? null : _reset,
                       style: AppStyles.primaryButton,
-                      child: _loading ? const CircularProgressIndicator(strokeWidth: 2) : const Text('立即注册'),
+                      child: _loading ? const CircularProgressIndicator(strokeWidth: 2) : const Text('确认重置'),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('已有账号？', style: TextStyle(color: AppStyles.textLight)),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage())),
-                        child: const Text('返回登录', style: TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
                   ),
                 ],
               ),

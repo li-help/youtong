@@ -10,7 +10,7 @@
     <view class="body">
       <text class="title">{{ activity.title }}</text>
       <view class="meta">
-        <text class="m-item">🕐 {{ activity.start_time || '时间待定' }}</text>
+        <text class="m-item">🕐 {{ activity.startTime || '时间待定' }}</text>
         <text class="m-item">📍 {{ activity.address || '优童活动中心' }}</text>
       </view>
       <view class="section">
@@ -25,19 +25,34 @@
       </view>
     </view>
     <view class="bottom-bar">
-      <button class="btn-primary signup-btn" @click="onJoin">报名参加</button>
+      <button class="btn-primary signup-btn" @click="openJoin">报名参加</button>
+    </view>
+
+    <!-- 报名弹窗 -->
+    <view v-if="showJoin" class="join-mask" @click.self="showJoin = false">
+      <view class="join-modal">
+        <text class="join-title">活动报名</text>
+        <text class="join-name">{{ activity.title }}</text>
+        <input class="join-input" v-model="joinForm.contactName" placeholder="联系人姓名" placeholder-class="ph" />
+        <input class="join-input" v-model="joinForm.contactPhone" type="number" maxlength="11" placeholder="联系人手机号" placeholder-class="ph" />
+        <button class="btn-confirm" :loading="joining" @click="submitJoin">确认报名</button>
+        <text class="join-close" @click="showJoin = false">取消</text>
+      </view>
     </view>
   </view>
   <view v-else class="loading">加载中...</view>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { activityApi } from '../../api/index.js'
+import { ref, reactive, onMounted } from 'vue'
+import { activityApi, orderApi } from '../../api/index.js'
 import { coverOf } from '../../config.js'
 
 const activity = ref(null)
 const id = ref('')
+const showJoin = ref(false)
+const joining = ref(false)
+const joinForm = reactive({ contactName: '', contactPhone: '' })
 
 onMounted(() => {
   const pages = getCurrentPages()
@@ -49,13 +64,43 @@ async function load() {
   try {
     activity.value = await activityApi.detail(id.value)
   } catch (e) {
-    activity.value = { id: id.value, title: '示例活动', address: '优童活动中心' }
+    activity.value = { id: id.value, title: '活动加载失败', address: '优童活动中心' }
   }
 }
 
-function onJoin() {
-  uni.showToast({ title: '报名成功，请准时参加', icon: 'success' })
+function openJoin() {
+  joinForm.contactName = ''
+  joinForm.contactPhone = ''
+  showJoin.value = true
 }
+
+async function submitJoin() {
+  if (!joinForm.contactName) {
+    uni.showToast({ title: '请输入联系人姓名', icon: 'none' })
+    return
+  }
+  if (!/^1[3-9]\d{9}$/.test(joinForm.contactPhone)) {
+    uni.showToast({ title: '请输入有效的手机号', icon: 'none' })
+    return
+  }
+  joining.value = true
+  try {
+    await orderApi.create({
+      courseName: activity.value.title,
+      price: 0,
+      contactName: joinForm.contactName,
+      contactPhone: joinForm.contactPhone,
+      remark: '活动报名'
+    })
+    uni.showToast({ title: '报名成功，请准时参加', icon: 'success' })
+    showJoin.value = false
+  } catch (e) {
+    // 错误提示已由 request 统一处理
+  } finally {
+    joining.value = false
+  }
+}
+
 function goBack() { uni.navigateBack() }
 </script>
 
@@ -72,4 +117,12 @@ function goBack() { uni.navigateBack() }
 .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 18rpx 32rpx; padding-bottom: calc(18rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -6rpx 24rpx rgba(0,0,0,.06); }
 .signup-btn { width: 100%; }
 .loading { text-align: center; padding: 120rpx 0; color: #999; }
+.join-mask { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 999; display: flex; align-items: center; justify-content: center; }
+.join-modal { width: 600rpx; background: #fff; border-radius: 24rpx; padding: 40rpx; display: flex; flex-direction: column; align-items: center; }
+.join-title { font-size: 34rpx; font-weight: bold; color: #2D2D2D; margin-bottom: 12rpx; }
+.join-name { font-size: 26rpx; color: #888; margin-bottom: 30rpx; }
+.join-input { width: 100%; background: #F5F6FA; border: 2rpx solid #E8E8E8; border-radius: 16rpx; padding: 22rpx 26rpx; margin-bottom: 20rpx; font-size: 28rpx; }
+.ph { color: #bbb; }
+.btn-confirm { width: 100%; height: 88rpx; line-height: 88rpx; background: linear-gradient(135deg, #FFD54F, #FFB300); color: #5D4000; font-size: 32rpx; font-weight: bold; border-radius: 44rpx; margin-top: 10rpx; }
+.join-close { margin-top: 24rpx; color: #999; font-size: 26rpx; }
 </style>

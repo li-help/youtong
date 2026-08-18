@@ -87,7 +87,7 @@ class _ArticlePageState extends State<ArticlePage> {
                                     Text(item['summary']?.toString() ?? '',
                                         maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),
                                     const SizedBox(height: 6),
-                                    Text('${item['author'] ?? ''}  ·  ${(item['viewCount'] ?? 0)}次浏览',
+                                    Text('${item['author'] ?? ''}  ·  ${item['createdAt'] ?? ''}',
                                         style: const TextStyle(fontSize: 12, color: AppStyles.textSub)),
                                   ],
                                 ),

@@ -18,6 +18,9 @@ public class JwtInterceptor implements HandlerInterceptor {
     private static final String[] WHITE_LIST = {
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/sendCode",
+            "/api/auth/checkCode",
+            "/api/auth/resetPwdByCode",
             "/api/auth/wechatLogin",
             "/api/auth/scanLogin/create",
             "/api/auth/scanLogin/check",
@@ -36,6 +39,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "GET:/api/store/*",
             "/api/store/list",
             "/api/service/list",
+            "GET:/api/service/*",
+            "GET:/api/user/qrcode/*",
             "GET:/api/video/*",
             "GET:/api/activity/*",
             "GET:/api/video/list",

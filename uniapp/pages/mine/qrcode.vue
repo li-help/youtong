@@ -16,8 +16,9 @@
       </view>
 
       <view class="qr-box">
-        <!-- 用 emoji 占位二维码（真实项目可用 uQRCode 生成） -->
-        <view class="qr-placeholder">
+        <!-- 后端 zxing 生成的用户二维码图片（公开接口） -->
+        <image v-if="qrSrc" :src="qrSrc" class="qr-img" mode="aspectFit" />
+        <view v-else class="qr-placeholder">
           <text class="qr-emoji">🔳</text>
         </view>
         <text class="qr-tip">扫一扫，添加好友 / 核销身份</text>
@@ -29,15 +30,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { userStore } from '../../store/user.js'
+import { BASE_URL } from '../../api/request.js'
 
 const user = computed(() => userStore.info || {})
 const avatarText = computed(() => {
   const n = user.value.nickname || user.value.username || '童'
   return n.charAt(0)
 })
-const code = computed(() => 'YT' + (user.value.id || '0') + '8F2A')
+const code = computed(() => 'YT' + (user.value.id || '0'))
+const qrSrc = computed(() => user.value.id ? `${BASE_URL}/user/qrcode/${user.value.id}` : '')
 
 function goBack() { uni.navigateBack() }
 </script>
@@ -52,6 +55,7 @@ function goBack() { uni.navigateBack() }
 .uid { font-size: 24rpx; margin-top: 6rpx; color: #bbb; }
 .qr-box { display: flex; flex-direction: column; align-items: center; margin: 40rpx 0; }
 .qr-placeholder { width: 360rpx; height: 360rpx; border: 4rpx dashed #F6B51E; border-radius: 24rpx; display: flex; align-items: center; justify-content: center; background: #FFF3DE; }
+.qr-img { width: 360rpx; height: 360rpx; border-radius: 24rpx; }
 .qr-emoji { font-size: 160rpx; }
 .qr-tip { font-size: 26rpx; color: #bbb; margin-top: 20rpx; }
 .code-text { text-align: center; font-size: 28rpx; color: #E89B00; font-weight: bold; }

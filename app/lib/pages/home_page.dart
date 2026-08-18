@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
@@ -25,6 +26,9 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _recommends = [];
   bool _loading = true;
 
+  Timer? _versionTimer;
+  int _lastVersion = 0;
+
   final List<Map<String, dynamic>> _categories = [
     {'name': '视频课程', 'icon': FontAwesomeIcons.circlePlay, 'color': const Color(0xFFFFECB3)},
     {'name': '创意绘画', 'icon': FontAwesomeIcons.palette, 'color': const Color(0xFFF8BBD0)},
@@ -36,6 +40,28 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadData();
+    // 实时同步：轮询后端数据版本号，后台编辑发布后自动刷新
+    _versionTimer = Timer.periodic(const Duration(seconds: 30), (_) => _pollVersion());
+  }
+
+  @override
+  void dispose() {
+    _versionTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _pollVersion() async {
+    try {
+      final res = await ApiService.fetchVersion('home');
+      final v = res['data'];
+      if (v is num) {
+        final version = v.toInt();
+        if (_lastVersion != 0 && version != _lastVersion) {
+          _loadData();
+        }
+        _lastVersion = version;
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadData() async {

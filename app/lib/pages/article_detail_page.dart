@@ -81,7 +81,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                   child: const Text('资讯', style: TextStyle(color: AppStyles.primary)),
                                 ),
                                 const SizedBox(width: 12),
-                                Text('${_detail?['author'] ?? ''}  ·  ${_detail?['viewCount'] ?? 0}次浏览',
+                                Text('${_detail?['author'] ?? ''}  ·  ${_detail?['createdAt'] ?? ''}',
                                     style: const TextStyle(color: AppStyles.textLight)),
                               ],
                             ),

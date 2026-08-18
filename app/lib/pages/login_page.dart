@@ -4,6 +4,7 @@ import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import 'main_page.dart';
 import 'register_page.dart';
+import 'reset_pwd_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -123,11 +124,11 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ResetPwdPage())),
                         child: const Text('忘记密码', style: TextStyle(color: AppStyles.primary)),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => _toast('当前支持手机号验证码登录'),
                         child: const Text('切换一键登录方式', style: TextStyle(color: AppStyles.primary)),
                       ),
                     ],

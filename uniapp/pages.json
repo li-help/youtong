@@ -104,6 +104,13 @@
       }
     },
     {
+      "path": "pages/article/view",
+      "style": {
+        "navigationBarTitleText": "文章详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/service/list",
       "style": {
         "navigationBarTitleText": "服务",

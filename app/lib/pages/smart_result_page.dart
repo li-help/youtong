@@ -16,7 +16,9 @@ class SmartResultPage extends StatefulWidget {
 
 class _SmartResultPageState extends State<SmartResultPage> {
   List<dynamic> _courses = [];
+  String _summary = '';
   bool _loading = true;
+  bool _failed = false;
 
   @override
   void initState() {
@@ -25,11 +27,30 @@ class _SmartResultPageState extends State<SmartResultPage> {
   }
 
   Future<void> _load() async {
-    final res = await ApiService.listCourses(page: 1, pageSize: 20);
+    try {
+      final res = await ApiService.aiRecommend(age: widget.age, interests: '运动');
+      if (!mounted) return;
+      setState(() {
+        final data = res['data'] as Map<String, dynamic>? ?? {};
+        _summary = data['summary']?.toString() ?? '';
+        _courses = data['courses'] is List ? data['courses'] as List : [];
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _failed = true;
+      });
+    }
+  }
+
+  void _retry() {
     setState(() {
-      _courses = res['data']?['list'] ?? [];
-      _loading = false;
+      _loading = true;
+      _failed = false;
     });
+    _load();
   }
 
   @override
@@ -57,8 +78,11 @@ class _SmartResultPageState extends State<SmartResultPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('智能推荐结果', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Chip(label: Text('偏瘦体质'), backgroundColor: Color(0xFFFFF8E1)),
-                  Text('您的宝宝是一个${widget.age}、身高${widget.height}cm、体重${widget.weight}kg的宝宝', style: const TextStyle(color: AppStyles.textSub)),
+                  Text('宝宝：${widget.age} · 身高${widget.height}cm · 体重${widget.weight}kg', style: const TextStyle(color: AppStyles.textSub)),
+                  if (_summary.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(_summary, style: const TextStyle(color: AppStyles.textMain, height: 1.5)),
+                  ],
                 ],
               ),
             ),
@@ -69,7 +93,20 @@ class _SmartResultPageState extends State<SmartResultPage> {
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
-                  : ListView.builder(
+                  : _failed
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('推荐加载失败', style: TextStyle(color: AppStyles.textSub)),
+                              const SizedBox(height: 12),
+                              ElevatedButton(onPressed: _retry, style: AppStyles.primaryButton, child: const Text('重新加载')),
+                            ],
+                          ),
+                        )
+                      : _courses.isEmpty
+                          ? const Center(child: Text('暂无推荐课程', style: TextStyle(color: AppStyles.textSub)))
+                          : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _courses.length,
                       itemBuilder: (context, i) => GestureDetector(
@@ -95,12 +132,12 @@ class _SmartResultPageState extends State<SmartResultPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(_courses[i]['title']?.toString() ?? '课程', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                    const Text('优质课程，适合宝宝成长学习。', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
+                                    const Text('根据宝宝的年龄与兴趣智能匹配，助力快乐成长。', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text('参考价格 ¥${_courses[i]['price'] ?? 0}', style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
-                                        Text('${[1000, 1888, 2000, 1500][i % 4]}人浏览', style: const TextStyle(fontSize: 12, color: AppStyles.textLight)),
+                                        Text(_courses[i]['categoryId']?.toString() ?? '推荐', style: const TextStyle(fontSize: 12, color: AppStyles.textLight)),
                                       ],
                                     ),
                                   ],

@@ -16,12 +16,12 @@
 
     <view class="card form">
       <view class="form-item">
-        <text class="label">宝宝姓名</text>
-        <input class="input" v-model="form.babyName" placeholder="请输入宝宝姓名" placeholder-class="ph" />
+        <text class="label">联系人姓名</text>
+        <input class="input" v-model="form.contactName" placeholder="请输入联系人姓名" placeholder-class="ph" />
       </view>
       <view class="form-item">
-        <text class="label">家长手机</text>
-        <input class="input" v-model="form.phone" type="number" placeholder="请输入联系电话" placeholder-class="ph" />
+        <text class="label">联系人手机</text>
+        <input class="input" v-model="form.contactPhone" type="number" maxlength="11" placeholder="请输入联系电话" placeholder-class="ph" />
       </view>
       <view class="form-item">
         <text class="label">备注</text>
@@ -45,7 +45,7 @@ import { userStore } from '../../store/user.js'
 const course = ref(null)
 const id = ref('')
 const loading = ref(false)
-const form = reactive({ babyName: '', phone: '', remark: '' })
+const form = reactive({ contactName: '', contactPhone: '', remark: '' })
 
 onMounted(() => {
   const pages = getCurrentPages()
@@ -64,26 +64,28 @@ async function load() {
 function goBack() { uni.navigateBack() }
 
 async function onSubmit() {
-  if (!form.babyName || !form.phone) {
-    uni.showToast({ title: '请填写宝宝姓名和电话', icon: 'none' })
+  if (!form.contactName || !form.contactPhone) {
+    uni.showToast({ title: '请填写联系人和电话', icon: 'none' })
+    return
+  }
+  if (!/^1[3-9]\d{9}$/.test(form.contactPhone)) {
+    uni.showToast({ title: '请输入有效的手机号', icon: 'none' })
     return
   }
   loading.value = true
   try {
     await orderApi.create({
       courseId: Number(id.value),
-      userId: (userStore.info && userStore.info.id) || 1,
-      amount: course.value.price || 0,
+      courseName: course.value.title,
+      price: course.value.price || 0,
       remark: form.remark,
-      babyName: form.babyName,
-      phone: form.phone
+      contactName: form.contactName,
+      contactPhone: form.contactPhone
     })
     uni.showToast({ title: '报名成功', icon: 'success' })
     setTimeout(() => uni.redirectTo({ url: '/pages/order/list' }), 600)
   } catch (e) {
-    uni.showModal({ title: '提示', content: '后端未连接，已生成本地模拟订单', success: () => {
-      uni.redirectTo({ url: '/pages/order/list' })
-    }})
+    uni.showModal({ title: '报名失败', content: '提交失败，请稍后重试', showCancel: false })
   } finally {
     loading.value = false
   }

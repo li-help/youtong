@@ -60,8 +60,13 @@
     <view v-if="showForgot" class="scan-mask" @click.self="closeForgot">
       <view class="scan-modal">
         <text class="scan-title">重置密码</text>
-        <input class="forgot-input" v-model="forgotForm.username" placeholder="账号" placeholder-class="ph" />
-        <input class="forgot-input" v-model="forgotForm.oldPassword" password placeholder="原密码" placeholder-class="ph" />
+        <input class="forgot-input" v-model="forgotForm.phone" placeholder="手机号" placeholder-class="ph" />
+        <view class="forgot-code-row">
+          <input class="forgot-input forgot-code-input" v-model="forgotForm.code" placeholder="验证码" placeholder-class="ph" />
+          <button class="btn-code" :disabled="forgotCountdown > 0" @click="sendResetCode">
+            {{ forgotCountdown > 0 ? forgotCountdown + 's' : '获取验证码' }}
+          </button>
+        </view>
         <input class="forgot-input" v-model="forgotForm.newPassword" password placeholder="新密码（至少6位）" placeholder-class="ph" />
         <button class="btn-scan-confirm" :loading="forgotLoading" @click="doReset">确认重置</button>
         <text class="scan-close" @click="closeForgot">关闭</text>
@@ -73,6 +78,7 @@
 <script>
 import { userStore } from '../../store/user.js'
 import { authApi } from '../../api/index.js'
+import { BASE_URL } from '../../api/request.js'
 
 export default {
   data() {
@@ -87,8 +93,10 @@ export default {
       scanTip: '请使用微信扫一扫',
       scanTimer: null,
       showForgot: false,
-      forgotForm: { username: '', oldPassword: '', newPassword: '' },
-      forgotLoading: false
+      forgotForm: { phone: '', code: '', newPassword: '' },
+      forgotLoading: false,
+      forgotCountdown: 0,
+      forgotTimer: null
     }
   },
   methods: {
@@ -115,15 +123,8 @@ export default {
         const errMsg = (e && (e.errMsg || e.msg || JSON.stringify(e))) || '未知错误'
         uni.showModal({
           title: '登录失败',
-          content: `原因：${errMsg}\n\n是否以演示模式进入？`,
-          success: (res) => {
-            if (res.confirm) {
-              userStore.token = 'demo-token'
-              userStore.info = { id: 1, username: this.phone, nickname: this.phone }
-              uni.setStorageSync('token', 'demo-token')
-              uni.switchTab({ url: '/pages/tabbar/home/home' })
-            }
-          }
+          content: `原因：${errMsg}`,
+          showCancel: false
         })
       } finally {
         this.loading = false
@@ -133,12 +134,32 @@ export default {
       uni.navigateTo({ url: '/pages/register/register' })
     },
     forgotPwd() {
-      this.forgotForm = { username: this.phone || '', oldPassword: '', newPassword: '' }
+      this.forgotForm = { phone: this.phone || '', code: '', newPassword: '' }
       this.showForgot = true
     },
+    async sendResetCode() {
+      const phone = this.forgotForm.phone
+      if (!phone || phone.length !== 11) {
+        uni.showToast({ title: '请输入正确的手机号', icon: 'none' })
+        return
+      }
+      try {
+        const res = await authApi.sendCode(phone)
+        this.forgotCountdown = 60
+        if (this.forgotTimer) clearInterval(this.forgotTimer)
+        this.forgotTimer = setInterval(() => {
+          this.forgotCountdown--
+          if (this.forgotCountdown <= 0) clearInterval(this.forgotTimer)
+        }, 1000)
+        const tip = (res && res.code) ? `验证码已发送（演示：${res.code}）` : '验证码已发送'
+        uni.showToast({ title: tip, icon: 'none' })
+      } catch (e) {
+        // 错误提示已由 request 统一处理
+      }
+    },
     async doReset() {
-      const { username, oldPassword, newPassword } = this.forgotForm
-      if (!username || !oldPassword || !newPassword) {
+      const { phone, code, newPassword } = this.forgotForm
+      if (!phone || !code || !newPassword) {
         uni.showToast({ title: '请填写完整信息', icon: 'none' })
         return
       }
@@ -148,12 +169,12 @@ export default {
       }
       this.forgotLoading = true
       try {
-        await authApi.resetPwd(username, oldPassword, newPassword)
+        await authApi.resetPwdByCode(phone, code, newPassword)
         uni.showToast({ title: '密码重置成功', icon: 'success' })
         this.showForgot = false
         this.password = ''
       } catch (e) {
-        const msg = (e && (e.errMsg || e.msg || JSON.stringify(e))) || '重置失败'
+        const msg = (e && (e.errMsg || e.msg || '重置失败')) || '重置失败'
         uni.showToast({ title: msg, icon: 'none' })
       } finally {
         this.forgotLoading = false
@@ -161,6 +182,10 @@ export default {
     },
     closeForgot() {
       this.showForgot = false
+      if (this.forgotTimer) {
+        clearInterval(this.forgotTimer)
+        this.forgotTimer = null
+      }
     },
     switchLogin() {
       // 切换账号：清除当前登录态，回到账号密码登录
@@ -232,13 +257,8 @@ export default {
       try {
         const res = await authApi.scanCreate()
         this.ticket = res.ticket
-        // 二维码图片地址：H5 用相对路径，其他环境用完整地址
-        // #ifdef H5
-        this.qrImage = `/api/auth/qrcode/${res.ticket}`
-        // #endif
-        // #ifndef H5
-        this.qrImage = `http://${this.serverIp()}:3001/api/auth/qrcode/${res.ticket}`
-        // #endif
+        // 二维码图片地址统一使用 request.js 的 BASE_URL（H5 为相对 /api，其他环境为 config.js 配置的地址）
+        this.qrImage = `${BASE_URL}/auth/qrcode/${res.ticket}`
         this.startPolling()
       } catch (e) {
         this.scanTip = '二维码生成失败，请重试'
@@ -289,10 +309,6 @@ export default {
       this.qrImage = ''
       this.ticket = ''
     },
-    serverIp() {
-      // 与 request.js 中 SERVER_IP 保持一致
-      return '127.0.0.1'
-    }
   }
 }
 </script>
@@ -428,5 +444,29 @@ export default {
   color: #2D2D2D;
   text-align: left;
 }
+.forgot-code-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 16rpx;
+  margin-bottom: 18rpx;
+}
+.forgot-code-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+.btn-code {
+  width: 200rpx;
+  height: 76rpx;
+  line-height: 76rpx;
+  background: linear-gradient(135deg, #FFD54F, #FFB300);
+  border-radius: 38rpx;
+  font-size: 24rpx;
+  color: #5D4000;
+  border: none;
+  white-space: nowrap;
+  padding: 0;
+}
+.btn-code[disabled] { opacity: .55; }
 .ph { color: #bbb; }
 </style>

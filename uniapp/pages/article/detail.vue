@@ -40,16 +40,13 @@ async function load() {
     const r = await articleApi.list({ page: 1, pageSize: 20, categoryId: catId.value || undefined })
     list.value = (r && r.list) ? r.list : []
   } catch (e) {
-    list.value = [
-      { id: 1, title: '如何培养孩子阅读习惯', author: '优童教研' },
-      { id: 2, title: '0-3岁感官启蒙指南', author: '优童教研' },
-      { id: 3, title: '亲子沟通的3个小技巧', author: '优童教研' }
-    ]
+    list.value = []
+    uni.showToast({ title: '内容加载失败，请稍后重试', icon: 'none' })
   }
 }
 
 function read(a) {
-  uni.showModal({ title: a.title, content: '这里是《' + a.title + '》的详细内容（演示）。', showCancel: false })
+  uni.navigateTo({ url: '/pages/article/view?id=' + a.id })
 }
 function goBack() { uni.navigateBack() }
 </script>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Youtong Backend
+After=network.target mysql.service
+
+[Service]
+WorkingDirectory=/opt/youtong/app
+ExecStart=/usr/bin/java -jar /opt/youtong/app/app.jar
+Restart=always
+RestartSec=5
+Environment=APP_UPLOAD_DIR=/opt/youtong/uploads
+Environment=SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/youtong?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+Environment=SPRING_DATASOURCE_USERNAME=youtong
+Environment=SPRING_DATASOURCE_PASSWORD=Youtong2026Db
+
+[Install]
+WantedBy=multi-user.target

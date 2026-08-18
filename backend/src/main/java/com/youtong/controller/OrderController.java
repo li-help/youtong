@@ -116,14 +116,50 @@ public class OrderController {
     }
 
     private void bindCurrentUser(Order o, HttpServletRequest request) {
-        Object username = request.getAttribute("username");
-        if (username != null) {
-            SysAccount account = accountService.getOne(
-                    new QueryWrapper<SysAccount>().eq("username", username.toString()).last("LIMIT 1"));
-            if (account != null) {
-                o.setUserId(account.getId());
-            }
+        SysAccount account = currentAccount(request);
+        if (account != null) {
+            o.setUserId(account.getId());
         }
+    }
+
+    private SysAccount currentAccount(HttpServletRequest request) {
+        Object username = request.getAttribute("username");
+        if (username == null) return null;
+        return accountService.getOne(
+                new QueryWrapper<SysAccount>().eq("username", username.toString()).last("LIMIT 1"));
+    }
+
+    /** C 端：我的报名订单（仅当前登录用户），按状态过滤 */
+    @GetMapping("/list")
+    public R listMine(PageQuery q, HttpServletRequest request) {
+        SysAccount account = currentAccount(request);
+        if (account == null) return R.fail("未登录");
+        IPage<Order> page = q.toPage();
+        QueryWrapper<Order> qw = new QueryWrapper<>();
+        qw.eq("user_id", account.getId());
+        if (q.getStatusInt() != null) qw.eq("status", q.getStatusInt());
+        qw.orderByDesc("id");
+        page = service.page(page, qw);
+        page.getRecords().forEach(this::fillText);
+        return R.ok(R.page(page.getTotal(), page.getRecords(), page.getCurrent(), page.getSize()));
+    }
+
+    /** 模拟支付：待支付(0) -> 已支付(1)；接入微信/支付宝后替换为真实支付回调 */
+    @PostMapping("/{id}/pay")
+    public R pay(@PathVariable Long id, HttpServletRequest request) {
+        Order o = service.getById(id);
+        if (o == null) return R.fail("订单不存在");
+        SysAccount account = currentAccount(request);
+        if (account == null) return R.fail("未登录");
+        if (o.getUserId() == null || !o.getUserId().equals(account.getId())) {
+            return R.fail("无权操作该订单");
+        }
+        if (o.getStatus() == null || o.getStatus() != 0) return R.fail("当前状态不可支付");
+        o.setStatus(1);
+        o.setPaidAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        service.updateById(o);
+        fillText(o);
+        return R.ok(o);
     }
 
     private String generateOrderNo() {

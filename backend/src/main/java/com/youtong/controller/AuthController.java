@@ -11,6 +11,7 @@ import com.youtong.common.PasswordEncoder;
 import com.youtong.common.R;
 import com.youtong.common.ScanLoginManager;
 import com.youtong.entity.SysAccount;
+import com.youtong.service.SmsCodeService;
 import com.youtong.service.SysAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private ScanLoginManager scanLoginManager;
+
+    @Autowired
+    private SmsCodeService smsCodeService;
 
     @Value("${wechat.miniapp.appid}")
     private String wxAppid;
@@ -122,6 +126,7 @@ public class AuthController {
     public R register(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
+        String code = body.get("code");
         if (username == null || password == null || username.isBlank() || password.isBlank()) {
             return R.fail("用户名和密码不能为空");
         }
@@ -130,6 +135,9 @@ public class AuthController {
         }
         if (password.length() < 6) {
             return R.fail("密码长度不能少于6位");
+        }
+        if (!smsCodeService.verify(username, code)) {
+            return R.fail("验证码错误或已过期");
         }
         if (accountService.count(new QueryWrapper<SysAccount>().eq("username", username)) > 0) {
             return R.fail("该手机号已注册");
@@ -145,6 +153,74 @@ public class AuthController {
         account.setUpdatedAt(now);
         accountService.save(account);
         return R.ok("注册成功");
+    }
+
+    /**
+     * 发送短信验证码（注册 / 忘记密码共用）。
+     * 演示环境直接返回验证码，便于前端提示；接入短信网关后改为不返回明文。
+     */
+    @PostMapping("/sendCode")
+    public R sendCode(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        if (phone == null || phone.isBlank()) {
+            return R.fail("请输入手机号");
+        }
+        if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
+            return R.fail("请输入有效的手机号");
+        }
+        String code = smsCodeService.send(phone.trim());
+        Map<String, Object> result = new HashMap<>();
+        result.put("phone", phone.trim());
+        result.put("code", code); // 演示环境返回明文，便于联调
+        result.put("expireSeconds", SmsCodeService.EXPIRE_MS / 1000);
+        return R.ok(result);
+    }
+
+    /** 校验验证码是否正确（供忘记密码流程第一步使用） */
+    @PostMapping("/checkCode")
+    public R checkCode(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        String code = body.get("code");
+        if (phone == null || code == null || phone.isBlank() || code.isBlank()) {
+            return R.fail("手机号和验证码不能为空");
+        }
+        if (!smsCodeService.verify(phone.trim(), code)) {
+            return R.fail("验证码错误或已过期");
+        }
+        return R.ok();
+    }
+
+    /**
+     * 通过手机号 + 验证码重置密码（忘记密码场景，无需原密码）。
+     */
+    @PostMapping("/resetPwdByCode")
+    public R resetPwdByCode(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        String code = body.get("code");
+        String newPassword = body.get("newPassword");
+        if (phone == null || phone.isBlank()) {
+            return R.fail("请输入手机号");
+        }
+        if (code == null || code.isBlank()) {
+            return R.fail("请输入验证码");
+        }
+        if (newPassword == null || newPassword.isBlank()) {
+            return R.fail("请输入新密码");
+        }
+        if (newPassword.length() < 6) {
+            return R.fail("新密码至少 6 位");
+        }
+        if (!smsCodeService.verify(phone.trim(), code)) {
+            return R.fail("验证码错误或已过期");
+        }
+        SysAccount account = accountService.getOne(
+                new QueryWrapper<SysAccount>().eq("username", phone.trim()));
+        if (account == null) {
+            return R.fail("该手机号尚未注册");
+        }
+        account.setPassword(PasswordEncoder.encode(newPassword));
+        accountService.updateById(account);
+        return R.ok("密码重置成功");
     }
 
     @PostMapping("/logout")

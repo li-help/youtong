@@ -1,5 +1,6 @@
 {
     "name" : "优童",
+    /* App 端打包前需在 DCloud 开发者中心（dev.dcloud.net.cn）注册应用并获取 appid 填入此处，否则无法云打包/本地打包 */
     "appid" : "",
     "description" : "优童 - 儿童教育类 App",
     "versionName" : "1.0.0",

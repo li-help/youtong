@@ -19,9 +19,12 @@ export const authApi = {
   scanCreate: () => request.post('/auth/scanLogin/create', {}),
   scanCheck: (ticket) => request.post('/auth/scanLogin/check', { ticket }),
   scanConfirm: (ticket, openid) => request.post('/auth/scanLogin/confirm', { ticket, openid }),
-  register: (username, password, nickname) => request.post('/auth/register', { username, password, nickname }),
+  register: (username, password, nickname, code) => request.post('/auth/register', { username, password, nickname, code }),
   logout: () => request.post('/auth/logout', {}),
   resetPwd: (username, oldPassword, newPassword) => request.post('/auth/resetPwd', { username, oldPassword, newPassword }),
+  resetPwdByCode: (phone, code, newPassword) => request.post('/auth/resetPwdByCode', { phone, code, newPassword }),
+  sendCode: (phone) => request.post('/auth/sendCode', { phone }),
+  checkCode: (phone, code) => request.post('/auth/checkCode', { phone, code }),
   info: () => request.post('/auth/info', {})
 }
 
@@ -110,9 +113,10 @@ export const syncApi = {
 
 // 订单（需登录）
 export const orderApi = {
-  list: (params) => request.get('/order', params).then(parsePage),
+  list: (params) => request.get('/order/list', params).then(parsePage),
   create: (data) => request.post('/order/create', data),
-  verify: (id) => request.post('/order/verify', { id })
+  pay: (id) => request.post('/order/' + id + '/pay', {}),
+  verify: (id) => request.post('/order/' + id + '/verify', {})
 }
 
 // AI 智能助手（公开问答 / 个性化推荐）
@@ -152,5 +156,5 @@ export const uploadApi = {
 
 export default {
   authApi, userApi, courseApi, storeApi, serviceApi,
-  activityApi, videoApi, articleApi, categoryApi, bannerApi, orderApi, aiApi
+  activityApi, videoApi, articleApi, categoryApi, bannerApi, orderApi, aiApi, uploadApi
 }

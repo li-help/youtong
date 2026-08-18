@@ -70,7 +70,7 @@ function goLogin() {
 }
 
 let timer = null
-function sendCode() {
+async function sendCode() {
   if (!form.phone) {
     uni.showToast({ title: '请输入手机号', icon: 'none' })
     return
@@ -79,13 +79,19 @@ function sendCode() {
     uni.showToast({ title: '手机号格式不正确', icon: 'none' })
     return
   }
-  // 模拟发送验证码
-  uni.showToast({ title: '验证码已发送', icon: 'success' })
-  countdown.value = 60
-  timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) clearInterval(timer)
-  }, 1000)
+  try {
+    const res = await authApi.sendCode(form.phone)
+    countdown.value = 60
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) clearInterval(timer)
+    }, 1000)
+    // 演示环境后端直接返回验证码明文，便于联调
+    const tip = (res && res.code) ? `验证码已发送（演示：${res.code}）` : '验证码已发送'
+    uni.showToast({ title: tip, icon: 'none' })
+  } catch (e) {
+    // 错误提示已由 request 统一处理
+  }
 }
 
 async function onRegister() {
@@ -97,9 +103,13 @@ async function onRegister() {
     uni.showToast({ title: '两次密码不一致', icon: 'none' })
     return
   }
+  if (!form.code) {
+    uni.showToast({ title: '请输入验证码', icon: 'none' })
+    return
+  }
   loading.value = true
   try {
-    await authApi.register(form.phone, form.password, form.phone)
+    await authApi.register(form.phone, form.password, form.phone, form.code)
     uni.showToast({ title: '注册成功，请登录', icon: 'success' })
     setTimeout(() => uni.navigateBack(), 600)
   } catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_network_image.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,6 +14,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _nickname = TextEditingController();
   final _phone = TextEditingController();
+  String? _avatar;
   bool _loading = true;
   bool _saving = false;
 
@@ -29,13 +31,41 @@ class _ProfilePageState extends State<ProfilePage> {
       if (u != null) {
         _nickname.text = u['nickname']?.toString() ?? u['username']?.toString() ?? '';
         _phone.text = u['phone']?.toString() ?? '';
+        _avatar = u['avatar']?.toString();
       }
     } catch (e) {
       // 未登录时回退到本地缓存
       final u = await ApiService.getUserInfo();
       _nickname.text = u?['nickname']?.toString() ?? u?['username']?.toString() ?? '';
+      _avatar = u?['avatar']?.toString();
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _changeAvatar() async {
+    final urlController = TextEditingController(text: _avatar ?? '');
+    final url = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('更换头像'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('请输入图片地址（支持 http/https 链接）', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
+            const SizedBox(height: 12),
+            TextField(controller: urlController, decoration: const InputDecoration(hintText: 'https://...')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(urlController.text.trim()), child: const Text('确定')),
+        ],
+      ),
+    );
+    if (url != null && url.isNotEmpty && mounted) {
+      setState(() => _avatar = url);
     }
   }
 
@@ -46,8 +76,8 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     setState(() => _saving = true);
     try {
-      await ApiService.updateProfile(_nickname.text.trim());
-      await ApiService.setUserInfo({'nickname': _nickname.text.trim(), 'username': _phone.text});
+      await ApiService.updateProfile(_nickname.text.trim(), avatar: _avatar);
+      await ApiService.setUserInfo({'nickname': _nickname.text.trim(), 'username': _phone.text, 'avatar': _avatar});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
         Future.delayed(const Duration(milliseconds: 600), () => Navigator.of(context).pop(true));
@@ -86,16 +116,25 @@ class _ProfilePageState extends State<ProfilePage> {
                         decoration: AppStyles.cardDecoration,
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 80, child: Text('头像', style: TextStyle(fontWeight: FontWeight.bold))),
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: const BoxDecoration(color: Color(0xFFFFECB3), shape: BoxShape.circle),
-                                  child: const FaIcon(FontAwesomeIcons.user, size: 32),
-                                ),
-                              ],
+                            InkWell(
+                              onTap: _changeAvatar,
+                              borderRadius: BorderRadius.circular(28),
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 80, child: Text('头像', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  ClipOval(
+                                    child: SizedBox(
+                                      width: 56,
+                                      height: 56,
+                                      child: _avatar != null && _avatar!.isNotEmpty
+                                          ? AppNetworkImage(url: _avatar!, fit: BoxFit.cover)
+                                          : const ColoredBox(color: Color(0xFFFFECB3), child: FaIcon(FontAwesomeIcons.user, size: 32)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text('点击更换', style: TextStyle(fontSize: 12, color: AppStyles.textSub)),
+                                ],
+                              ),
                             ),
                             const Divider(),
                             _field('昵称', _nickname),
