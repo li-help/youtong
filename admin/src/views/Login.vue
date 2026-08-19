@@ -15,10 +15,11 @@
         </div>
 
         <h1 class="aside-title">一站式运营中枢<br />让每一个成长瞬间被看见</h1>
+        <p class="aside-sub">面向课程、活动、门店与内容的统一管理平台，实时数据驱动精细运营。</p>
 
         <ul class="feature-list">
+          <li><span class="dot"></span>多端数据实时同步，运营状态一目了然</li>
           <li><span class="dot"></span>课程 / 活动 / 订单全链路管理</li>
-          <li><span class="dot"></span>多端数据实时同步，运营一目了然</li>
           <li><span class="dot"></span>智能育儿助手，赋能家长服务</li>
         </ul>
 
@@ -173,11 +174,10 @@ async function onSubmit() {
 /* 左侧品牌区 */
 .login-aside {
   position: relative;
-  flex: 1 1 58%;
-  min-width: 460px;
+  flex: 1 1 55%;
+  min-width: 420px;
   display: flex;
   align-items: center;
-  justify-content: center;
   overflow: hidden;
   color: #fff;
   animation: fadeUp 0.7s ease both;
@@ -203,15 +203,14 @@ async function onSubmit() {
 .aside-content {
   position: relative;
   z-index: 1;
-  padding: 0 80px 0 10vw;
-  max-width: 640px;
-  width: 100%;
+  padding: 0 64px;
+  max-width: 560px;
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 72px;
+  gap: 12px;
+  margin-bottom: 56px;
   animation: fadeUp 0.7s ease 0.05s both;
 }
 .brand-logo {
@@ -231,21 +230,28 @@ async function onSubmit() {
   letter-spacing: 0.5px;
 }
 .aside-title {
-  font-size: 42px;
-  line-height: 1.3;
+  font-size: 40px;
+  line-height: 1.25;
   font-weight: 800;
-  margin: 0 0 36px;
-  letter-spacing: 0;
+  margin: 0 0 18px;
+  letter-spacing: -0.5px;
   text-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
   animation: fadeUp 0.7s ease 0.12s both;
+}
+.aside-sub {
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.92;
+  margin: 0 0 36px;
+  animation: fadeUp 0.7s ease 0.18s both;
 }
 .feature-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 56px;
+  margin: 0 0 48px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   animation: fadeUp 0.7s ease 0.24s both;
 }
 .feature-list li {
@@ -265,8 +271,8 @@ async function onSubmit() {
 }
 .aside-foot {
   display: flex;
-  gap: 40px;
-  padding-top: 32px;
+  gap: 32px;
+  padding-top: 28px;
   border-top: 1px solid rgba(255, 255, 255, 0.3);
   animation: fadeUp 0.7s ease 0.3s both;
 }
@@ -476,6 +482,7 @@ async function onSubmit() {
   .login-aside,
   .brand,
   .aside-title,
+  .aside-sub,
   .feature-list,
   .aside-foot,
   .login-card {
