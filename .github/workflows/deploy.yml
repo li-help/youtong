@@ -100,50 +100,52 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
           set -e
-          # 准备 SSH 私钥
+          # 准备 SSH 私钥（ubuntu-latest 已预装 rsync，无需 apt 安装，避免 apt 拉源卡死）
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts 2>/dev/null
+          # 私钥为空/无效时直接报错，避免 ssh 卡在密码交互
+          [ -s ~/.ssh/id_rsa ] || { echo "!! SSH_PRIVATE_KEY 为空或无效，请检查 GitHub Secret 配置"; rm -f ~/.ssh/id_rsa; exit 1; }
 
-          # 安装 rsync（ubuntu-latest 默认不带）
-          sudo apt-get update -qq && sudo apt-get install -y -qq rsync
+          # 统一 SSH 参数：免交互 + 自动接受主机密钥 + 连接超时快速失败
+          SSH_OPTS="-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
+          SSH_TARGET="$SERVER_USER@$SERVER_HOST"
 
           APP_DIR=/opt/youtong
 
           # 1) 创建服务器目标目录（含备份目录）
-          ssh $SERVER_USER@$SERVER_HOST "mkdir -p $APP_DIR/app $APP_DIR/admin $APP_DIR/backup $APP_UPLOAD_DIR"
+          ssh $SSH_OPTS $SSH_TARGET "mkdir -p $APP_DIR/app $APP_DIR/admin $APP_DIR/backup $APP_UPLOAD_DIR"
 
           # 2) 备份当前运行的 jar（保留最近 10 份，便于回滚）
-          ssh $SERVER_USER@$SERVER_HOST \
+          ssh $SSH_OPTS $SSH_TARGET \
             "cd $APP_DIR/app && [ -f app.jar ] && cp app.jar $APP_DIR/backup/app-\$(date +%Y%m%d-%H%M%S).jar && ls -1t $APP_DIR/backup/*.jar 2>/dev/null | tail -n +11 | xargs -r rm -f || true"
 
           # 3) 上传后端 jar（替换旧包）
-          rsync -avz -e ssh ./backend-jar/youtong-admin-backend-1.0.0.jar $SERVER_USER@$SERVER_HOST:$APP_DIR/app/app.jar
+          rsync -avz -e "ssh $SSH_OPTS" ./backend-jar/youtong-admin-backend-1.0.0.jar $SSH_TARGET:$APP_DIR/app/app.jar
 
           # 4) 上传数据库脚本与初始化工具
-          rsync -avz -e ssh backend/schema.sql backend/seed.sql $SERVER_USER@$SERVER_HOST:$APP_DIR/app/
-          rsync -avz -e ssh deploy/init-db.sh $SERVER_USER@$SERVER_HOST:$APP_DIR/init-db.sh
+          rsync -avz -e "ssh $SSH_OPTS" backend/schema.sql backend/seed.sql $SSH_TARGET:$APP_DIR/app/
+          rsync -avz -e "ssh $SSH_OPTS" deploy/init-db.sh $SSH_TARGET:$APP_DIR/init-db.sh
 
           # 5) 上传后台 dist
-          rsync -avz -e ssh --delete ./admin-dist/ $SERVER_USER@$SERVER_HOST:$APP_DIR/admin/
+          rsync -avz -e "ssh $SSH_OPTS" --delete ./admin-dist/ $SSH_TARGET:$APP_DIR/admin/
 
           # 6) 幂等初始化数据库（已存在表则跳过，不会覆盖线上数据）
           if [ -n "$MYSQL_PASSWORD" ]; then
-            ssh $SERVER_USER@$SERVER_HOST \
+            ssh $SSH_OPTS $SSH_TARGET \
               "MYSQL_PASSWORD='$MYSQL_PASSWORD' bash $APP_DIR/init-db.sh $APP_DIR/app/schema.sql $APP_DIR/app/seed.sql"
           else
             echo "警告: 未配置 MYSQL_PASSWORD，跳过数据库初始化（请确认库表已就绪）"
           fi
 
           # 7) 重启后端服务
-          ssh $SERVER_USER@$SERVER_HOST "systemctl restart youtong 2>/dev/null || echo 'service-not-found'"
+          ssh $SSH_OPTS $SSH_TARGET "systemctl restart youtong 2>/dev/null || echo 'service-not-found'"
 
           # 8) 健康检查（白名单放行 /api/sync/*，无需登录；60s 内就绪视为成功）
           set +e
           HEALTHY=""
           for i in $(seq 1 30); do
-            HTTP_CODE=$(ssh $SERVER_USER@$SERVER_HOST "curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3001/api/sync/version?channel=health'" 2>/dev/null)
+            HTTP_CODE=$(ssh $SSH_OPTS $SSH_TARGET "curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3001/api/sync/version?channel=health'" 2>/dev/null)
             if [ "$HTTP_CODE" = "200" ]; then HEALTHY="ok"; break; fi
             sleep 2
           done
