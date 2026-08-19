@@ -1,7 +1,7 @@
 # ============================================================
 # 优童成长社 GitHub Actions CI/CD 流水线
 # 触发：push 到 main 分支 或 手动运行（Actions 页面 Run workflow）
-# 流程：构建后端 jar → 构建后台 dist → 部署到生产服务器
+# 流程：构建后端 jar → 构建后台 dist → 构建安卓 APK → 部署到生产服务器
 # 依赖 GitHub Secrets（Settings → Secrets and variables → Actions）：
 #   SERVER_HOST        服务器 IP（如 123.56.160.50）
 #   SERVER_USER        SSH 登录用户（如 root）
@@ -73,10 +73,35 @@ jobs:
           path: admin/dist/
           retention-days: 7
 
-  # ---------- 3. 部署到生产服务器 ----------
+  # ---------- 3. 构建安卓 App（APK） ----------
+  build-app:
+    name: 构建安卓 App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 安装依赖
+        run: cd app && flutter pub get
+
+      - name: 构建 release APK（API 指向生产服务器）
+        run: cd app && flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
+
+  # ---------- 4. 部署到生产服务器 ----------
   deploy:
     name: 部署到生产服务器
-    needs: [build-backend, build-admin]
+    needs: [build-backend, build-admin, build-app]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,6 +115,11 @@ jobs:
         with:
           name: admin-dist
           path: ./admin-dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-apk
+          path: ./app-apk
 
       - name: 部署
         env:
@@ -129,6 +159,18 @@ jobs:
 
           # 5) 上传后台 dist
           rsync -avz -e "ssh $SSH_OPTS" --delete ./admin-dist/ $SSH_TARGET:$APP_DIR/admin/
+
+          # 5.5) 上传 App APK（下载直链 /download/app-release.apk）
+          ssh $SSH_OPTS $SSH_TARGET "mkdir -p $APP_DIR/app/downloads && chmod 755 $APP_DIR/app/downloads"
+          rsync -avz -e "ssh $SSH_OPTS" ./app-apk/app-release.apk $SSH_TARGET:$APP_DIR/app/downloads/app-release.apk
+
+          # 5.6) 上传 App 下载页（含二维码组件）
+          rsync -avz -e "ssh $SSH_OPTS" deploy/download.html deploy/qrcode.min.js $SSH_TARGET:$APP_DIR/app/downloads/
+
+          # 5.7) 应用 Nginx 下载路由（幂等：已配置过则跳过，避免覆盖服务器后续改动）
+          rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/tmp/youtong.conf
+          ssh $SSH_OPTS $SSH_TARGET \
+            "if ! grep -q 'location = /download.html' /etc/nginx/conf.d/youtong.conf; then cp /etc/nginx/conf.d/youtong.conf /etc/nginx/conf.d/youtong.conf.bak && cp /tmp/youtong.conf /etc/nginx/conf.d/youtong.conf && nginx -t && systemctl reload nginx; else echo 'nginx-download-already-configured'; fi"
 
           # 6) 幂等初始化数据库（已存在表则跳过，不会覆盖线上数据）
           if [ -n "$MYSQL_PASSWORD" ]; then

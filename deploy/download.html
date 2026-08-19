@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>优童成长社 App 下载</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #e8f7f1 0%, #f4fbf8 45%, #e6f0fb 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 32px;
+  }
+  .logo {
+    width: 88px; height: 88px; border-radius: 24px;
+    background: linear-gradient(135deg, #35c48d, #1f9d73);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 44px; font-weight: 700;
+    box-shadow: 0 12px 28px rgba(31,157,115,.28);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 24px; color: #14532d; margin-bottom: 8px; }
+  .sub { font-size: 14px; color: #5b7a6b; margin-bottom: 36px; text-align: center; }
+  .card {
+    background: #fff; border-radius: 20px; padding: 28px 32px;
+    box-shadow: 0 8px 30px rgba(20,83,45,.08);
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; max-width: 340px;
+  }
+  #qrcode { padding: 12px; background: #fff; border-radius: 12px; margin-bottom: 18px; }
+  #qrcode img, #qrcode canvas { display: block; }
+  .btn {
+    display: block; width: 100%; text-align: center;
+    background: linear-gradient(135deg, #35c48d, #1f9d73);
+    color: #fff; text-decoration: none;
+    font-size: 17px; font-weight: 600; letter-spacing: 2px;
+    padding: 14px 0; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(31,157,115,.32);
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  .btn:active { transform: scale(.97); opacity: .9; }
+  .hint { font-size: 13px; color: #7d9789; margin-top: 14px; text-align: center; line-height: 1.7; }
+  .tips {
+    width: 100%; max-width: 340px; margin-top: 22px;
+    background: rgba(255,255,255,.7); border-radius: 16px; padding: 18px 20px;
+    font-size: 13px; color: #4a6b5c; line-height: 1.9;
+    backdrop-filter: blur(4px);
+  }
+  .tips b { color: #14532d; }
+  .ver { margin-top: 24px; font-size: 12px; color: #9db3a7; }
+</style>
+</head>
+<body>
+  <div class="logo">优</div>
+  <h1>优童成长社</h1>
+  <div class="sub">孩子成长记录 · 家长放心之选</div>
+
+  <div class="card">
+    <div id="qrcode"></div>
+    <a class="btn" id="dl" href="/download/app-release.apk">下载安卓版 App</a>
+    <div class="hint">扫码或用手机浏览器打开本页<br>下载后点击安装即可</div>
+  </div>
+
+  <div class="tips">
+    <b>安装说明（安卓）：</b><br>
+    ① 点击上方按钮下载 APK 文件<br>
+    ② 打开文件时选择「允许安装未知来源应用」<br>
+    ③ 安装完成后即可使用手机号登录<br>
+    <span style="color:#c07">iOS 版暂未开放，敬请期待</span>
+  </div>
+
+  <div class="ver" id="ver"></div>
+
+  <script src="/download/qrcode.min.js"></script>
+  <script>
+    var url = "http://123.56.160.50/download/app-release.apk";
+    if (window.QRCode) {
+      new QRCode(document.getElementById("qrcode"), {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: "#14532d",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+    document.getElementById("dl").href = url;
+    document.getElementById("ver").textContent = "版本 v1.0.0";
+  </script>
+</body>
+</html>
