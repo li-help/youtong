@@ -63,7 +63,9 @@ jobs:
       - name: 安装依赖
         run: cd admin && npm install --registry=https://registry.npmmirror.com
 
-      - name: 构建
+      - name: 构建（注入真实下载地址）
+        env:
+          VITE_APP_DOWNLOAD_URL: http://${{ secrets.SERVER_HOST }}/download/app-release.apk
         run: cd admin && npm run build
 
       - name: 上传构建产物
