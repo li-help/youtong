@@ -28,6 +28,19 @@
           <span class="stat"><b>3</b> 端协同</span>
           <span class="stat"><b>实时</b> 同步</span>
         </div>
+
+        <div class="app-download">
+          <div class="app-download-icon">
+            <el-icon :size="18"><Download /></el-icon>
+          </div>
+          <div class="app-download-info">
+            <div class="app-download-title">App 下载</div>
+            <div class="app-download-sub">手机扫码直接安装</div>
+          </div>
+          <div v-if="qrDataUrl" class="app-download-qrcode">
+            <img :src="qrDataUrl" alt="App 下载二维码" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -85,11 +98,29 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import QRCode from 'qrcode'
 import { authApi } from '../api'
+
+// 扫码后跳转的 App 下载地址，发布前改成真实可访问的 APK 下载地址
+const APP_DOWNLOAD_URL = import.meta.env.VITE_APP_DOWNLOAD_URL || 'http://localhost:3001/download/app-release.apk'
+const APK_FILE_NAME = import.meta.env.VITE_APK_FILE_NAME || 'app-release.apk'
+const qrDataUrl = ref('')
+
+onMounted(async () => {
+  try {
+    qrDataUrl.value = await QRCode.toDataURL(APP_DOWNLOAD_URL, {
+      width: 200,
+      margin: 2,
+      color: { dark: '#2b2730', light: '#ffffff' },
+    })
+  } catch (err) {
+    console.warn('生成二维码失败:', err)
+  }
+})
 
 const router = useRouter()
 const formRef = ref()
@@ -254,6 +285,53 @@ async function onSubmit() {
   font-size: 22px;
   font-weight: 800;
   margin-bottom: 2px;
+}
+
+.app-download {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+  animation: fadeUp 0.7s ease 0.36s both;
+}
+.app-download-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.app-download-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+.app-download-sub {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.app-download-qrcode {
+  margin-left: auto;
+  width: 88px;
+  height: 88px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 10px;
+  flex: none;
+}
+.app-download-qrcode img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 6px;
 }
 
 /* 右侧登录区 */

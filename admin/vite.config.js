@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __APP_DOWNLOAD_URL__: JSON.stringify(process.env.VITE_APP_DOWNLOAD_URL || ''),
+  },
   server: {
     port: 5173,
     proxy: {
@@ -12,6 +15,10 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/download': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },

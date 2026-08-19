@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/app_styles.dart';
 import 'home_page.dart';
 import 'smart_page.dart';
 import 'course_page.dart';
-import 'article_page.dart';
 import 'activity_page.dart';
 import 'mine_page.dart';
 
@@ -21,7 +19,6 @@ class _MainPageState extends State<MainPage> {
     HomePage(),
     SmartPage(),
     CoursePage(),
-    ArticlePage(),
     ActivityPage(),
     MinePage(),
   ];
@@ -33,6 +30,9 @@ class _MainPageState extends State<MainPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppStyles.primary,
+        unselectedItemColor: AppStyles.textLight,
         items: const [
           BottomNavigationBarItem(
             icon: _TabIcon(icon: 'assets/icons/tab_home.png'),
@@ -49,7 +49,6 @@ class _MainPageState extends State<MainPage> {
             activeIcon: _TabIcon(icon: 'assets/icons/tab_course_active.png'),
             label: '课程',
           ),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.newspaper, color: AppStyles.textLight), activeIcon: FaIcon(FontAwesomeIcons.solidNewspaper, color: AppStyles.primary), label: '资讯'),
           BottomNavigationBarItem(
             icon: _TabIcon(icon: 'assets/icons/tab_activity.png'),
             activeIcon: _TabIcon(icon: 'assets/icons/tab_activity_active.png'),

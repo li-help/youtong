@@ -3,6 +3,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/app_skeleton.dart';
+import '../widgets/app_empty_state.dart';
+import '../widgets/app_error_retry.dart';
+import '../widgets/app_scroll_top.dart';
+import '../widgets/app_search_history.dart';
+import '../widgets/app_page_route.dart';
 import 'course_detail_page.dart';
 
 class CoursePage extends StatefulWidget {
@@ -18,6 +24,14 @@ class _CoursePageState extends State<CoursePage> {
   int? _activeCat;
   String _keyword = '';
   bool _loading = true;
+  bool _error = false;
+  int _page = 1;
+  bool _hasMore = true;
+  bool _showHistory = true;
+
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _searchFocus = FocusNode();
 
   @override
   void initState() {
@@ -25,16 +39,63 @@ class _CoursePageState extends State<CoursePage> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
-    final results = await Future.wait([
-      ApiService.listCourses(page: 1, pageSize: 20, keyword: _keyword, categoryId: _activeCat),
-      ApiService.listCategories(page: 1, pageSize: 50),
-    ]);
-    setState(() {
-      _courses = results[0]['data']?['list'] ?? [];
-      _categories = results[1]['data']?['list'] ?? [];
-      _loading = false;
-    });
+    setState(() { _loading = true; _error = false; _page = 1; });
+    try {
+      final results = await Future.wait([
+        ApiService.listCourses(page: 1, pageSize: 20, keyword: _keyword, categoryId: _activeCat),
+        ApiService.listCategories(page: 1, pageSize: 50),
+      ]);
+      setState(() {
+        _courses = results[0]['data']?['list'] ?? [];
+        _hasMore = (results[0]['data']?['total'] ?? 0) > _courses.length;
+        _categories = results[1]['data']?['list'] ?? [];
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() { _loading = false; _error = true; });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (!_hasMore || _loading) return;
+    try {
+      final next = _page + 1;
+      final res = await ApiService.listCourses(
+        page: next,
+        pageSize: 20,
+        keyword: _keyword,
+        categoryId: _activeCat,
+      );
+      final list = res['data']?['list'] ?? [];
+      setState(() {
+        _courses.addAll(list);
+        _page = next;
+        _hasMore = list.length >= 20;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _search(String keyword) async {
+    _searchController.text = keyword;
+    _searchFocus.unfocus();
+    setState(() { _keyword = keyword; _showHistory = false; });
+    await AppSearchHistory.save(keyword);
+    await _load();
+  }
+
+  Future<void> _clearSearch() async {
+    _searchController.clear();
+    setState(() { _keyword = ''; _showHistory = true; });
+    await _load();
   }
 
   @override
@@ -47,121 +108,197 @@ class _CoursePageState extends State<CoursePage> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: TextField(
-                      onChanged: (v) => _keyword = v,
-                      onSubmitted: (_) => _load(),
-                      decoration: InputDecoration(
-                        hintText: '课程名称',
-                        prefixIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                    child: SizedBox(
+                      height: 48,
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocus,
+                        textAlignVertical: TextAlignVertical.center,
+                        onChanged: (v) {
+                          setState(() { _keyword = v; _showHistory = v.isEmpty; });
+                        },
+                        onSubmitted: (v) => _search(v),
+                        onTap: () => setState(() => _showHistory = _keyword.isEmpty),
+                        decoration: InputDecoration(
+                          hintText: '课程名称',
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                          suffixIcon: _keyword.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 20, color: AppStyles.textSub),
+                                  onPressed: _clearSearch,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () => _load(),
+                    onTap: () => _search(_keyword),
                     child: Container(
                       width: 48,
                       height: 48,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(color: AppStyles.primaryLight, borderRadius: BorderRadius.circular(24)),
-                      child: const FaIcon(FontAwesomeIcons.magnifyingGlass, color: Colors.white),
+                      child: const FaIcon(FontAwesomeIcons.magnifyingGlass, color: Colors.white, size: 22),
                     ),
                   ),
                 ],
               ),
             ),
+            if (_showHistory && _keyword.isEmpty)
+              AppSearchHistory(
+                onTap: (k) => _search(k),
+                onChanged: () => setState(() {}),
+              ),
             SizedBox(
               height: _categories.isEmpty ? 0 : 96,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: _categories.length + 1,
-                itemBuilder: (context, i) {
-                  if (i == 0) {
-                    final all = _activeCat == null;
-                    return _catChip('全部', all, () => setState(() {
-                          _activeCat = null;
-                          _load();
-                        }));
-                  }
-                  final c = _categories[i - 1];
-                  final active = _activeCat == c['id'];
-                  return _catChip(c['name']?.toString() ?? '分类', active, () => setState(() {
-                        _activeCat = c['id'] as int?;
-                        _load();
-                      }));
-                },
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [Text('🔥 热销课程 🔥', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))],
-              ),
+              child: _loading
+                  ? ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemCount: 6,
+                      itemBuilder: (_, __) => Container(
+                        width: 80,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AppSkeleton(width: 64, height: 64, borderRadius: 16),
+                            SizedBox(height: 8),
+                            AppSkeleton(width: 50, height: 12, borderRadius: 4),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemCount: _categories.length + 1,
+                      itemBuilder: (context, i) {
+                        if (i == 0) {
+                          final all = _activeCat == null;
+                          return _catChip('全部', all, () => setState(() {
+                                _activeCat = null;
+                                _load();
+                              }));
+                        }
+                        final c = _categories[i - 1];
+                        final active = _activeCat == c['id'];
+                        return _catChip(c['name']?.toString() ?? '分类', active, () => setState(() {
+                              _activeCat = c['id'] as int?;
+                              _load();
+                            }));
+                      },
+                    ),
             ),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
-                  : _courses.isEmpty
-                      ? const Center(child: Text('暂无课程', style: TextStyle(color: AppStyles.textSub)))
-                      : GridView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 0.7,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                          itemCount: _courses.length,
-                          itemBuilder: (context, i) => GestureDetector(
-                            onTap: () => Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: (_courses[i]['id'] as num).toInt()))),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: AppStyles.cardDecoration,
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(12),
-                                          child: AppNetworkImage(
-                                            url: _courses[i]['cover']?.toString(),
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            borderRadius: BorderRadius.circular(12),
+                  ? _skeletonGrid()
+                  : _error
+                      ? AppErrorRetry(onRetry: _load)
+                      : _courses.isEmpty
+                          ? AppEmptyState(
+                              title: '暂无课程',
+                              subtitle: '换个关键词或分类试试看',
+                              onRefresh: _load,
+                            )
+                          : Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                NotificationListener<ScrollNotification>(
+                                  onNotification: (n) {
+                                    if (n is ScrollUpdateNotification) {
+                                      final m = n.metrics;
+                                      if (m.pixels >= m.maxScrollExtent - 80) _loadMore();
+                                    }
+                                    return false;
+                                  },
+                                  child: RefreshIndicator(
+                                    onRefresh: _load,
+                                    color: AppStyles.primary,
+                                    backgroundColor: Colors.white,
+                                    child: GridView.builder(
+                                      controller: _scrollController,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 0.7,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                      ),
+                                      itemCount: _courses.length,
+                                      physics: const AlwaysScrollableScrollPhysics(),
+                                      itemBuilder: (context, i) => GestureDetector(
+                                        onTap: () => pushAppPage(context,
+                                            page: CourseDetailPage(id: (_courses[i]['id'] as num).toInt())),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: AppStyles.cardDecoration,
+                                          child: Column(
+                                            children: [
+                                              Expanded(
+                                                child: Stack(
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      child: AppNetworkImage(
+                                                        url: _courses[i]['cover']?.toString(),
+                                                        width: double.infinity,
+                                                        height: double.infinity,
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      left: 4,
+                                                      top: 4,
+                                                      child: Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        color: AppStyles.bg,
+                                                        child: const Text('自营', style: TextStyle(fontSize: 10, color: AppStyles.primary)),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(_courses[i]['title']?.toString() ?? '课程', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)),
+                                              Text('¥${_courses[i]['price'] ?? 0}', style: const TextStyle(fontSize: 12, color: AppStyles.primary)),
+                                            ],
                                           ),
                                         ),
-                                        Positioned(
-                                          left: 4,
-                                          top: 4,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            color: AppStyles.bg,
-                                            child: const Text('自营', style: TextStyle(fontSize: 10, color: AppStyles.primary)),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(_courses[i]['title']?.toString() ?? '课程', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)),
-                                  Text('¥${_courses[i]['price'] ?? 0}', style: const TextStyle(fontSize: 12, color: AppStyles.primary)),
-                                ],
-                              ),
+                                ),
+                                AppScrollTopButton(controller: _scrollController),
+                              ],
                             ),
-                          ),
-                        ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _skeletonGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 0.7,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: 9,
+        itemBuilder: (_, __) => const SkeletonGridCard(),
       ),
     );
   }
@@ -173,18 +310,21 @@ class _CoursePageState extends State<CoursePage> {
         width: 80,
         margin: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: 64,
               height: 64,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: active ? AppStyles.primary : AppStyles.primaryLight,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const FaIcon(FontAwesomeIcons.borderAll, color: Colors.white),
+              child: const FaIcon(FontAwesomeIcons.borderAll, color: Colors.white, size: 28),
             ),
             const SizedBox(height: 6),
-            Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+            Text(name, maxLines: 1, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),

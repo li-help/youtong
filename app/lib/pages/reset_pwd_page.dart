@@ -52,7 +52,7 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
         return true;
       });
     } catch (e) {
-      _toast('验证码发送失败，请检查网络');
+      _toast('验证码发送失败：${e.toString()}');
     }
   }
 
@@ -93,7 +93,7 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
         _toast(res['msg']?.toString() ?? '重置失败');
       }
     } catch (e) {
-      _toast('网络异常，请检查网络后重试');
+      _toast('网络异常：${e.toString()}');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -106,6 +106,16 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppStyles.bg,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('重置密码', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 22, color: Colors.black54),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -114,24 +124,19 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
             colors: [AppStyles.bg, Color(0xFFFFECB3)],
           ),
         ),
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 60),
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios, size: 28),
-              onPressed: () => Navigator.of(context).maybePop(),
-            ),
-            const Center(
-              child: Text('重置密码', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 50),
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: AppStyles.cardDecoration,
-              child: Column(
-                children: [
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: AppStyles.cardDecoration,
+                  child: Column(
+                    children: [
                   TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: _input('请输入手机号')),
                   const SizedBox(height: 16),
                   Row(
@@ -169,9 +174,11 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
                     ),
                   ),
                 ],
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/app_page_route.dart';
 import 'login_page.dart';
 import 'profile_page.dart';
 import 'orders_page.dart';
@@ -35,7 +36,7 @@ class _MinePageState extends State<MinePage> {
     } catch (_) {}
     await ApiService.clearToken();
     if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginPage()), (_) => false);
+    Navigator.of(context).pushAndRemoveUntil(AppPageRoute(builder: (_) => const LoginPage()), (_) => false);
   }
 
   @override
@@ -48,9 +49,9 @@ class _MinePageState extends State<MinePage> {
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('我的', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+            const SizedBox(height: 12),
             GestureDetector(
-              onTap: loggedIn ? null : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())),
+              onTap: loggedIn ? null : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())),
               child: Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(24),
@@ -61,15 +62,14 @@ class _MinePageState extends State<MinePage> {
                 child: Row(
                   children: [
                     ClipOval(
-                      child: SizedBox(
+                      child: Container(
                         width: 60,
                         height: 60,
+                        color: Colors.white,
+                        alignment: Alignment.center,
                         child: _user?['avatar'] != null && _user!['avatar'].toString().isNotEmpty
                             ? AppNetworkImage(url: _user!['avatar'].toString(), fit: BoxFit.cover)
-                            : const ColoredBox(
-                                color: Colors.white,
-                                child: FaIcon(FontAwesomeIcons.user, size: 36, color: AppStyles.textSub),
-                              ),
+                            : const FaIcon(FontAwesomeIcons.user, size: 36, color: AppStyles.textSub),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -82,15 +82,15 @@ class _MinePageState extends State<MinePage> {
                         ],
                       ),
                     ),
-                    Icon(loggedIn ? FontAwesomeIcons.cloud : FontAwesomeIcons.chevronRight, size: 28),
+                    FaIcon(loggedIn ? FontAwesomeIcons.cloud : FontAwesomeIcons.chevronRight, size: 28),
                   ],
                 ),
               ),
             ),
             GestureDetector(
               onTap: _user == null
-                  ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage()))
-                  : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage())),
+                  ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage()))
+                  : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const ProfilePage())),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -114,10 +114,10 @@ class _MinePageState extends State<MinePage> {
                 children: [
                   const Row(children: [FaIcon(FontAwesomeIcons.solidStar, color: AppStyles.primary), SizedBox(width: 6), Text('我的服务', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]),
                   const SizedBox(height: 8),
-                  _menu('📦', '我的订单', '查看', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrdersPage()))),
-                  _menu('📱', '我的二维码', '查看', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QrcodePage()))),
+                  _menu('📦', '我的订单', '查看', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const OrdersPage()))),
+                  _menu('📱', '我的二维码', '查看', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const QrcodePage()))),
                   _menu('📖', '使用说明', '查看', () => _showHelp(context)),
-                  _menu('👤', '个人信息', '修改', _user == null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage()))),
+                  _menu('👤', '个人信息', '修改', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const ProfilePage()))),
                 ],
               ),
             ),
@@ -144,18 +144,22 @@ class _MinePageState extends State<MinePage> {
   }
 
   Widget _menu(String icon, String name, String action, VoidCallback onTap) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Text(icon, style: const TextStyle(fontSize: 22)),
-      title: Text(name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(action, style: const TextStyle(color: AppStyles.primary)),
-          const FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight),
-        ],
-      ),
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 12),
+            Expanded(child: Text(name, style: const TextStyle(fontSize: 16, color: Colors.black87))),
+            Text(action, style: const TextStyle(color: AppStyles.primary, fontSize: 13)),
+            const SizedBox(width: 4),
+            const FaIcon(FontAwesomeIcons.chevronRight, color: AppStyles.textLight, size: 16),
+          ],
+        ),
+      ),
     );
   }
 
@@ -166,7 +170,7 @@ class _MinePageState extends State<MinePage> {
         title: const Text('使用说明'),
         content: const SingleChildScrollView(
           child: Text(
-            '1. 首页可查看精选课程、活动、视频与资讯，下滑可刷新。\n\n'
+            '1. 首页可查看精选课程、活动与视频，下滑可刷新。\n\n'
             '2. 注册登录后可报名课程、参与活动、查看订单。\n\n'
             '3. 智能推荐：填写宝宝年龄、身高体重后，系统将智能匹配适合的课程。\n\n'
             '4. 我的订单中可查看报名记录，到店后出示二维码即可核销。\n\n'

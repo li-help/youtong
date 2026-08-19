@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/app_skeleton.dart';
+import '../widgets/app_empty_state.dart';
+import '../widgets/app_error_retry.dart';
 
 class ServicePage extends StatefulWidget {
   final String title;
@@ -15,6 +18,7 @@ class ServicePage extends StatefulWidget {
 class _ServicePageState extends State<ServicePage> {
   List<dynamic> _services = [];
   bool _loading = true;
+  bool _error = false;
 
   @override
   void initState() {
@@ -23,14 +27,16 @@ class _ServicePageState extends State<ServicePage> {
   }
 
   Future<void> _load() async {
+    setState(() { _loading = true; _error = false; });
     try {
       final res = await ApiService.listServices(page: 1, pageSize: 50);
       setState(() {
         _services = res['data']?['list'] ?? [];
         _loading = false;
+        _error = false;
       });
     } catch (e) {
-      setState(() => _loading = false);
+      setState(() { _loading = false; _error = true; });
     }
   }
 
@@ -77,16 +83,29 @@ class _ServicePageState extends State<ServicePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title), backgroundColor: Colors.white, foregroundColor: AppStyles.textMain),
+      appBar: AppBar(backgroundColor: Colors.white, foregroundColor: AppStyles.textMain, elevation: 0),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
-          : RefreshIndicator(
-              onRefresh: _load,
-              color: AppStyles.primary,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _services.length,
-                itemBuilder: (ctx, i) {
+          ? ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 6,
+              itemBuilder: (_, __) => const SkeletonListTile(),
+            )
+          : _error
+              ? AppErrorRetry(onRetry: _load)
+              : _services.isEmpty
+                  ? AppEmptyState(
+                      title: '暂无服务',
+                      subtitle: '下拉刷新或稍后重试',
+                      onRefresh: _load,
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      color: AppStyles.primary,
+                      backgroundColor: Colors.white,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _services.length,
+                        itemBuilder: (ctx, i) {
                   final s = _services[i] as Map<String, dynamic>;
                   final cover = (s['cover'] ?? s['image'])?.toString();
                   return Container(

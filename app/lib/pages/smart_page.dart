@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_page_route.dart';
 import 'smart_result_page.dart';
 
 class SmartPage extends StatefulWidget {
@@ -55,11 +56,8 @@ class _SmartPageState extends State<SmartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).maybePop()),
-                    const Text('推荐', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const FaIcon(FontAwesomeIcons.solidHeart, color: Colors.red),
                   ],
                 ),
                 Container(
@@ -110,7 +108,7 @@ class _SmartPageState extends State<SmartPage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                FaIcon(_ages[i]['icon'] as IconData, color: AppStyles.primary, size: 32),
+                                FaIcon(_ages[i]['icon'] as FaIconData, color: AppStyles.primary, size: 32),
                                 Text(_ages[i]['label'] as String, style: const TextStyle(color: AppStyles.textSub)),
                               ],
                             ),
@@ -169,7 +167,7 @@ class _SmartPageState extends State<SmartPage> {
                   child: ElevatedButton(
                     onPressed: _selectedAge == null
                         ? null
-                        : () => Navigator.of(context).push(MaterialPageRoute(
+                        : () => Navigator.of(context).push(AppPageRoute(
                               builder: (_) => SmartResultPage(
                                 age: _ages[_selectedAge!]['label'] as String,
                                 height: _height.toInt(),

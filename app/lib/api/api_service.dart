@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,7 +9,7 @@ class ApiService {
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('API_BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (Platform.isAndroid) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:3001/api';
     }
     return 'http://localhost:3001/api';
@@ -150,10 +150,7 @@ class ApiService {
   static Future<Map<String, dynamic>> recommendCourses({int size = 6}) =>
       get('/course/recommend', query: {'size': '$size'});
 
-  // C 端资讯
-  static Future<Map<String, dynamic>> listArticles({int page = 1, int pageSize = 10}) =>
-      get('/article/published', query: {'page': '$page', 'pageSize': '$pageSize'});
-  static Future<Map<String, dynamic>> articleDetail(int id) => get('/article/view/$id');
+
 
   // 当前用户信息 / 修改资料（对接后端 sys_account）
   static Future<Map<String, dynamic>> userMe() => get('/user/me');

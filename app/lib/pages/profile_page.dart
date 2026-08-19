@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/app_skeleton.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -100,15 +101,48 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).pop()),
-                  const Expanded(child: Text('修改个人信息', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                  const SizedBox(width: 40),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
+                    ),
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: AppStyles.cardDecoration,
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const SizedBox(width: 80, child: Text('头像', style: TextStyle(fontWeight: FontWeight.bold))),
+                                ClipOval(
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: AppSkeleton(width: 56, height: 56, borderRadius: 28),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(),
+                            const Row(children: [SizedBox(width: 80, child: Text('昵称', style: TextStyle(fontWeight: FontWeight.bold))), Expanded(child: AppSkeleton(height: 18, borderRadius: 4))]),
+                            const Divider(),
+                            const Row(children: [SizedBox(width: 80, child: Text('手机号', style: TextStyle(fontWeight: FontWeight.bold))), Expanded(child: AppSkeleton(height: 18, borderRadius: 4))]),
+                          ],
+                        ),
+                      ),
+                    )
                   : SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Container(

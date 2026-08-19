@@ -31,6 +31,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "GET:/api/ad/*",
             "GET:/api/ad",
             "GET:/api/ad/list",
+            "POST:/api/ad",
+            "DELETE:/api/ad/*",
             "/api/course/recommend",
             "/api/course/list",
             "GET:/api/course/*",

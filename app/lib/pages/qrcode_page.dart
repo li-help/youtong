@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_skeleton.dart';
 
 class QrcodePage extends StatefulWidget {
   const QrcodePage({super.key});
@@ -39,9 +40,22 @@ class _QrcodePageState extends State<QrcodePage> {
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('我的二维码', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 40),
             Container(
@@ -66,7 +80,7 @@ class _QrcodePageState extends State<QrcodePage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(border: Border.all(color: AppStyles.primary, width: 8), borderRadius: BorderRadius.circular(16)),
                     child: _user == null
-                        ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
+                        ? const Center(child: AppSkeleton(width: 120, height: 120, borderRadius: 12))
                         : QrImageView(
                             data: _qrData,
                             version: QrVersions.auto,

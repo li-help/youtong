@@ -18,6 +18,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
 
+    @Value("${app.download-dir:downloads}")
+    private String downloadDir;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
@@ -28,7 +31,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String absUploadDir = Paths.get(uploadDir).toAbsolutePath().normalize().toString();
+        String absDownloadDir = Paths.get(downloadDir).toAbsolutePath().normalize().toString();
+
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + absUploadDir + "/");
+
+        registry.addResourceHandler("/download/**")
+                .addResourceLocations("file:" + absDownloadDir + "/");
     }
 }

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_skeleton.dart';
+import '../widgets/app_empty_state.dart';
+import '../widgets/app_error_retry.dart';
+import '../widgets/app_page_route.dart';
 import 'course_detail_page.dart';
 
 class SmartResultPage extends StatefulWidget {
@@ -27,6 +31,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
   }
 
   Future<void> _load() async {
+    setState(() { _loading = true; _failed = false; });
     try {
       final res = await ApiService.aiRecommend(age: widget.age, interests: '运动');
       if (!mounted) return;
@@ -38,19 +43,8 @@ class _SmartResultPageState extends State<SmartResultPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _failed = true;
-      });
+      setState(() { _loading = false; _failed = true; });
     }
-  }
-
-  void _retry() {
-    setState(() {
-      _loading = true;
-      _failed = false;
-    });
-    _load();
   }
 
   @override
@@ -64,9 +58,16 @@ class _SmartResultPageState extends State<SmartResultPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).pop()),
-                  const Expanded(child: Text('推荐课程', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                  const SizedBox(width: 40),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -92,62 +93,59 @@ class _SmartResultPageState extends State<SmartResultPage> {
             ),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppStyles.primary))
-                  : _failed
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('推荐加载失败', style: TextStyle(color: AppStyles.textSub)),
-                              const SizedBox(height: 12),
-                              ElevatedButton(onPressed: _retry, style: AppStyles.primaryButton, child: const Text('重新加载')),
-                            ],
-                          ),
-                        )
-                      : _courses.isEmpty
-                          ? const Center(child: Text('暂无推荐课程', style: TextStyle(color: AppStyles.textSub)))
-                          : ListView.builder(
+                  ? ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _courses.length,
-                      itemBuilder: (context, i) => GestureDetector(
-                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseDetailPage(id: (_courses[i]['id'] is num ? (_courses[i]['id'] as num).toInt() : int.tryParse(_courses[i]['id']?.toString() ?? '') ?? 0)))),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: AppStyles.cardDecoration,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: [const Color(0xFFFFCC80), const Color(0xFFEF9A9A), const Color(0xFFA5D6A7), const Color(0xFFFFF59D)][i % 4],
-                                  borderRadius: BorderRadius.circular(12),
+                      itemCount: 4,
+                      itemBuilder: (_, __) => const SkeletonListTile(hasImage: true),
+                    )
+                  : _failed
+                      ? AppErrorRetry(onRetry: _load)
+                      : _courses.isEmpty
+                          ? const AppEmptyState(title: '暂无推荐课程', subtitle: '完善宝宝档案后再来试试吧')
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _courses.length,
+                              itemBuilder: (context, i) => GestureDetector(
+                                onTap: () => Navigator.of(context).push(AppPageRoute(
+                                  builder: (_) => CourseDetailPage(id: _courses[i]['id'] is num ? (_courses[i]['id'] as num).toInt() : int.tryParse(_courses[i]['id']?.toString() ?? '') ?? 0),
+                                )),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: AppStyles.cardDecoration,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          color: [const Color(0xFFFFCC80), const Color(0xFFEF9A9A), const Color(0xFFA5D6A7), const Color(0xFFFFF59D)][i % 4],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(_courses[i]['title']?.toString() ?? '课程', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                            const Text('根据宝宝的年龄与兴趣智能匹配，助力快乐成长。', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text('参考价格 ¥${_courses[i]['price'] ?? 0}', style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
+                                                Text(_courses[i]['categoryId']?.toString() ?? '推荐', style: const TextStyle(fontSize: 12, color: AppStyles.textLight)),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(_courses[i]['title']?.toString() ?? '课程', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                    const Text('根据宝宝的年龄与兴趣智能匹配，助力快乐成长。', style: TextStyle(fontSize: 13, color: AppStyles.textSub)),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('参考价格 ¥${_courses[i]['price'] ?? 0}', style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold)),
-                                        Text(_courses[i]['categoryId']?.toString() ?? '推荐', style: const TextStyle(fontSize: 12, color: AppStyles.textLight)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                            ),
             ),
           ],
         ),

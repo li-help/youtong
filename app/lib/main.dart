@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'api/api_service.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
+import 'widgets/app_page_route.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +44,13 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Color(0xFF999999),
           type: BottomNavigationBarType.fixed,
         ),
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
       home: const SplashPage(),
     );
@@ -67,11 +76,11 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
     if (token != null && token.isNotEmpty) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainPage()),
+        AppPageRoute(builder: (_) => const MainPage()),
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
+        AppPageRoute(builder: (_) => const LoginPage()),
       );
     }
   }
