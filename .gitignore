@@ -21,6 +21,9 @@ out/
 .vscode/
 *.iml
 
+# 浏览器自动化临时产物
+.playwright-cli/
+
 # 系统
 .DS_Store
 Thumbs.db
