@@ -169,10 +169,10 @@ jobs:
           # 5.6) 上传 App 下载页（含二维码组件）
           rsync -avz -e "ssh $SSH_OPTS" deploy/download.html deploy/qrcode.min.js $SSH_TARGET:$APP_DIR/app/downloads/
 
-          # 5.7) 应用 Nginx 下载路由（幂等：已配置过则跳过，避免覆盖服务器后续改动）
-          rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/tmp/youtong.conf
+          # 5.7) 应用 Nginx 配置（以仓库 deploy/youtong.conf 为准，始终同步并校验重载）
+          rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/opt/youtong/youtong.conf.new
           ssh $SSH_OPTS $SSH_TARGET \
-            "if ! grep -q 'location = /download.html' /etc/nginx/conf.d/youtong.conf; then cp /etc/nginx/conf.d/youtong.conf /etc/nginx/conf.d/youtong.conf.bak && cp /tmp/youtong.conf /etc/nginx/conf.d/youtong.conf && nginx -t && systemctl reload nginx; else echo 'nginx-download-already-configured'; fi"
+            "cp /etc/nginx/conf.d/youtong.conf /etc/nginx/conf.d/youtong.conf.bak && cp /opt/youtong/youtong.conf.new /etc/nginx/conf.d/youtong.conf && nginx -t && systemctl reload nginx && echo 'nginx-config-reloaded'"
 
           # 6) 幂等初始化数据库（已存在表则跳过，不会覆盖线上数据）
           if [ -n "$MYSQL_PASSWORD" ]; then
