@@ -65,7 +65,15 @@ public abstract class CrudController<T, ID extends Serializable> {
             q.applyKeyword(qw, keywordColumns);
         }
         page = service.page(page, qw);
+        fillExtra(page.getRecords());
         return R.ok(R.page(page.getTotal(), page.getRecords(), page.getCurrent(), page.getSize()));
+    }
+
+    /**
+     * 列表查询后的扩展钩子：子类可覆盖，用于填充关联名称等额外展示字段
+     */
+    protected void fillExtra(java.util.List<T> records) {
+        // 默认不做处理，由子类按需覆盖
     }
 
     @PostMapping

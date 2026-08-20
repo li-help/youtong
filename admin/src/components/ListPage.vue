@@ -62,6 +62,9 @@ const formRef = ref(null)
 const form = reactive({})
 const formLoading = ref(false)
 
+// 动态下拉选项缓存：{ [prop]: [{label, value}] }，支持表单字段配置 loadOptions 异步拉取
+const dynamicOptions = reactive({})
+
 function openDialog(mode, row) {
   dialogMode.value = mode
   // 初始化表单字段
@@ -73,6 +76,17 @@ function openDialog(mode, row) {
   // 打开弹窗时清空本地预览缓存
   props.formFields.forEach((f) => {
     if (f.type === 'image') localPreview[f.prop] = ''
+  })
+  // 异步加载下拉选项（如分类等远程数据）
+  props.formFields.forEach(async (f) => {
+    if (f.type === 'select' && typeof f.loadOptions === 'function') {
+      dynamicOptions[f.prop] = []
+      try {
+        dynamicOptions[f.prop] = await f.loadOptions()
+      } catch (e) {
+        dynamicOptions[f.prop] = []
+      }
+    }
   })
   dialogVisible.value = true
 }
@@ -302,7 +316,7 @@ defineExpose({ load })
             style="width: 100%"
           >
             <el-option
-              v-for="opt in f.options"
+              v-for="opt in (dynamicOptions[f.prop] || f.options || [])"
               :key="opt.value"
               :label="opt.label"
               :value="opt.value"

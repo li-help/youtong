@@ -1,5 +1,6 @@
 package com.youtong.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -16,4 +17,8 @@ public class Course {
     private Integer status;
     private String createdAt;
     private String updatedAt;
+
+    /** 分类名称（非表字段，列表展示用） */
+    @TableField(exist = false)
+    private String categoryName;
 }
