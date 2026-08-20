@@ -91,16 +91,16 @@ function openDialog(mode, row) {
   dialogVisible.value = true
 }
 
-// 上传前校验：仅允许图片类型，限制 5MB
+// 上传前校验：仅允许图片类型，限制 10MB
 function beforeImageUpload(file) {
   const okType = file.type.startsWith('image/')
   if (!okType) {
     ElMessage.error('只能上传图片文件')
     return false
   }
-  const okSize = file.size / 1024 / 1024 <= 5
+  const okSize = file.size / 1024 / 1024 <= 10
   if (!okSize) {
-    ElMessage.error('图片大小不能超过 5MB')
+    ElMessage.error('图片大小不能超过 10MB')
     return false
   }
   return true
