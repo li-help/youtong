@@ -15,7 +15,6 @@ const columns = [
   { prop: 'price', label: '价格(元)', formatter: (r, c, v) => `¥${v}` },
   { prop: 'teacher', label: '讲师' },
   { prop: 'categoryName', label: '分类', width: 130 },
-  { prop: 'categoryId', label: '分类ID', width: 90 },
   { prop: 'status', label: '状态', tag: { 1: { text: '在售', type: 'success' }, 0: { text: '下架', type: 'danger' } } },
 ]
 

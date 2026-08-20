@@ -12,7 +12,6 @@ const columns = [
   { prop: 'id', label: 'ID', width: 70 },
   { prop: 'name', label: '分类名称' },
   { prop: 'parentName', label: '父分类', width: 130 },
-  { prop: 'parentId', label: '父级ID', width: 90 },
   { prop: 'sort', label: '排序', width: 80 },
   { prop: 'status', label: '状态', tag: { 1: { text: '启用', type: 'success' }, 0: { text: '禁用', type: 'danger' } } },
 ]
