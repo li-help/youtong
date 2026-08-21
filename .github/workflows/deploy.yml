@@ -87,6 +87,17 @@ jobs:
           channel: stable
           cache: true
 
+      # 缓存 Gradle 依赖，避免每次构建重新下载（网络波动导致 assembleRelease 失败）
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            app/android/.gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
       - name: 清理构建残留（避免 watcher 状态冲突）
         run: |
           cd app
@@ -98,10 +109,14 @@ jobs:
           GRADLE_OPTS: -Dorg.gradle.vfs.watch=false -Dorg.gradle.daemon=false
         run: cd app && flutter pub get
 
-      - name: 构建 release APK（API 指向生产服务器）
+      - name: 构建 release APK（API 指向生产服务器，失败自动重试一次）
         env:
           GRADLE_OPTS: -Dorg.gradle.vfs.watch=false -Dorg.gradle.daemon=false
-        run: cd app && flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api
+          GRADLE_USER_HOME: ~/.gradle
+        run: |
+          cd app
+          flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api \
+            || flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
