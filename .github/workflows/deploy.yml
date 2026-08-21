@@ -87,10 +87,20 @@ jobs:
           channel: stable
           cache: true
 
+      - name: 清理构建残留（避免 watcher 状态冲突）
+        run: |
+          cd app
+          rm -rf .dart_tool build android/.gradle
+
       - name: 安装依赖
+        env:
+          # 禁用 Gradle 文件系统监听与 daemon，避免 CI 上 "Already watching path" 卡死
+          GRADLE_OPTS: -Dorg.gradle.vfs.watch=false -Dorg.gradle.daemon=false
         run: cd app && flutter pub get
 
       - name: 构建 release APK（API 指向生产服务器）
+        env:
+          GRADLE_OPTS: -Dorg.gradle.vfs.watch=false -Dorg.gradle.daemon=false
         run: cd app && flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api
 
       - name: 上传构建产物
