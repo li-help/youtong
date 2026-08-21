@@ -37,6 +37,8 @@ wechat:
     appid: ${WECHAT_APPID:wx4b9c2156878deb40}
     # secret 优先取环境变量，生产环境务必通过 WECHAT_SECRET 注入，勿使用默认值
     secret: ${WECHAT_SECRET:}
+    # 扫码登录小程序码指向的确认页（须为小程序已发布页面）
+    scan-page: ${WECHAT_SCAN_PAGE:pages/scan/confirm}
 
 # 大模型（OpenAI 兼容协议，DeepSeek）
 # 注意：api-key 为敏感凭证，请勿提交到公开仓库。

@@ -44,14 +44,12 @@
       <view class="scan-modal">
         <text class="scan-title">微信扫码登录</text>
         <view class="scan-qr-box">
-          <image v-if="qrImage" :src="qrImage" class="scan-qr" mode="aspectFit" />
+          <image v-if="qrImage" :src="qrImage" class="scan-qr" mode="aspectFit" @error="onQrError" />
           <view v-else class="scan-loading">
             <text>二维码加载中...</text>
           </view>
         </view>
         <text class="scan-tip">{{ scanTip }}</text>
-        <!-- 演示用：模拟手机端确认 -->
-        <button class="btn-scan-confirm" v-if="ticket" @click="simulateConfirm">我已扫码并确认</button>
         <text class="scan-close" @click="closeScan">关闭</text>
       </view>
     </view>
@@ -250,6 +248,10 @@ export default {
     },
     // ================= 微信扫码登录 =================
     async openScan() {
+      // #ifdef MP-WEIXIN
+      uni.showToast({ title: '请在电脑端浏览器打开本页面扫码登录', icon: 'none' })
+      return
+      // #endif
       this.showScan = true
       this.qrImage = ''
       this.ticket = ''
@@ -257,12 +259,15 @@ export default {
       try {
         const res = await authApi.scanCreate()
         this.ticket = res.ticket
-        // 二维码图片地址统一使用 request.js 的 BASE_URL（H5 为相对 /api，其他环境为 config.js 配置的地址）
-        this.qrImage = `${BASE_URL}/auth/qrcode/${res.ticket}`
+        // 二维码图片为微信小程序码，扫码后直接打开小程序确认页
+        this.qrImage = `${BASE_URL}/auth/scanLogin/wxacode/${res.ticket}`
         this.startPolling()
       } catch (e) {
-        this.scanTip = '二维码生成失败，请重试'
+        this.scanTip = e && e.message ? e.message : '二维码生成失败，请重试'
       }
+    },
+    onQrError() {
+      this.scanTip = '二维码加载失败：请检查服务器微信配置（WECHAT_SECRET）'
     },
     startPolling() {
       this.stopPolling()
@@ -290,17 +295,6 @@ export default {
       if (this.scanTimer) {
         clearInterval(this.scanTimer)
         this.scanTimer = null
-      }
-    },
-    // 演示用：模拟手机端扫码确认
-    async simulateConfirm() {
-      try {
-        const r = await authApi.scanConfirm(this.ticket, 'wx_demo_openid')
-        this.stopPolling()
-        this.setLoginSuccess(r)
-        this.closeScan()
-      } catch (e) {
-        uni.showToast({ title: '确认失败', icon: 'none' })
       }
     },
     closeScan() {

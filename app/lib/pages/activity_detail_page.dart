@@ -5,8 +5,6 @@ import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_error_retry.dart';
-import '../widgets/app_page_route.dart';
-import 'orders_page.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   final int id;
@@ -20,11 +18,24 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
   Map<String, dynamic>? _detail;
   bool _loading = true;
   bool _error = false;
+  bool _fav = false;
+  bool _favBusy = false;
+  bool _showJoin = false;
+  bool _joining = false;
+  final TextEditingController _joinName = TextEditingController();
+  final TextEditingController _joinPhone = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _joinName.dispose();
+    _joinPhone.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -35,28 +46,90 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         _detail = res['data'] as Map<String, dynamic>?;
         _loading = false;
       });
+      _loadFavStatus();
     } catch (e) {
       setState(() { _loading = false; _error = true; });
     }
   }
 
-  Future<void> _book() async {
+  Future<void> _loadFavStatus() async {
+    try {
+      final res = await ApiService.favoriteStatus('activity', widget.id);
+      final data = res['data'];
+      final fav = data is bool ? data : (data is Map ? (data['favorited'] == true || data['favorite'] == true) : false);
+      if (mounted) setState(() => _fav = fav);
+    } catch (_) {}
+  }
+
+  Future<void> _toggleFav() async {
+    if (_favBusy || _detail == null) return;
+    setState(() => _favBusy = true);
+    try {
+      final payload = {
+        'targetType': 'activity',
+        'targetId': widget.id,
+        'title': _detail?['title']?.toString() ?? '',
+        'cover': _detail?['cover']?.toString() ?? '',
+      };
+      if (_fav) {
+        await ApiService.removeFavorite(payload);
+      } else {
+        await ApiService.addFavorite(payload);
+      }
+      if (!mounted) return;
+      setState(() {
+        _fav = !_fav;
+        _favBusy = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_fav ? '收藏成功' : '已取消收藏')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _favBusy = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('操作失败：${e.toString()}')));
+    }
+  }
+
+  void _openJoin() {
+    _joinName.clear();
+    _joinPhone.clear();
+    setState(() => _showJoin = true);
+  }
+
+  Future<void> _submitJoin() async {
+    final name = _joinName.text.trim();
+    final phone = _joinPhone.text.trim();
+    if (name.isEmpty) {
+      _toast('请输入联系人姓名');
+      return;
+    }
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      _toast('请输入有效的手机号');
+      return;
+    }
+    setState(() => _joining = true);
     try {
       await ApiService.createOrder({
-        'type': 'activity',
-        'targetId': widget.id,
-        'title': _detail?['title'] ?? '',
+        'courseName': _detail?['title']?.toString() ?? '活动报名',
         'price': _detail?['price'] ?? 0,
+        'contactName': name,
+        'contactPhone': phone,
+        'remark': '活动报名',
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('报名成功，可在「我的订单」查看')));
-        pushAppPage(context, page: const OrdersPage());
-      }
+      if (!mounted) return;
+      setState(() {
+        _joining = false;
+        _showJoin = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('报名成功，请准时参加')));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('报名失败：${e.toString()}')));
-      }
+      if (!mounted) return;
+      setState(() => _joining = false);
+      _toast('报名失败：${e.toString()}');
     }
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -102,6 +175,24 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(22)),
                                     child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 20, color: Colors.black87),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: MediaQuery.of(context).padding.top + 12,
+                                right: 16,
+                                child: GestureDetector(
+                                  onTap: _favBusy ? null : _toggleFav,
+                                  child: Container(
+                                    width: 44,
+                                    height: 44,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(22)),
+                                    child: FaIcon(
+                                      _fav ? FontAwesomeIcons.solidStar : FontAwesomeIcons.star,
+                                      size: 22,
+                                      color: _fav ? const Color(0xFFFFB300) : Colors.black87,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -155,7 +246,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                             ),
                             const Spacer(),
                             ElevatedButton(
-                              onPressed: _book,
+                              onPressed: _openJoin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppStyles.primary,
                                 foregroundColor: Colors.white,
@@ -168,8 +259,80 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         ),
                       ),
                     ),
+                    if (_showJoin) _joinDialog(),
                   ],
                 ),
+    );
+  }
+
+  Widget _joinDialog() {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: _joining ? null : () => setState(() => _showJoin = false),
+        child: Container(
+          color: Colors.black45,
+          alignment: Alignment.center,
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('活动报名', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(_detail?['title']?.toString() ?? '活动', textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: AppStyles.textLight)),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _joinName,
+                    enabled: !_joining,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      hintText: '联系人姓名',
+                      hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFBBBBBB)),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _joinPhone,
+                    enabled: !_joining,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 11,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      hintText: '联系人手机号',
+                      hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFBBBBBB)),
+                      counterText: '',
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _joining ? null : _submitJoin,
+                    style: AppStyles.primaryButton,
+                    child: Text(_joining ? '提交中...' : '确认报名'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: _joining ? null : () => setState(() => _showJoin = false),
+                    child: const Text('取消', style: TextStyle(color: Color(0xFF999999))),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

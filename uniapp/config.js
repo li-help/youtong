@@ -18,7 +18,14 @@ export const PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURICompon
 )
 
 // 图片服务器地址：后端 /uploads/** 由 WebMvcConfig 提供静态资源，管理端存储的是相对路径
+// #ifdef H5
+// H5 端使用相对路径 /uploads/...，由 Nginx 反代到后端，避免硬编码 localhost 导致图片加载失败
+const IMG_BASE = ''
+// #endif
+// #ifndef H5
+// 小程序 / App 端：拼接完整后端地址
 const IMG_BASE = BASE_URL.replace(/\/api$/, '')
+// #endif
 
 // 把后端相对路径（如 /uploads/xxx.png）解析为可访问的绝对地址；http(s)/data 等绝对地址原样返回
 export function resolveImg(url) {

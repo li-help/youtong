@@ -44,9 +44,9 @@ INSERT INTO `category` (`name`,`parent_id`,`sort`,`status`) VALUES
 
 -- 4. 店铺
 INSERT INTO `store` (`name`,`address`,`logo`,`score`,`intro`,`lng`,`lat`,`status`) VALUES
-('优童中心旗舰店','北京市朝阳区建国路88号','https://picsum.photos/seed/s1/200',4.8,'专注3-12岁儿童成长综合服务',116.461,39.909,1),
-('优童海淀分店','北京市海淀区中关村大街1号','https://picsum.photos/seed/s2/200',4.6,'学科辅导与兴趣培养',116.316,39.983,1),
-('优童朝阳分店','北京市朝阳区望京SOHO','https://picsum.photos/seed/s3/200',4.5,'艺术与音乐培训',116.470,39.996,0);
+('优童中心旗舰店','北京市朝阳区建国路88号','/uploads/placeholder.jpg',4.8,'专注3-12岁儿童成长综合服务',116.461,39.909,1),
+('优童海淀分店','北京市海淀区中关村大街1号','/uploads/placeholder.jpg',4.6,'学科辅导与兴趣培养',116.316,39.983,1),
+('优童朝阳分店','北京市朝阳区望京SOHO','/uploads/placeholder.jpg',4.5,'艺术与音乐培训',116.470,39.996,0);
 
 -- 5. 广告位
 INSERT INTO `ad_position` (`name`,`code`,`size`,`status`) VALUES
@@ -56,41 +56,41 @@ INSERT INTO `ad_position` (`name`,`code`,`size`,`status`) VALUES
 
 -- 6. 广告
 INSERT INTO `ad` (`position_id`,`title`,`image`,`url`,`start_time`,`end_time`,`sort`,`status`) VALUES
-(1,'暑期成长计划','https://picsum.photos/seed/a1/750/300','/activity/1','2026-07-01 00:00:00','2026-08-31 23:59:59',1,1),
-(1,'新生体验课','https://picsum.photos/seed/a2/750/300','/course/2','2026-08-01 00:00:00','2026-09-30 23:59:59',2,1),
-(2,'开学季抽奖','https://picsum.photos/seed/a3/600/800','/activity/3','2026-08-15 00:00:00','2026-09-15 23:59:59',1,0);
+(1,'暑期成长计划','/uploads/placeholder.jpg','/activity/1','2026-07-01 00:00:00','2026-08-31 23:59:59',1,1),
+(1,'新生体验课','/uploads/placeholder.jpg','/course/2','2026-08-01 00:00:00','2026-09-30 23:59:59',2,1),
+(2,'开学季抽奖','/uploads/placeholder.jpg','/activity/3','2026-08-15 00:00:00','2026-09-15 23:59:59',1,0);
 
 -- 7. 课程（依赖 category）
 INSERT INTO `course` (`title`,`cover`,`price`,`category_id`,`teacher`,`status`) VALUES
-('少儿创意绘画入门','https://picsum.photos/seed/c1/400',299.00,3,'周老师',1),
-('钢琴基础班','https://picsum.photos/seed/c2/400',599.00,4,'林老师',1),
-('小学数学思维','https://picsum.photos/seed/c3/400',399.00,5,'吴老师',1),
-('少儿英语口语','https://picsum.photos/seed/c4/400',459.00,6,'Tom',0),
-('亲子手工课','https://picsum.photos/seed/c5/400',199.00,3,'陈老师',1);
+('少儿创意绘画入门','/uploads/placeholder.jpg',299.00,3,'周老师',1),
+('钢琴基础班','/uploads/placeholder.jpg',599.00,4,'林老师',1),
+('小学数学思维','/uploads/placeholder.jpg',399.00,5,'吴老师',1),
+('少儿英语口语','/uploads/placeholder.jpg',459.00,6,'Tom',0),
+('亲子手工课','/uploads/placeholder.jpg',199.00,3,'陈老师',1);
 
 -- 8. 视频（依赖 category）
 INSERT INTO `video` (`title`,`cover`,`url`,`duration`,`category_id`,`status`) VALUES
-('如何培养孩子专注力','https://picsum.photos/seed/v1/400','https://example.com/v/1.mp4',320,1,1),
-('5分钟学会简笔画','https://picsum.photos/seed/v2/400','https://example.com/v/2.mp4',180,3,1),
-('亲子阅读指南','https://picsum.photos/seed/v3/400','https://example.com/v/3.mp4',540,1,0);
+('如何培养孩子专注力','/uploads/placeholder.jpg','https://example.com/v/1.mp4',320,1,1),
+('5分钟学会简笔画','/uploads/placeholder.jpg','https://example.com/v/2.mp4',180,3,1),
+('亲子阅读指南','/uploads/placeholder.jpg','https://example.com/v/3.mp4',540,1,0);
 
 -- 9. 活动
 INSERT INTO `activity` (`title`,`cover`,`start_time`,`end_time`,`status`) VALUES
-('2026暑期成长营','https://picsum.photos/seed/ac1/400','2026-07-10 09:00:00','2026-08-20 18:00:00',1),
-('开学季亲子市集','https://picsum.photos/seed/ac2/400','2026-09-01 10:00:00','2026-09-03 17:00:00',1),
-('已结束的试运营','https://picsum.photos/seed/ac3/400','2026-05-01 10:00:00','2026-05-31 18:00:00',0);
+('2026暑期成长营','/uploads/placeholder.jpg','2026-07-10 09:00:00','2026-08-20 18:00:00',1),
+('开学季亲子市集','/uploads/placeholder.jpg','2026-09-01 10:00:00','2026-09-03 17:00:00',1),
+('已结束的试运营','/uploads/placeholder.jpg','2026-05-01 10:00:00','2026-05-31 18:00:00',0);
 
 -- 10. 文章
 INSERT INTO `article` (`title`,`cover`,`content`,`author`,`status`) VALUES
-('儿童情绪管理家长必读','https://picsum.photos/seed/ar1/400','<p>本文介绍如何帮助孩子识别和管理情绪...</p>','编辑部',1),
-('暑期学习计划制定指南','https://picsum.photos/seed/ar2/400','<p>一份可落地的暑期学习计划模板...</p>','王老师',1),
-('草稿：新学期开学准备','https://picsum.photos/seed/ar3/400','<p>待补充内容</p>','编辑部',0);
+('儿童情绪管理家长必读','/uploads/placeholder.jpg','<p>本文介绍如何帮助孩子识别和管理情绪...</p>','编辑部',1),
+('暑期学习计划制定指南','/uploads/placeholder.jpg','<p>一份可落地的暑期学习计划模板...</p>','王老师',1),
+('草稿：新学期开学准备','/uploads/placeholder.jpg','<p>待补充内容</p>','编辑部',0);
 
 -- 11. 客服
 INSERT INTO `customer_service` (`name`,`avatar`,`phone`,`online`,`status`) VALUES
-('客服小优','https://picsum.photos/seed/cs1/100','400-800-1234',1,1),
-('客服小童','https://picsum.photos/seed/cs2/100','400-800-5678',1,1),
-('客服小星','https://picsum.photos/seed/cs3/100','400-800-9012',0,0);
+('客服小优','/uploads/placeholder.jpg','400-800-1234',1,1),
+('客服小童','/uploads/placeholder.jpg','400-800-5678',1,1),
+('客服小星','/uploads/placeholder.jpg','400-800-9012',0,0);
 
 -- 12. 订单（依赖 user / course，覆盖多种状态以测试核销与筛选）
 INSERT INTO `order` (`order_no`,`user_id`,`course_id`,`amount`,`status`,`paid_at`,`verify_at`) VALUES

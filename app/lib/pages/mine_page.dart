@@ -8,6 +8,9 @@ import 'login_page.dart';
 import 'profile_page.dart';
 import 'orders_page.dart';
 import 'qrcode_page.dart';
+import 'favorite_page.dart';
+import 'address_list_page.dart';
+import 'help_page.dart';
 
 class MinePage extends StatefulWidget {
   const MinePage({super.key});
@@ -18,16 +21,28 @@ class MinePage extends StatefulWidget {
 
 class _MinePageState extends State<MinePage> {
   Map<String, dynamic>? _user;
+  Map<String, dynamic>? _stats;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _loadStats();
   }
 
   Future<void> _loadUser() async {
-    final u = await ApiService.getUserInfo();
-    setState(() => _user = u);
+    try {
+      final u = await ApiService.getUserInfo();
+      setState(() => _user = u);
+    } catch (_) {}
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final res = await ApiService.userStats();
+      if (!mounted) return;
+      setState(() => _stats = res['data'] is Map ? res['data'] as Map<String, dynamic> : null);
+    } catch (_) {}
   }
 
   Future<void> _logout() async {
@@ -108,6 +123,21 @@ class _MinePageState extends State<MinePage> {
             const SizedBox(height: 16),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: AppStyles.cardDecoration,
+              child: Row(
+                children: [
+                  _statItem('📦', _stats?['orderCount']?.toString() ?? '0', '我的订单', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const OrdersPage()))),
+                  Container(width: 1, height: 36, color: const Color(0xFFF0F0F0)),
+                  _statItem('❤️', _stats?['favoriteCount']?.toString() ?? '0', '我的收藏', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const FavoritePage()))),
+                  Container(width: 1, height: 36, color: const Color(0xFFF0F0F0)),
+                  _statItem('⭐', '100', '成长值', null),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
               decoration: AppStyles.cardDecoration,
               child: Column(
@@ -115,8 +145,10 @@ class _MinePageState extends State<MinePage> {
                   const Row(children: [FaIcon(FontAwesomeIcons.solidStar, color: AppStyles.primary), SizedBox(width: 6), Text('我的服务', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))]),
                   const SizedBox(height: 8),
                   _menu('📦', '我的订单', '查看', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const OrdersPage()))),
+                  _menu('📍', '收货地址', '管理', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const AddressListPage()))),
+                  _menu('❤️', '我的收藏', '查看', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const FavoritePage()))),
                   _menu('📱', '我的二维码', '查看', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const QrcodePage()))),
-                  _menu('📖', '使用说明', '查看', () => _showHelp(context)),
+                  _menu('📖', '使用说明', '查看', () => Navigator.of(context).push(AppPageRoute(builder: (_) => const HelpPage()))),
                   _menu('👤', '个人信息', '修改', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const ProfilePage()))),
                 ],
               ),
@@ -163,24 +195,20 @@ class _MinePageState extends State<MinePage> {
     );
   }
 
-  void _showHelp(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('使用说明'),
-        content: const SingleChildScrollView(
-          child: Text(
-            '1. 首页可查看精选课程、活动与视频，下滑可刷新。\n\n'
-            '2. 注册登录后可报名课程、参与活动、查看订单。\n\n'
-            '3. 智能推荐：填写宝宝年龄、身高体重后，系统将智能匹配适合的课程。\n\n'
-            '4. 我的订单中可查看报名记录，到店后出示二维码即可核销。\n\n'
-            '5. 如遇问题，请联系门店客服或前往门店详情页拨打电话。',
-            style: TextStyle(fontSize: 14, height: 1.7),
-          ),
+  Widget _statItem(String icon, String value, String label, VoidCallback? onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap ?? () {},
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppStyles.textMain)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 12, color: AppStyles.textLight)),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('知道了')),
-        ],
       ),
     );
   }

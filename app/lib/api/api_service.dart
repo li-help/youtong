@@ -157,6 +157,36 @@ class ApiService {
   static Future<Map<String, dynamic>> updateProfile(String nickname, {String? avatar}) =>
       post('/user/profile', body: {'nickname': nickname, if (avatar != null) 'avatar': avatar});
 
+  // 用户统计（订单数/收藏数）
+  static Future<Map<String, dynamic>> userStats() => get('/user/stats');
+
+  // 收藏
+  static Future<Map<String, dynamic>> listFavorites({String? targetType}) =>
+      get('/favorite/list', query: {if (targetType != null && targetType.isNotEmpty) 'targetType': targetType});
+  static Future<Map<String, dynamic>> addFavorite(Map<String, dynamic> body) =>
+      post('/favorite/add', body: body);
+  static Future<Map<String, dynamic>> removeFavorite(Map<String, dynamic> body) =>
+      post('/favorite/remove', body: body);
+  static Future<Map<String, dynamic>> favoriteStatus(String targetType, int targetId) =>
+      get('/favorite/status', query: {'targetType': targetType, 'targetId': '$targetId'});
+
+  // 收货地址
+  static Future<Map<String, dynamic>> listAddresses() => get('/address/list');
+  static Future<Map<String, dynamic>> saveAddress(Map<String, dynamic> body) =>
+      post('/address/save', body: body);
+  static Future<Map<String, dynamic>> deleteAddress(int id) => delete('/address/$id');
+  static Future<Map<String, dynamic>> setDefaultAddress(int id) => post('/address/$id/default');
+
+  // 资讯文章
+  static Future<Map<String, dynamic>> listArticles({int page = 1, int pageSize = 20, int? categoryId}) =>
+      get('/article/published',
+          query: {
+            'page': '$page',
+            'pageSize': '$pageSize',
+            if (categoryId != null) 'categoryId': '$categoryId',
+          });
+  static Future<Map<String, dynamic>> articleDetail(int id) => get('/article/view/$id');
+
   // 首页轮播：后台广告位 home_banner（统一走 /api/ad，与 uniapp 端一致）
   static Future<Map<String, dynamic>> listBanners() =>
       get('/ad/list', query: {'positionId': '1', 'status': '1'});

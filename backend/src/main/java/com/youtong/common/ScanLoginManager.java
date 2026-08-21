@@ -79,6 +79,11 @@ public class ScanLoginManager {
         return res;
     }
 
+    /** 删除 ticket（创建后预检失败时回滚） */
+    public void remove(String ticket) {
+        tickets.remove(ticket);
+    }
+
     private boolean isExpired(TicketInfo info) {
         return System.currentTimeMillis() - info.createTime > EXPIRE_MS;
     }

@@ -27,12 +27,12 @@
 
       <!-- 统计卡 -->
       <view class="stats">
-        <view class="stat-item">
-          <text class="stat-num">0</text>
+        <view class="stat-item" @click="goOrders">
+          <text class="stat-num">{{ stats.orderCount ?? 0 }}</text>
           <text class="stat-label">我的订单</text>
         </view>
-        <view class="stat-item">
-          <text class="stat-num">0</text>
+        <view class="stat-item" @click="goFavorites">
+          <text class="stat-num">{{ stats.favoriteCount ?? 0 }}</text>
           <text class="stat-label">我的收藏</text>
         </view>
         <view class="stat-item">
@@ -58,8 +58,24 @@
           </view>
         </view>
 
+        <view class="menu-item" @click="goAddress">
+          <view class="menu-icon-box mb-blue">📍</view>
+          <text class="menu-text">收货地址</text>
+          <view class="menu-right">
+            <text class="menu-action">管理 ›</text>
+          </view>
+        </view>
+
+        <view class="menu-item" @click="goFavorites">
+          <view class="menu-icon-box mb-purple">⭐</view>
+          <text class="menu-text">我的收藏</text>
+          <view class="menu-right">
+            <text class="menu-action">查看 ›</text>
+          </view>
+        </view>
+
         <view class="menu-item" @click="goQrcode">
-          <view class="menu-icon-box mb-blue">📱</view>
+          <view class="menu-icon-box mb-green">📱</view>
           <text class="menu-text">我的二维码</text>
           <view class="menu-right">
             <text class="menu-action">查看 ›</text>
@@ -67,7 +83,7 @@
         </view>
 
         <view class="menu-item" @click="goHelp">
-          <view class="menu-icon-box mb-purple">📖</view>
+          <view class="menu-icon-box mb-orange">📖</view>
           <text class="menu-text">使用说明</text>
           <view class="menu-right">
             <text class="menu-action">查看 ›</text>
@@ -75,7 +91,7 @@
         </view>
 
         <view class="menu-item" @click="goProfile">
-          <view class="menu-icon-box mb-green">👤</view>
+          <view class="menu-icon-box mb-blue">👤</view>
           <text class="menu-text">个人信息</text>
           <view class="menu-right">
             <text class="menu-action">修改 ›</text>
@@ -92,20 +108,53 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, reactive } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { userStore } from '../../../store/user.js'
+import { userApi } from '../../../api/index.js'
 
 const user = computed(() => userStore.info || {})
 const isLoggedIn = computed(() => !!userStore.token)
+const stats = reactive({ orderCount: 0, favoriteCount: 0 })
 
-function goProfile() { 
+async function loadStats() {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await userApi.stats()
+    if (res) {
+      stats.orderCount = res.orderCount || 0
+      stats.favoriteCount = res.favoriteCount || 0
+    }
+  } catch (e) { /* 静默失败 */ }
+}
+
+onShow(() => {
+  loadStats()
+})
+
+function requireLogin() {
   if (!isLoggedIn.value) {
     uni.navigateTo({ url: '/pages/login/login' })
-    return
+    return false
   }
-  uni.navigateTo({ url: '/pages/mine/profile' }) 
+  return true
 }
-function goOrders() { uni.navigateTo({ url: '/pages/order/list' }) }
+function goProfile() {
+  if (!requireLogin()) return
+  uni.navigateTo({ url: '/pages/mine/profile' })
+}
+function goOrders() {
+  if (!requireLogin()) return
+  uni.navigateTo({ url: '/pages/order/list' })
+}
+function goAddress() {
+  if (!requireLogin()) return
+  uni.navigateTo({ url: '/pages/mine/address/list' })
+}
+function goFavorites() {
+  if (!requireLogin()) return
+  uni.navigateTo({ url: '/pages/mine/favorite' })
+}
 function goQrcode() { uni.navigateTo({ url: '/pages/mine/qrcode' }) }
 function goHelp() { uni.navigateTo({ url: '/pages/mine/help' }) }
 </script>

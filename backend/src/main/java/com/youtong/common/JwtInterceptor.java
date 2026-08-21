@@ -25,6 +25,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/api/auth/scanLogin/create",
             "/api/auth/scanLogin/check",
             "/api/auth/scanLogin/confirm",
+            "/api/auth/scanLogin/marked",
+            "/api/auth/scanLogin/wxacode/*",
             "/api/auth/qrcode/*",
             "/api/auth/logout",
             "/api/ad/position/*",

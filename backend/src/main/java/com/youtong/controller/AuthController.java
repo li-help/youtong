@@ -1,11 +1,7 @@
 package com.youtong.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youtong.common.JwtUtil;
 import com.youtong.common.PasswordEncoder;
 import com.youtong.common.R;
@@ -15,6 +11,7 @@ import com.youtong.service.SmsCodeService;
 import com.youtong.service.SysAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,9 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -56,7 +51,14 @@ public class AuthController {
     @Value("${wechat.miniapp.secret}")
     private String wxSecret;
 
+    @Value("${wechat.miniapp.scan-page}")
+    private String wxScanPage;
+
     private final RestTemplate restTemplate = new RestTemplate();
+
+    // 微信全局 access_token 缓存（2 小时有效，提前 1 分钟刷新）
+    private volatile String wxAccessToken;
+    private volatile long wxAccessTokenExpireAt;
 
     /**
      * 调用微信 jscode2session 接口，用 code 换取 openid
@@ -84,6 +86,41 @@ public class AuthController {
             throw new RuntimeException("未获取到微信 openid");
         }
         return openid.toString();
+    }
+
+    /**
+     * 获取微信全局 access_token（有效期 2 小时），带内存缓存，提前 1 分钟刷新。
+     * 该凭证用于生成小程序码等需要服务端身份的接口。
+     */
+    private synchronized String getWxAccessToken() {
+        long now = System.currentTimeMillis();
+        if (wxAccessToken != null && now < wxAccessTokenExpireAt - 60_000) {
+            return wxAccessToken;
+        }
+        String url = UriComponentsBuilder
+                .fromHttpUrl("https://api.weixin.qq.com/cgi-bin/token")
+                .queryParam("grant_type", "client_credential")
+                .queryParam("appid", wxAppid)
+                .queryParam("secret", wxSecret)
+                .toUriString();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> res = restTemplate.getForObject(url, Map.class);
+        if (res == null) {
+            throw new RuntimeException("微信接口无响应");
+        }
+        Object errcode = res.get("errcode");
+        if (errcode != null && !Integer.valueOf(0).equals(errcode)) {
+            throw new RuntimeException("微信接口错误：" + res.getOrDefault("errmsg", "未知错误"));
+        }
+        Object token = res.get("access_token");
+        if (token == null || token.toString().isBlank()) {
+            throw new RuntimeException("未获取到微信 access_token");
+        }
+        Object expiresIn = res.get("expires_in");
+        long expires = expiresIn instanceof Number ? ((Number) expiresIn).longValue() : 7200L;
+        wxAccessToken = token.toString();
+        wxAccessTokenExpireAt = now + expires * 1000L;
+        return wxAccessToken;
     }
 
     @PostMapping("/login")
@@ -276,6 +313,18 @@ public class AuthController {
         } catch (RuntimeException e) {
             return R.fail(e.getMessage());
         }
+        try {
+            return R.ok(loginByOpenid(openid));
+        } catch (RuntimeException e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 按 openid 查找或自动注册微信用户，并签发登录 token。
+     * 小程序一键登录与扫码登录共用。
+     */
+    private Map<String, Object> loginByOpenid(String openid) {
         SysAccount account = accountService.getOne(
                 new QueryWrapper<SysAccount>().eq("openid", openid));
         if (account == null) {
@@ -294,7 +343,7 @@ public class AuthController {
             accountService.save(account);
         }
         if (account.getStatus() != null && account.getStatus() == 0) {
-            return R.fail("账号已被禁用");
+            throw new RuntimeException("账号已被禁用");
         }
         String token = JwtUtil.generate(account.getUsername(), account.getRole());
         Map<String, Object> result = new HashMap<>();
@@ -305,43 +354,113 @@ public class AuthController {
         user.put("nickname", account.getNickname());
         user.put("role", account.getRole());
         result.put("user", user);
-        return R.ok(result);
+        return result;
     }
 
     // ===================== 微信扫码登录（PC / Web 端） =====================
 
     /**
-     * 1) 创建扫码登录 ticket，并返回二维码图片地址。
-     * 二维码内容为一个可被微信识别的 URL（演示环境指向本系统扫码确认页）。
+     * 1) 创建扫码登录 ticket，并返回微信小程序码图片地址。
+     * 预检微信配置：拿不到 access_token 时提前报错，避免前端只看到图片 502。
      */
     @PostMapping("/scanLogin/create")
     public R scanLoginCreate() {
         String ticket = scanLoginManager.create();
-        String qrContent = "https://youtong.example.com/scan?ticket=" + ticket;
+        try {
+            getWxAccessToken();
+        } catch (RuntimeException e) {
+            scanLoginManager.remove(ticket);
+            return R.fail("微信配置错误：" + e.getMessage());
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("ticket", ticket);
         result.put("expireSeconds", ScanLoginManager.EXPIRE_MS / 1000);
-        result.put("qrcode", "/api/auth/qrcode/" + ticket);
-        result.put("qrContent", qrContent);
+        result.put("qrcode", "/api/auth/scanLogin/wxacode/" + ticket);
         return R.ok(result);
     }
 
-    /** 2) 返回二维码 PNG 图片流 */
-    @GetMapping("/qrcode/{ticket}")
-    public ResponseEntity<byte[]> qrcode(@PathVariable String ticket) {
-        String content = "https://youtong.example.com/scan?ticket=" + ticket;
-        try {
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 320, 320);
-            BufferedImage image = MatrixToImageWriter.toBufferedImage(matrix);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ImageIO.write(image, "PNG", out);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
-            return new ResponseEntity<>(out.toByteArray(), headers, HttpStatus.OK);
-        } catch (WriterException | java.io.IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    /**
+     * 2) 返回微信"小程序码"PNG 图片流。
+     * 用户用微信扫码后直接打开小程序 pages/scan/confirm 确认页（scene 携带 ticket）。
+     */
+    @GetMapping("/scanLogin/wxacode/{ticket}")
+    public ResponseEntity<byte[]> wxacode(@PathVariable String ticket) {
+        if (ticket == null || ticket.isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
+        // 先尝试缓存 token；若微信判定 token 失效，强制刷新后重试一次
+        // （微信的 access_token 是全局唯一凭证，任何一方重新获取都会使旧 token 立即失效）
+        ResponseEntity<byte[]> res = callWxacode(ticket, getWxAccessToken());
+        if (isTokenInvalid(res)) {
+            forceRefreshWxAccessToken();
+            res = callWxacode(ticket, getWxAccessToken());
+        }
+        return res;
+    }
+
+    /** 调用微信 getwxacodeunlimit 生成小程序码，统一异常为 JSON 透出错误信息 */
+    private ResponseEntity<byte[]> callWxacode(String ticket, String accessToken) {
+        try {
+            String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("scene", ticket);
+            payload.put("page", wxScanPage);
+            payload.put("width", 320);
+            payload.put("check_path", false);
+            // 注意：Spring 6.1+ 的 RestTemplate 不再自动设置 Content-Length，
+            // 而微信会校验该头，缺失会返回 412 Precondition Failed。
+            // 因此先序列化 JSON body，再手动设置 Content-Length。
+            byte[] jsonBody = new ObjectMapper().writeValueAsBytes(payload);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentLength(jsonBody.length);
+            ResponseEntity<byte[]> res = restTemplate.postForEntity(
+                    url, new HttpEntity<>(jsonBody, headers), byte[].class);
+            byte[] data = res.getBody();
+            if (data == null || data.length == 0) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"code\":502,\"msg\":\"微信返回空响应\"}".getBytes(StandardCharsets.UTF_8));
+            }
+            // 成功时返回图片二进制；失败时微信返回 JSON（如页面未发布 41030）
+            String text = new String(data, StandardCharsets.UTF_8);
+            if (text.trim().startsWith("{")) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(data);
+            }
+            HttpHeaders respHeaders = new HttpHeaders();
+            respHeaders.setContentType(MediaType.IMAGE_JPEG);
+            respHeaders.setCacheControl("no-store");
+            return new ResponseEntity<>(data, respHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            // 透出异常信息，便于定位（如 412 access_token 失效 / 网络超时 / JSON 序列化等）
+            String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(("{\"code\":502,\"msg\":\"生成小程序码失败:" + msg + "\"}").getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    /** 判断失败是否为 access_token 失效/过期导致（可安全重试） */
+    private boolean isTokenInvalid(ResponseEntity<byte[]> res) {
+        byte[] body = res.getBody();
+        if (body == null) {
+            return false;
+        }
+        String text = new String(body, StandardCharsets.UTF_8);
+        // 微信返回的 HTTP 错误码/异常信息
+        if (text.contains("412") || text.contains("401") || text.contains("40001")
+                || text.contains("42001") || text.contains("41001") || text.contains("40014")) {
+            return true;
+        }
+        // 微信 JSON 错误码形式 {"errcode":40001,...}
+        return text.matches(".*\"errcode\"\\s*:\\s*(40001|42001|41001|40014).*");
+    }
+
+    /** 强制刷新微信 access_token（清缓存后重新获取） */
+    private synchronized void forceRefreshWxAccessToken() {
+        wxAccessToken = null;
+        wxAccessTokenExpireAt = 0;
+        getWxAccessToken();
     }
 
     /**
@@ -358,51 +477,49 @@ public class AuthController {
         return R.ok(scanLoginManager.check(ticket));
     }
 
+    /** 3.5) 手机端扫码进入确认页时调用，把状态置为"已扫码"（PC 端及时提示） */
+    @PostMapping("/scanLogin/marked")
+    public R scanLoginMarked(@RequestBody Map<String, String> body) {
+        String ticket = body.get("ticket");
+        if (ticket == null || ticket.isBlank()) {
+            return R.fail("缺少 ticket");
+        }
+        if (!scanLoginManager.markScanned(ticket)) {
+            return R.fail("二维码已失效，请刷新重试");
+        }
+        return R.ok();
+    }
+
     /**
-     * 4) 确认登录（演示用：真实环境由微信 OAuth 回调或手机端确认触发）。
-     * 这里使用已存在的 openid 账户进行登录并写入 token。
+     * 4) 手机端确认登录：小程序扫码确认页调用 uni.login 拿到 code 后传入，
+     * 后端用 code 换真实 openid，自动注册/登录并写入 ticket，PC 端轮询即可登录。
      */
     @PostMapping("/scanLogin/confirm")
     public R scanLoginConfirm(@RequestBody Map<String, String> body) {
         String ticket = body.get("ticket");
-        String openid = body.get("openid");
+        String code = body.get("code");
         if (ticket == null || ticket.isBlank()) {
             return R.fail("缺少 ticket");
         }
-        // 若未传 openid，使用演示账户 openid，确保流程可跑通
-        if (openid == null || openid.isBlank()) {
-            openid = "wx_demo_openid";
+        if (code == null || code.isBlank()) {
+            return R.fail("缺少微信登录凭证 code");
         }
-        SysAccount account = accountService.getOne(
-                new QueryWrapper<SysAccount>().eq("openid", openid));
-        if (account == null) {
-            // 自动注册
-            account = new SysAccount();
-            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            account.setUsername(openid);
-            account.setPassword(PasswordEncoder.encode(openid));
-            account.setNickname("微信用户" + openid.substring(openid.length() - 6));
-            account.setPhone("");
-            account.setOpenid(openid);
-            account.setRole("user");
-            account.setStatus(1);
-            account.setCreatedAt(now);
-            account.setUpdatedAt(now);
-            accountService.save(account);
+        String openid;
+        try {
+            openid = getOpenidByCode(code);
+        } catch (RuntimeException e) {
+            return R.fail(e.getMessage());
         }
-        String token = JwtUtil.generate(account.getUsername(), account.getRole());
-        boolean ok = scanLoginManager.confirm(ticket, token, openid);
+        Map<String, Object> result;
+        try {
+            result = loginByOpenid(openid);
+        } catch (RuntimeException e) {
+            return R.fail(e.getMessage());
+        }
+        boolean ok = scanLoginManager.confirm(ticket, (String) result.get("token"), openid);
         if (!ok) {
             return R.fail("二维码已失效，请刷新重试");
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("token", token);
-        Map<String, Object> user = new HashMap<>();
-        user.put("id", account.getId());
-        user.put("username", account.getUsername());
-        user.put("nickname", account.getNickname());
-        user.put("role", account.getRole());
-        result.put("user", user);
         return R.ok(result);
     }
 

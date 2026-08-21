@@ -88,8 +88,24 @@
       "style": { "navigationBarTitleText": "我的二维码", "navigationStyle": "custom" }
     },
     {
+      "path": "pages/scan/confirm",
+      "style": { "navigationBarTitleText": "扫码登录", "navigationStyle": "custom" }
+    },
+    {
       "path": "pages/mine/help",
       "style": { "navigationBarTitleText": "使用说明", "navigationStyle": "custom" }
+    },
+    {
+      "path": "pages/mine/address/list",
+      "style": { "navigationBarTitleText": "收货地址", "navigationStyle": "custom" }
+    },
+    {
+      "path": "pages/mine/address/edit",
+      "style": { "navigationBarTitleText": "编辑地址", "navigationStyle": "custom" }
+    },
+    {
+      "path": "pages/mine/favorite",
+      "style": { "navigationBarTitleText": "我的收藏", "navigationStyle": "custom" }
     },
     {
       "path": "pages/ai/result",

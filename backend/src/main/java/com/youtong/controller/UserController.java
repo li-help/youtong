@@ -1,5 +1,6 @@
 package com.youtong.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -7,8 +8,12 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.youtong.common.CrudController;
 import com.youtong.common.R;
+import com.youtong.entity.Favorite;
+import com.youtong.entity.Order;
 import com.youtong.entity.SysAccount;
 import com.youtong.entity.User;
+import com.youtong.service.FavoriteService;
+import com.youtong.service.OrderService;
 import com.youtong.service.SysAccountService;
 import com.youtong.service.UserService;
 import org.springframework.http.HttpHeaders;
@@ -33,10 +38,15 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserController extends CrudController<User, Long> {
     private final SysAccountService accountService;
+    private final OrderService orderService;
+    private final FavoriteService favoriteService;
 
-    public UserController(UserService service, SysAccountService accountService) {
+    public UserController(UserService service, SysAccountService accountService,
+                          OrderService orderService, FavoriteService favoriteService) {
         super(service, "status", new String[]{"name", "code", "phone"});
         this.accountService = accountService;
+        this.orderService = orderService;
+        this.favoriteService = favoriteService;
     }
 
     /** 当前登录账号信息（App 端用户资料） */
@@ -99,5 +109,19 @@ public class UserController extends CrudController<User, Long> {
         }
         accountService.updateById(account);
         return R.ok("保存成功");
+    }
+
+    /** 我的统计：订单数/收藏数（我的页面数字卡） */
+    @GetMapping("/stats")
+    public R stats(@RequestAttribute("username") String username) {
+        if (username == null) return R.fail("未登录");
+        SysAccount account = accountService.getByUsername(username);
+        if (account == null) return R.fail("用户不存在");
+        long orderCount = orderService.count(new QueryWrapper<Order>().eq("user_id", account.getId()));
+        long favoriteCount = favoriteService.count(new QueryWrapper<Favorite>().eq("user_id", account.getId()));
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderCount", orderCount);
+        data.put("favoriteCount", favoriteCount);
+        return R.ok(data);
     }
 }

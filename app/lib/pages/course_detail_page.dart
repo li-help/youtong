@@ -20,6 +20,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   Map<String, dynamic>? _detail;
   bool _loading = true;
   bool _error = false;
+  bool _fav = false;
+  bool _favBusy = false;
 
   @override
   void initState() {
@@ -35,8 +37,46 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         _detail = res['data'] as Map<String, dynamic>?;
         _loading = false;
       });
+      _loadFavStatus();
     } catch (e) {
       setState(() { _loading = false; _error = true; });
+    }
+  }
+
+  Future<void> _loadFavStatus() async {
+    try {
+      final res = await ApiService.favoriteStatus('course', widget.id);
+      final data = res['data'];
+      final fav = data is bool ? data : (data is Map ? (data['favorited'] == true || data['favorite'] == true) : false);
+      if (mounted) setState(() => _fav = fav);
+    } catch (_) {}
+  }
+
+  Future<void> _toggleFav() async {
+    if (_favBusy || _detail == null) return;
+    setState(() => _favBusy = true);
+    try {
+      final payload = {
+        'targetType': 'course',
+        'targetId': widget.id,
+        'title': _detail?['title']?.toString() ?? '',
+        'cover': _detail?['cover']?.toString() ?? '',
+      };
+      if (_fav) {
+        await ApiService.removeFavorite(payload);
+      } else {
+        await ApiService.addFavorite(payload);
+      }
+      if (!mounted) return;
+      setState(() {
+        _fav = !_fav;
+        _favBusy = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_fav ? '收藏成功' : '已取消收藏')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _favBusy = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('操作失败：${e.toString()}')));
     }
   }
 
@@ -88,10 +128,29 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               Positioned(
                                 right: 16,
                                 top: MediaQuery.of(context).padding.top + 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(16)),
-                                  child: Text(_detail?['categoryName']?.toString() ?? _detail?['category']?.toString() ?? '热门课程', style: const TextStyle(color: AppStyles.primary, fontSize: 13)),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(16)),
+                                      child: Text(_detail?['categoryName']?.toString() ?? _detail?['category']?.toString() ?? '热门课程', style: const TextStyle(color: AppStyles.primary, fontSize: 13)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: _favBusy ? null : _toggleFav,
+                                      child: Container(
+                                        width: 44,
+                                        height: 44,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(22)),
+                                        child: FaIcon(
+                                          _fav ? FontAwesomeIcons.solidStar : FontAwesomeIcons.star,
+                                          size: 22,
+                                          color: _fav ? const Color(0xFFFFB300) : Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Positioned(

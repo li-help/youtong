@@ -4,6 +4,7 @@
       <view class="app-nav__inner">
         <text class="app-nav__back" @click="goBack">‹</text>
         <text class="app-nav__title">课程详情</text>
+        <text class="nav-fav" @click="toggleFav">{{ fav ? '★' : '☆' }}</text>
       </view>
     </view>
     <image :src="coverOf(course)" mode="aspectFill" class="banner" />
@@ -39,17 +40,53 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { courseApi } from '../../api/index.js'
+import { courseApi, favoriteApi } from '../../api/index.js'
 import { coverOf } from '../../config.js'
+import { userStore } from '../../store/user.js'
 
 const course = ref(null)
 const id = ref('')
+const fav = ref(false)
 
 onMounted(() => {
   const pages = getCurrentPages()
   id.value = pages[pages.length - 1].options.id
   load()
+  checkFav()
 })
+
+async function checkFav() {
+  if (!userStore.token || !id.value) return
+  try {
+    const r = await favoriteApi.status('course', id.value)
+    fav.value = !!r
+  } catch (e) { /* 忽略 */ }
+}
+
+async function toggleFav() {
+  if (!userStore.token) {
+    uni.navigateTo({ url: '/pages/login/login' })
+    return
+  }
+  try {
+    if (fav.value) {
+      await favoriteApi.remove({ targetType: 'course', targetId: id.value })
+      fav.value = false
+      uni.showToast({ title: '已取消收藏', icon: 'none' })
+    } else {
+      await favoriteApi.add({
+        targetType: 'course',
+        targetId: id.value,
+        title: course.value && course.value.title ? course.value.title : '课程',
+        cover: course.value ? coverOf(course.value) : ''
+      })
+      fav.value = true
+      uni.showToast({ title: '已收藏', icon: 'success' })
+    }
+  } catch (e) {
+    uni.showToast({ title: '操作失败，请稍后重试', icon: 'none' })
+  }
+}
 
 async function load() {
   try {
@@ -77,6 +114,7 @@ function goBack() { uni.navigateBack() }
 .section { margin-top: 30rpx; }
 .intro { font-size: 28rpx; line-height: 1.7; color: #888; }
 .point { font-size: 28rpx; color: #555; margin: 12rpx 0; }
+.nav-fav { margin-left: auto; font-size: 44rpx; color: #F6B51E; line-height: 88rpx; }
 .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 16rpx 24rpx; padding-bottom: calc(16rpx + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -6rpx 24rpx rgba(0,0,0,.06); }
 .signup-btn { width: 100%; }
 .loading { text-align: center; padding: 120rpx 0; color: #999; }

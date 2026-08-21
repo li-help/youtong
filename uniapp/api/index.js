@@ -18,7 +18,9 @@ export const authApi = {
   wechatLogin: (code) => request.post('/auth/wechatLogin', { code }),
   scanCreate: () => request.post('/auth/scanLogin/create', {}),
   scanCheck: (ticket) => request.post('/auth/scanLogin/check', { ticket }),
-  scanConfirm: (ticket, openid) => request.post('/auth/scanLogin/confirm', { ticket, openid }),
+  scanMarked: (ticket) => request.post('/auth/scanLogin/marked', { ticket }),
+  // 手机端确认：小程序扫码页 uni.login 拿到 code 后调用
+  scanConfirm: (ticket, code) => request.post('/auth/scanLogin/confirm', { ticket, code }),
   register: (username, password, nickname, code) => request.post('/auth/register', { username, password, nickname, code }),
   logout: () => request.post('/auth/logout', {}),
   resetPwd: (username, oldPassword, newPassword) => request.post('/auth/resetPwd', { username, oldPassword, newPassword }),
@@ -31,7 +33,24 @@ export const authApi = {
 // 用户（需登录）
 export const userApi = {
   me: () => request.get('/user/me', {}),
-  updateProfile: (data) => request.post('/user/profile', data)
+  updateProfile: (data) => request.post('/user/profile', data),
+  stats: () => request.get('/user/stats', {})
+}
+
+// 收货地址（需登录）
+export const addressApi = {
+  list: () => request.get('/address/list', {}),
+  save: (data) => request.post('/address/save', data),
+  remove: (id) => request.del('/address/' + id),
+  setDefault: (id) => request.post('/address/' + id + '/default', {})
+}
+
+// 收藏（需登录）
+export const favoriteApi = {
+  list: (targetType) => request.get('/favorite/list', { targetType }),
+  add: (data) => request.post('/favorite/add', data),
+  remove: (data) => request.post('/favorite/remove', data),
+  status: (targetType, targetId) => request.get('/favorite/status', { targetType, targetId })
 }
 
 // 课程（C 端公开列表 / 推荐；详情需登录）
@@ -155,6 +174,6 @@ export const uploadApi = {
 }
 
 export default {
-  authApi, userApi, courseApi, storeApi, serviceApi,
+  authApi, userApi, addressApi, favoriteApi, courseApi, storeApi, serviceApi,
   activityApi, videoApi, articleApi, categoryApi, bannerApi, orderApi, aiApi, uploadApi
 }

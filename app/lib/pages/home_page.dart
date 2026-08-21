@@ -11,10 +11,10 @@ import '../widgets/app_refresh_load.dart';
 import '../widgets/app_page_route.dart';
 import 'video_page.dart';
 import 'smart_page.dart';
-import 'course_page.dart';
 import 'course_detail_page.dart';
 import 'store_detail_page.dart';
 import 'service_page.dart';
+import 'article_list_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,12 +35,45 @@ class _HomePageState extends State<HomePage> {
   Timer? _versionTimer;
   int _lastVersion = 0;
 
-  final List<Map<String, dynamic>> _categories = [
-    {'name': '视频课程', 'icon': FontAwesomeIcons.circlePlay, 'color': const Color(0xFFFFECB3)},
-    {'name': '创意绘画', 'icon': FontAwesomeIcons.palette, 'color': const Color(0xFFF8BBD0)},
-    {'name': '音乐启蒙', 'icon': FontAwesomeIcons.music, 'color': const Color(0xFFE1BEE7)},
-    {'name': '益智游戏', 'icon': FontAwesomeIcons.puzzlePiece, 'color': const Color(0xFFC5CAE9)},
-  ];
+  List<dynamic> _categories = [];
+
+  static const Map<String, Map<String, String>> _categoryIcons = {
+    '兴趣培养': {'emoji': '🎨', 'bg': '#FFE0B2'},
+    '学科辅导': {'emoji': '📚', 'bg': '#FFCC80'},
+    '绘画': {'emoji': '🎨', 'bg': '#FFE0B2'},
+    '音乐': {'emoji': '🎵', 'bg': '#FFE082'},
+    '数学': {'emoji': '🧮', 'bg': '#FFB74D'},
+    '英语': {'emoji': '💬', 'bg': '#FFCC80'},
+    '绘本阅读': {'emoji': '📖', 'bg': '#FFE0B2'},
+    '益智游戏': {'emoji': '🧩', 'bg': '#FFCC80'},
+    '科学启蒙': {'emoji': '🔬', 'bg': '#FFB74D'},
+    '艺术创作': {'emoji': '🎨', 'bg': '#FFD54F'},
+    '运动健康': {'emoji': '⚽', 'bg': '#FFB74D'},
+    '音乐律动': {'emoji': '🎵', 'bg': '#FFE082'},
+    '语言表达': {'emoji': '💬', 'bg': '#FFCC80'},
+    '视频课程': {'emoji': '📺', 'bg': '#E3F2FD'},
+    '创意绘画': {'emoji': '🎨', 'bg': '#FCE4EC'},
+  };
+
+  List<Map<String, dynamic>> _defaultCategories() {
+    return [
+      {'id': 1, 'name': '视频课程', 'emoji': '📺', 'bg': '#E3F2FD'},
+      {'id': 2, 'name': '创意绘画', 'emoji': '🎨', 'bg': '#FCE4EC'},
+      {'id': 3, 'name': '音乐启蒙', 'emoji': '🎵', 'bg': '#FFF8E1'},
+      {'id': 4, 'name': '益智游戏', 'emoji': '🧩', 'bg': '#E8F5E9'},
+    ];
+  }
+
+  Map<String, dynamic> _decorateCategory(dynamic c) {
+    final name = c is Map ? (c['name']?.toString() ?? '') : '';
+    final icon = _categoryIcons[name] ?? {'emoji': '⭐', 'bg': '#FFE0B2'};
+    return {
+      'id': c is Map ? c['id'] : null,
+      'name': name,
+      'emoji': icon['emoji'],
+      'bg': icon['bg'],
+    };
+  }
 
   @override
   void initState() {
@@ -86,6 +119,7 @@ class _HomePageState extends State<HomePage> {
         ApiService.listStores(page: 1, pageSize: 6),
         ApiService.listServices(page: 1, pageSize: 6),
         ApiService.recommendCourses(size: 4),
+        ApiService.listCategories(page: 1, pageSize: 8),
       ]);
       setState(() {
         final banners = results.isNotEmpty ? results[0]['data'] : null;
@@ -98,11 +132,19 @@ class _HomePageState extends State<HomePage> {
         _stores = results.length > 2 ? _listFrom(results[2]) : [];
         _services = results.length > 3 ? _listFrom(results[3]) : [];
         _recommends = results.length > 4 ? _listFrom(results[4]) : [];
+        final cats = results.length > 5 ? _listFrom(results[5]) : [];
+        _categories = cats.isEmpty
+            ? _defaultCategories()
+            : cats.map(_decorateCategory).toList();
         _loading = false;
         _error = false;
       });
     } catch (e) {
-      setState(() { _loading = false; _error = true; });
+      setState(() {
+        _loading = false;
+        _error = true;
+        _categories = _defaultCategories();
+      });
     }
   }
 
@@ -227,7 +269,9 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _categories.map((c) => Expanded(child: _categoryItem(c))).toList(),
+            children: _categories
+                .map((c) => Expanded(child: _categoryItem(Map<String, dynamic>.from(c as Map))))
+                .toList(),
           ),
         ),
         _sectionTitle('⭐ 精选视频'),
@@ -477,8 +521,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _categoryItem(Map<String, dynamic> c) {
+    final bg = _hexColor(c['bg']?.toString() ?? '#FFE0B2');
+    final id = c['id'];
     return GestureDetector(
-      onTap: () => pushAppPage(context, page: const CoursePage()),
+      onTap: () => pushAppPage(
+        context,
+        page: ArticleListPage(
+          categoryId: id is num ? id.toInt() : int.tryParse(id.toString()),
+          categoryName: c['name']?.toString(),
+        ),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -487,13 +539,20 @@ class _HomePageState extends State<HomePage> {
             width: 60,
             height: 60,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: c['color'] as Color, borderRadius: BorderRadius.circular(30)),
-            child: FaIcon(c['icon'] as FaIconData, color: AppStyles.textMain, size: 26),
+            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(30)),
+            child: Text(c['emoji']?.toString() ?? '⭐', style: const TextStyle(fontSize: 26)),
           ),
           const SizedBox(height: 6),
-          Text(c['name'] as String, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),
+          Text(c['name']?.toString() ?? '', textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: AppStyles.textSub)),
         ],
       ),
     );
+  }
+
+  Color _hexColor(String hex) {
+    var h = hex.replaceAll('#', '');
+    if (h.length == 6) h = 'FF$h';
+    final v = int.tryParse(h, radix: 16) ?? 0xFFFFE0B2;
+    return Color(v);
   }
 }
