@@ -86,8 +86,8 @@ function scrollBottom() {
 </script>
 
 <style scoped>
-.ai-page { min-height: 100vh; background: #F5F6FA; }
-.scroll { height: calc(100vh - 88rpx - 110rpx); }
+.ai-page { min-height: 100vh; background: #F5F6FA; padding-bottom: var(--window-bottom); }
+.scroll { height: calc(100vh - 88rpx - 110rpx - var(--window-bottom)); }
 
 /* 机器人欢迎区 */
 .hero { padding: 36rpx 32rpx 24rpx; text-align: center; }
@@ -119,7 +119,7 @@ function scrollBottom() {
 
 /* 输入栏 */
 .input-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
+  position: fixed; bottom: var(--window-bottom); left: 0; right: 0;
   display: flex; align-items: center; gap: 16rpx;
   padding: 16rpx 32rpx;
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));

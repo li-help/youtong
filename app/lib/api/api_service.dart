@@ -160,6 +160,11 @@ class ApiService {
   // 用户统计（订单数/收藏数）
   static Future<Map<String, dynamic>> userStats() => get('/user/stats');
 
+  // AI 智能助手
+  static Future<Map<String, dynamic>> aiChat(List<Map<String, String>> messages) async {
+    return post('/ai/chat', body: {'messages': messages}).timeout(const Duration(seconds: 60));
+  }
+
   // 收藏
   static Future<Map<String, dynamic>> listFavorites({String? targetType}) =>
       get('/favorite/list', query: {if (targetType != null && targetType.isNotEmpty) 'targetType': targetType});

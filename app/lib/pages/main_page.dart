@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_styles.dart';
 import 'home_page.dart';
-import 'smart_page.dart';
+import 'ai_page.dart';
 import 'course_page.dart';
 import 'activity_page.dart';
 import 'mine_page.dart';
@@ -17,7 +17,7 @@ class _MainPageState extends State<MainPage> {
   int _index = 0;
   final _pages = const [
     HomePage(),
-    SmartPage(),
+    AiPage(),
     CoursePage(),
     ActivityPage(),
     MinePage(),
