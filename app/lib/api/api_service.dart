@@ -4,12 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  /// 后端地址：优先使用编译期注入（flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3001/api），
-  /// 否则按平台回退到本机调试地址（Android 模拟器 10.0.2.2，iOS/桌面 localhost）。
+  /// 后端地址：
+  /// - Web 端：使用相对路径 /api（同源，由 Nginx 反代到后端 3001），无需硬编码域名
+  /// - 移动端：优先使用编译期注入（--dart-define=API_BASE_URL=...），否则回退本机调试地址
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('API_BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (kIsWeb) return '/api';
+    if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:3001/api';
     }
     return 'http://localhost:3001/api';

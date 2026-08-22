@@ -125,10 +125,40 @@ jobs:
           path: app/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 7
 
+  # ---------- 3.5 构建 Web 端（浏览器直接访问） ----------
+  build-app-web:
+    name: 构建 Web 端
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 安装依赖
+        run: cd app && flutter pub get
+
+      # Web 端部署在 /web/ 子路径：用 --base-href=/web/ 指定资源基准路径
+      # API 走相对路径 /api（由 Nginx 反代到后端 3001），无需硬编码域名
+      - name: 构建 release Web（部署路径 /web/，失败自动重试一次）
+        run: |
+          cd app
+          flutter build web --release --base-href=/web/ --dart-define=API_BASE_URL=/api \
+            || flutter build web --release --base-href=/web/ --dart-define=API_BASE_URL=/api
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-web
+          path: app/build/web/
+          retention-days: 7
+
   # ---------- 4. 部署到生产服务器 ----------
   deploy:
     name: 部署到生产服务器
-    needs: [build-backend, build-admin, build-app]
+    needs: [build-backend, build-admin, build-app, build-app-web]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -147,6 +177,11 @@ jobs:
         with:
           name: app-apk
           path: ./app-apk
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-web
+          path: ./app-web
 
       - name: 部署
         env:
@@ -193,6 +228,10 @@ jobs:
 
           # 5.6) 上传 App 下载页（含二维码组件）
           rsync -avz -e "ssh $SSH_OPTS" deploy/download.html deploy/qrcode.min.js $SSH_TARGET:$APP_DIR/app/downloads/
+
+          # 5.8) 上传 Flutter Web 端（浏览器直接访问，部署在 /web/ 子路径）
+          ssh $SSH_OPTS $SSH_TARGET "mkdir -p $APP_DIR/web && chmod 755 $APP_DIR/web"
+          rsync -avz -e "ssh $SSH_OPTS" --delete ./app-web/ $SSH_TARGET:$APP_DIR/web/
 
           # 5.7) 应用 Nginx 配置（以仓库 deploy/youtong.conf 为准，始终同步并校验重载）
           rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/opt/youtong/youtong.conf.new
