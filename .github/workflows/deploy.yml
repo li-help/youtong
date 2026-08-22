@@ -231,7 +231,8 @@ jobs:
 
           # 5.8) 上传 Flutter Web 端（浏览器直接访问，部署在 /web/ 子路径）
           ssh $SSH_OPTS $SSH_TARGET "mkdir -p $APP_DIR/web && chmod 755 $APP_DIR/web"
-          rsync -avz -e "ssh $SSH_OPTS" --delete ./app-web/ $SSH_TARGET:$APP_DIR/web/
+          # 用 --chmod 统一权限，避免 Nginx(www-data) 因属主/权限问题无法读取静态资源
+          rsync -avz -e "ssh $SSH_OPTS" --delete --chmod=D755,F644 ./app-web/ $SSH_TARGET:$APP_DIR/web/
 
           # 5.7) 应用 Nginx 配置（以仓库 deploy/youtong.conf 为准，始终同步并校验重载）
           rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/opt/youtong/youtong.conf.new
