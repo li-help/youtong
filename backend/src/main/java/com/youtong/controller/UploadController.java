@@ -30,18 +30,26 @@ public class UploadController {
         if (original != null && original.lastIndexOf('.') >= 0) {
             ext = original.substring(original.lastIndexOf('.'));
         }
-        if (!ext.matches("(?i)\\.(png|jpe?g|gif|webp|bmp)")) {
-            return R.fail("仅支持图片文件");
+        // 按文件类型分流：图片进 images/，视频进 video/，其余拒绝
+        String subDir;
+        if (ext.matches("(?i)\\.(png|jpe?g|gif|webp|bmp)")) {
+            subDir = "images";
+        } else if (ext.matches("(?i)\\.(mp4|mov|webm|mkv|avi|m3u8)")) {
+            subDir = "video";
+        } else {
+            return R.fail("不支持的文件类型");
         }
         try {
             String filename = UUID.randomUUID().toString().replace("-", "") + ext;
-            File dir = new File(uploadDir).getAbsoluteFile();
+            File dir = new File(uploadDir, subDir).getAbsoluteFile();
             if (!dir.exists()) {
                 dir.mkdirs();
             }
             file.transferTo(new File(dir, filename));
             Map<String, Object> data = new HashMap<>();
-            data.put("url", "/uploads/" + filename);
+            data.put("url", "/uploads/" + subDir + "/" + filename);
+            // 返回文件类型，便于前端区分图片/视频
+            data.put("type", subDir);
             return R.ok(data);
         } catch (Exception e) {
             return R.fail("上传失败: " + e.getMessage());

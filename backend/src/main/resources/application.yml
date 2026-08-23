@@ -7,8 +7,9 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 20MB
+      # 视频文件较大，适当放大上限（图片仍建议控制在合理范围）
+      max-file-size: 200MB
+      max-request-size: 400MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/youtong?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true&socketTimeout=30000&connectTimeout=30000

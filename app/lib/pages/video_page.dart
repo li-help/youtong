@@ -31,7 +31,7 @@ class _VideoPageState extends State<VideoPage> {
       final res = await ApiService.videoDetail(widget.id);
       final d = res['data'] as Map<String, dynamic>?;
       setState(() => _detail = d);
-      final url = d?['videoUrl']?.toString();
+      final url = d?['url']?.toString();
       if (url != null && url.isNotEmpty) {
         _controller = VideoPlayerController.networkUrl(Uri.parse(url))
           ..initialize().then((_) {
