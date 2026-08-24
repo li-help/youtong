@@ -267,6 +267,56 @@ public class AuthController {
     }
 
     /**
+     * 手机号 + 验证码登录（C 端免密登录）。
+     * 验证码正确即可登录：已注册用户直接登录；未注册用户自动注册后登录。
+     * 用于"验证码登录"入口，与账号密码登录、微信登录并列。
+     */
+    @PostMapping("/phoneLogin")
+    public R phoneLogin(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        String code = body.get("code");
+        if (phone == null || phone.isBlank() || code == null || code.isBlank()) {
+            return R.fail("手机号和验证码不能为空");
+        }
+        if (!PHONE_PATTERN.matcher(phone.trim()).matches()) {
+            return R.fail("请输入有效的手机号");
+        }
+        if (!smsCodeService.verify(phone.trim(), code)) {
+            return R.fail("验证码错误或已过期");
+        }
+        SysAccount account = accountService.getOne(
+                new QueryWrapper<SysAccount>().eq("username", phone.trim()));
+        if (account == null) {
+            // 未注册则自动注册（默认昵称取手机号后 4 位），验证码登录即注册
+            account = new SysAccount();
+            account.setUsername(phone.trim());
+            // 密码字段必填但用户未设置，用 openid 兜底加密（与微信自动注册一致）
+            account.setPassword(PasswordEncoder.encode(phone.trim()));
+            account.setNickname("用户" + phone.trim().substring(phone.trim().length() - 4));
+            account.setPhone(phone.trim());
+            account.setRole("user");
+            account.setStatus(1);
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            account.setCreatedAt(now);
+            account.setUpdatedAt(now);
+            accountService.save(account);
+        }
+        if (account.getStatus() != null && account.getStatus() == 0) {
+            return R.fail("账号已被禁用");
+        }
+        String token = JwtUtil.generate(account.getUsername(), account.getRole());
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", token);
+        Map<String, Object> user = new HashMap<>();
+        user.put("id", account.getId());
+        user.put("username", account.getUsername());
+        user.put("nickname", account.getNickname());
+        user.put("role", account.getRole());
+        result.put("user", user);
+        return R.ok(result);
+    }
+
+    /**
      * 重置密码：通过"原密码 + 新密码"校验后修改（账号密码登录场景）。
      * 验证码重置需短信服务，此处采用原密码校验方式。
      */

@@ -27,6 +27,8 @@ export const authApi = {
   resetPwdByCode: (phone, code, newPassword) => request.post('/auth/resetPwdByCode', { phone, code, newPassword }),
   sendCode: (phone) => request.post('/auth/sendCode', { phone }),
   checkCode: (phone, code) => request.post('/auth/checkCode', { phone, code }),
+  // 手机号 + 验证码登录（免密，未注册自动注册）
+  phoneLogin: (phone, code) => request.post('/auth/phoneLogin', { phone, code }),
   info: () => request.post('/auth/info', {})
 }
 

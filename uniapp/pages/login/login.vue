@@ -13,11 +13,21 @@
       <view class="input-item">
         <input class="input" v-model="phone" placeholder="请输入手机号" placeholder-class="ph" />
       </view>
-      <view class="input-item">
+      <view class="input-item code-item" v-if="codeLogin">
+        <input class="input" v-model="code" placeholder="请输入验证码" placeholder-class="ph" />
+        <text class="code-btn" :class="{ disabled: codeCountdown > 0 }" @click="sendLoginCode">
+          {{ codeCountdown > 0 ? codeCountdown + 's' : '获取验证码' }}
+        </text>
+      </view>
+      <view class="input-item" v-else>
         <input class="input" v-model="password" password placeholder="请输入密码" placeholder-class="ph" />
       </view>
 
       <button class="btn-login" :loading="loading" @click="onLogin">登 录</button>
+
+      <view class="login-mode-switch">
+        <text @click="codeLogin = !codeLogin">{{ codeLogin ? '使用密码登录' : '使用验证码登录' }}</text>
+      </view>
 
       <!-- 微信一键登录 -->
       <button class="btn-wechat" :loading="wxLoading" @click="onWechatLogin">
@@ -83,6 +93,10 @@ export default {
     return {
       phone: '',
       password: '',
+      code: '',
+      codeLogin: false, // false=密码登录 true=验证码登录
+      codeCountdown: 0,
+      codeSending: false,
       loading: false,
       wxLoading: false,
       showScan: false,
@@ -102,12 +116,60 @@ export default {
       uni.navigateBack({ fail: () => {} })
     },
     onLogin() {
-      if (!this.phone || !this.password) {
-        uni.showToast({ title: '请输入手机号和密码', icon: 'none' })
+      if (!this.phone) {
+        uni.showToast({ title: '请输入手机号', icon: 'none' })
         return
       }
-      this.loading = true
-      this.doLogin()
+      if (this.codeLogin) {
+        if (!this.code) {
+          uni.showToast({ title: '请输入验证码', icon: 'none' })
+          return
+        }
+        this.loading = true
+        this.doCodeLogin()
+      } else {
+        if (!this.password) {
+          uni.showToast({ title: '请输入密码', icon: 'none' })
+          return
+        }
+        this.loading = true
+        this.doLogin()
+      }
+    },
+    async doCodeLogin() {
+      try {
+        const data = await authApi.phoneLogin(this.phone.trim(), this.code.trim())
+        this.setLoginSuccess(data)
+      } catch (e) {
+        console.error('验证码登录失败:', e)
+        const errMsg = (e && (e.errMsg || e.msg || JSON.stringify(e))) || '未知错误'
+        uni.showModal({ title: '登录失败', content: `原因：${errMsg}`, showCancel: false })
+      } finally {
+        this.loading = false
+      }
+    },
+    async sendLoginCode() {
+      if (!this.phone || this.phone.length !== 11) {
+        uni.showToast({ title: '请输入正确的手机号', icon: 'none' })
+        return
+      }
+      if (this.codeCountdown > 0 || this.codeSending) return
+      this.codeSending = true
+      try {
+        const res = await authApi.sendCode(this.phone)
+        this.codeCountdown = 60
+        if (this.codeTimer) clearInterval(this.codeTimer)
+        this.codeTimer = setInterval(() => {
+          this.codeCountdown--
+          if (this.codeCountdown <= 0) clearInterval(this.codeTimer)
+        }, 1000)
+        const tip = (res && res.code) ? `验证码已发送（演示：${res.code}）` : '验证码已发送'
+        uni.showToast({ title: tip, icon: 'none' })
+      } catch (e) {
+        // 错误提示已由 request 统一处理
+      } finally {
+        this.codeSending = false
+      }
     },
     async doLogin() {
       try {
@@ -463,4 +525,20 @@ export default {
 }
 .btn-code[disabled] { opacity: .55; }
 .ph { color: #bbb; }
+
+/* 验证码登录 */
+.code-item { display: flex; align-items: center; padding-right: 20rpx; }
+.code-item .input { flex: 1; }
+.code-btn {
+  font-size: 26rpx; color: #E89B00; font-weight: 600;
+  white-space: nowrap; padding-left: 20rpx;
+}
+.code-btn.disabled { color: #bbb; }
+.login-mode-switch {
+  text-align: center; margin-top: 18rpx;
+}
+.login-mode-switch text {
+  font-size: 26rpx; color: #999;
+  border-bottom: 2rpx solid #eee; padding-bottom: 4rpx;
+}
 </style>

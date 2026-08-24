@@ -120,6 +120,10 @@ class ApiService {
   static Future<Map<String, dynamic>> logout() => post('/auth/logout');
   static Future<Map<String, dynamic>> info() => post('/auth/info');
 
+  /// 手机号 + 验证码登录（免密，未注册自动注册）
+  static Future<Map<String, dynamic>> phoneLogin(String phone, String code) =>
+      post('/auth/phoneLogin', body: {'phone': phone, 'code': code});
+
   // Resources（C 端列表统一走公开的 /list 接口，仅返回已上线内容）
   static Future<Map<String, dynamic>> listVideos({int page = 1, int pageSize = 20}) =>
       get('/video/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});

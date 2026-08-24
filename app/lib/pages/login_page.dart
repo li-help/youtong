@@ -17,7 +17,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _username = TextEditingController();
   final _password = TextEditingController();
+  final _code = TextEditingController();
   bool _loading = false;
+  bool _codeLogin = false; // false=密码登录 true=验证码登录
+  int _countdown = 0;
+  bool _sending = false;
 
   Future<void> _login() async {
     final phone = _username.text.trim();
@@ -57,6 +61,79 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// 手机号 + 验证码登录
+  Future<void> _codeLoginSubmit() async {
+    final phone = _username.text.trim();
+    final code = _code.text.trim();
+    if (phone.isEmpty || code.isEmpty) {
+      _toast('请填写手机号和验证码');
+      return;
+    }
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      _toast('请输入有效的手机号');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final res = await ApiService.phoneLogin(phone, code);
+      if (res['code'] == 0) {
+        final data = res['data'] as Map<String, dynamic>?;
+        final token = data?['token']?.toString();
+        final user = data?['user'] as Map<String, dynamic>?;
+        if (token == null || token.isEmpty || user == null) {
+          _toast('登录接口返回数据异常');
+          return;
+        }
+        await ApiService.setToken(token);
+        await ApiService.setUserInfo(user);
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(AppPageRoute(builder: (_) => const MainPage()));
+      } else {
+        _toast(res['msg']?.toString() ?? '登录失败');
+      }
+    } catch (e) {
+      _toast('网络异常：${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// 发送验证码（演示环境接口会返回明文 code，自动提示）
+  Future<void> _sendCode() async {
+    final phone = _username.text.trim();
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
+      _toast('请输入有效的手机号');
+      return;
+    }
+    if (_countdown > 0 || _sending) return;
+    setState(() => _sending = true);
+    try {
+      final res = await ApiService.sendCode(phone);
+      if (res['code'] == 0) {
+        final data = res['data'] as Map<String, dynamic>?;
+        final code = data?['code']?.toString() ?? '';
+        _startCountdown();
+        _toast(code.isNotEmpty ? '验证码已发送（演示：$code）' : '验证码已发送');
+      } else {
+        _toast(res['msg']?.toString() ?? '发送失败');
+      }
+    } catch (e) {
+      _toast('网络异常：${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  void _startCountdown() {
+    _countdown = 60;
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      setState(() => _countdown--);
+      return _countdown > 0;
+    });
   }
 
   /// 一键登录（测试体验用）：自动用固定账号登录，若账号未注册则自动获取验证码并注册后再登录。
@@ -175,23 +252,87 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: AppStyles.cardDecoration,
                   child: Column(
                     children: [
+                      // 登录方式切换
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3D6),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _codeLogin = false),
+                                child: Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: !_codeLogin ? AppStyles.primary : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text('密码登录',
+                                      style: TextStyle(
+                                        color: !_codeLogin ? Colors.white : AppStyles.primary,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _codeLogin = true),
+                                child: Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: _codeLogin ? AppStyles.primary : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text('验证码登录',
+                                      style: TextStyle(
+                                        color: _codeLogin ? Colors.white : AppStyles.primary,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       TextField(
                         controller: _username,
                         keyboardType: TextInputType.phone,
                         decoration: _input('请输入手机号'),
                       ),
                       const SizedBox(height: 16),
-                      TextField(
-                        controller: _password,
-                        obscureText: true,
-                        decoration: _input('请输入密码'),
-                      ),
+                      if (_codeLogin)
+                        TextField(
+                          controller: _code,
+                          keyboardType: TextInputType.number,
+                          decoration: _input('请输入验证码').copyWith(
+                            suffixIcon: TextButton(
+                              onPressed: _sending || _countdown > 0 ? null : _sendCode,
+                              child: Text(
+                                _countdown > 0 ? '$_countdown s' : '获取验证码',
+                                style: const TextStyle(color: AppStyles.primary, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        TextField(
+                          controller: _password,
+                          obscureText: true,
+                          decoration: _input('请输入密码'),
+                        ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: _loading ? null : _login,
+                          onPressed: _loading ? null : (_codeLogin ? _codeLoginSubmit : _login),
                           style: AppStyles.primaryButton,
                           child: _loading ? const CircularProgressIndicator(strokeWidth: 2) : const Text('登录'),
                         ),
