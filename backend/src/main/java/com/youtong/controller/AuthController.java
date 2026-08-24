@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,10 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -54,7 +59,24 @@ public class AuthController {
     @Value("${wechat.miniapp.scan-page}")
     private String wxScanPage;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    // 微信接口返回 Content-Type 为 text/plain 而非 application/json，
+    // 默认的 Jackson 转换器只认 application/json，会导致解析失败。
+    // 这里构造一个额外支持 text/plain 的 RestTemplate。
+    private final RestTemplate restTemplate = buildTextPlainRestTemplate();
+
+    private static RestTemplate buildTextPlainRestTemplate() {
+        RestTemplate template = new RestTemplate();
+        for (var converter : new ArrayList<>(template.getMessageConverters())) {
+            if (converter instanceof MappingJackson2HttpMessageConverter jackson) {
+                List<MediaType> types = new ArrayList<>(jackson.getSupportedMediaTypes());
+                if (!types.contains(MediaType.TEXT_PLAIN)) {
+                    types.add(MediaType.TEXT_PLAIN);
+                }
+                jackson.setSupportedMediaTypes(types);
+            }
+        }
+        return template;
+    }
 
     // 微信全局 access_token 缓存（2 小时有效，提前 1 分钟刷新）
     private volatile String wxAccessToken;

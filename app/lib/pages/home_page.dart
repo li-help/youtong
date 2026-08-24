@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFCC80),
+                  color: AppStyles.orangeSoft,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Center(
@@ -432,8 +432,12 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, i) => GestureDetector(
                     onTap: () {
                       final id = _stores[i]['id'];
-                      if (id != null) {
+                      if (id is int && id > 0) {
                         pushAppPage(context, page: StoreDetailPage(id: id));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('店铺信息暂不可用')),
+                        );
                       }
                     },
                     child: Container(

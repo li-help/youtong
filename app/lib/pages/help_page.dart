@@ -45,7 +45,7 @@ class HelpPage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFFF9F2E), AppStyles.primary]),
+                gradient: const LinearGradient(colors: [AppStyles.primary, AppStyles.primaryLight]),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(color: AppStyles.primary.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 8)),
@@ -141,7 +141,7 @@ class _QA extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(q, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE89B00))),
+          Text(q, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppStyles.primaryText)),
           const SizedBox(height: 6),
           Text(a, style: const TextStyle(fontSize: 13, color: AppStyles.textSub, height: 1.6)),
         ],

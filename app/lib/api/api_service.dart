@@ -6,15 +6,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   /// 后端地址：
   /// - Web 端：使用相对路径 /api（同源，由 Nginx 反代到后端 3001），无需硬编码域名
-  /// - 移动端：优先使用编译期注入（--dart-define=API_BASE_URL=...），否则回退本机调试地址
+  /// - 移动端：优先使用编译期注入（--dart-define=API_BASE_URL=...），
+  ///   未注入时回退到已上线生产环境（Nginx 反代 /api），确保 release 包默认可连。
+  ///   本地联调请注入：--dart-define=API_BASE_URL=http://10.0.2.2:3001/api
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('API_BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
     if (kIsWeb) return '/api';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:3001/api';
+      // 安卓模拟器访问宿主机：优先本地联调地址，联调时仍可通过 --dart-define 覆盖
+      return 'http://123.56.160.50/api';
     }
-    return 'http://localhost:3001/api';
+    return 'http://123.56.160.50/api';
   }
 
   static Future<String?> getToken() async {

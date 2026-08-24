@@ -159,7 +159,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                             Container(
                                               width: 60,
                                               height: 60,
-                                              decoration: BoxDecoration(color: const Color(0xFFFFCC80), borderRadius: BorderRadius.circular(12)),
+                                              decoration: BoxDecoration(color: AppStyles.orangeSoft, borderRadius: BorderRadius.circular(12)),
                                               child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
                                             ),
                                             const SizedBox(width: 12),
@@ -170,13 +170,13 @@ class _OrdersPageState extends State<OrdersPage> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text('¥${o['amount'] ?? 0}', style: const TextStyle(color: Color(0xFFFF6F00), fontWeight: FontWeight.bold)),
+                                            Text('¥${o['amount'] ?? 0}', style: const TextStyle(color: AppStyles.price, fontWeight: FontWeight.bold)),
                                             if (status == '0')
                                               ElevatedButton(
                                                 onPressed: () => _pay(o),
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: AppStyles.primaryLight,
-                                                  foregroundColor: const Color(0xFFB86E00),
+                                                  foregroundColor: AppStyles.primaryText,
                                                 ),
                                                 child: const Text('去支付'),
                                               ),

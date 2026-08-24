@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_back_button.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_error_retry.dart';
 import '../widgets/app_page_route.dart';
@@ -99,14 +100,7 @@ class _CourseOrderPageState extends State<CourseOrderPage> {
                         child: Row(
                           children: [
                             GestureDetector(
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
-                                child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
-                              ),
+                              child: AppBackButton(),
                             ),
                           ],
                         ),
@@ -124,7 +118,7 @@ class _CourseOrderPageState extends State<CourseOrderPage> {
                                     Container(
                                       width: 80,
                                       height: 80,
-                                      decoration: BoxDecoration(color: const Color(0xFFFFCC80), borderRadius: BorderRadius.circular(12)),
+                                      decoration: BoxDecoration(color: AppStyles.orangeSoft, borderRadius: BorderRadius.circular(12)),
                                       child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),
                                     ),
                                     const SizedBox(width: 16),
@@ -132,7 +126,7 @@ class _CourseOrderPageState extends State<CourseOrderPage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                        Text('¥$price', style: const TextStyle(fontSize: 18, color: Color(0xFFFF6F00), fontWeight: FontWeight.bold)),
+                                        Text('¥$price', style: const TextStyle(fontSize: 18, color: AppStyles.price, fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ],
@@ -180,7 +174,7 @@ class _CourseOrderPageState extends State<CourseOrderPage> {
                         child: Row(
                           children: [
                             const Text('合计：', style: TextStyle(fontSize: 16)),
-                            Text('¥$price', style: const TextStyle(fontSize: 22, color: Color(0xFFFF6F00), fontWeight: FontWeight.bold)),
+                            Text('¥$price', style: const TextStyle(fontSize: 22, color: AppStyles.price, fontWeight: FontWeight.bold)),
                             const SizedBox(width: 20),
                             Expanded(
                               child: ElevatedButton(

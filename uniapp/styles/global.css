@@ -1,11 +1,33 @@
 /* ============================================
-   优童成长 —— 全局设计系统（实色值版）
-   放弃 CSS 变量，确保微信小程序 100% 兼容
+   优童成长 —— 全局设计系统
+   设计原则：统一色板 / 圆角 / 间距 / 阴影，所有页面优先复用下方公共类，
+   禁止在各页写死与以下相同的色值与结构（避免风格分裂）。
    ============================================ */
 
+/* —— 设计变量（CSS 变量，小程序已验证兼容，便于统一调控）—— */
 page {
-  background: #F5F6FA;
-  color: #2D2D2D;
+  --c-primary: #FF9F2E;
+  --c-primary-light: #F6B51E;
+  --c-primary-soft: #FFF6E5;   /* 主色浅底 */
+  --c-primary-text: #E89B00;   /* 主色文字 */
+  --c-bg: #F5F6FA;             /* 页面背景 */
+  --c-bg-warm: #FFF9EC;        /* 暖黄背景 */
+  --c-card: #FFFFFF;
+  --c-text: #2D2D2D;
+  --c-text-2: #666666;
+  --c-text-3: #999999;
+  --c-line: #F0F0F0;
+  --radius-sm: 16rpx;
+  --radius: 24rpx;
+  --radius-lg: 28rpx;
+  --gap: 24rpx;
+  --pad: 32rpx;
+  --grad-primary: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  --shadow-card: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 8rpx 24rpx rgba(246, 181, 30, 0.30);
+
+  background: var(--c-bg);
+  color: var(--c-text);
   font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
   font-size: 28rpx;
   line-height: 1.6;
@@ -15,16 +37,16 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   box-sizing: border-box;
 }
 
-/* ===== 统一顶部栏 ===== */
+/* ===== 统一顶部栏（推荐用 components/AppNav 组件）===== */
 .app-nav {
   position: relative;
   z-index: 100;
   padding-top: var(--status-bar-height, 20rpx);
   background: #fff;
-  border-bottom: 1rpx solid #F0F0F0;
+  border-bottom: 1rpx solid var(--c-line);
 }
 .app-nav--gradient {
-  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
   border-bottom: none;
 }
 .app-nav__inner {
@@ -34,7 +56,7 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   padding: 0 32rpx;
 }
 .app-nav__title {
-  color: #2D2D2D;
+  color: var(--c-text);
   font-size: 36rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
@@ -50,7 +72,7 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   justify-content: center;
   font-size: 64rpx;
   line-height: 1;
-  color: #2D2D2D;
+  color: var(--c-text);
   margin-right: 8rpx;
 }
 .app-nav--gradient .app-nav__back {
@@ -65,23 +87,30 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
 
 /* ===== 卡片 ===== */
 .card {
-  background: #fff;
-  border-radius: 24rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
-  padding: 32rpx;
+  background: var(--c-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--pad);
 }
 
-/* ===== 区块标题 ===== */
+/* ===== 区块标题（全站统一，替代各页自写的 .section-header / .section-title）===== */
+.section {
+  padding: 0 var(--pad);
+  margin-top: 40rpx;
+}
 .section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx 32rpx 20rpx;
+  padding: 32rpx 0 20rpx;
+}
+.section-head--inset {
+  padding: 32rpx var(--pad) 20rpx;
 }
 .section-head__title {
   font-size: 34rpx;
   font-weight: 700;
-  color: #2D2D2D;
+  color: var(--c-text);
   position: relative;
   padding-left: 24rpx;
 }
@@ -94,14 +123,68 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   width: 8rpx;
   height: 32rpx;
   border-radius: 4rpx;
-  background: linear-gradient(180deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
 }
 .section-head__more {
   font-size: 26rpx;
-  color: #999;
+  color: var(--c-primary-text);
+  display: flex;
+  align-items: center;
 }
 
-/* ===== 按钮 ===== */
+/* ===== 网格（分类/图标入口通用）===== */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+.grid-item {
+  width: calc(25% - 18rpx);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.grid-text {
+  font-size: 24rpx;
+  color: var(--c-text-2);
+  margin-top: 14rpx;
+}
+.tile {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, .06);
+}
+.tile__emoji { font-size: 48rpx; }
+
+/* ===== 列表项卡片（门店/课程等通用）===== */
+.list-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: var(--gap);
+  box-shadow: var(--shadow-card);
+}
+.list-card + .list-card { margin-top: var(--gap); }
+
+/* ===== 标签 ===== */
+.tag {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-text);
+}
+.tag--ghost {
+  background: #fff;
+  color: var(--c-primary-text);
+  border: 2rpx solid var(--c-primary-light);
+}
+
+/* ===== 按钮（全站统一，替代各页自写按钮）===== */
 .btn {
   display: flex;
   align-items: center;
@@ -115,14 +198,21 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
 }
 .btn::after { border: none; }
 .btn--primary {
-  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
   color: #fff;
-  box-shadow: 0 8rpx 24rpx rgba(246, 181, 30, 0.30);
+  box-shadow: var(--shadow-float);
 }
 .btn--ghost {
   background: #fff;
-  color: #E89B00;
-  border: 2rpx solid #F6B51E;
+  color: var(--c-primary-text);
+  border: 2rpx solid var(--c-primary-light);
+}
+.btn--block { width: 100%; }
+.btn--sm {
+  height: 64rpx;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  padding: 0 28rpx;
 }
 
 /* ===== 空态 ===== */
@@ -132,13 +222,19 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   padding: 80rpx 0;
   font-size: 28rpx;
 }
+.empty__icon { font-size: 72rpx; display: block; margin-bottom: 16rpx; }
 
-/* 标签 */
-.tag {
-  display: inline-block;
-  padding: 6rpx 18rpx;
-  border-radius: 20rpx;
-  font-size: 22rpx;
-  background: #FFF6E5;
-  color: #E89B00;
+/* ===== 通用文字辅助 ===== */
+.text-2 { color: var(--c-text-2); }
+.text-3 { color: var(--c-text-3); }
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }

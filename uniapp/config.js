@@ -1,16 +1,16 @@
 // 全局配置
 // ============================================================
-// 【上线必改】后端 API 地址，按部署环境选择：
-//   H5 / 小程序 正式环境:  https://你的域名/api        （走 Nginx 反代，微信要求 HTTPS）
-//   本地开发:              http://localhost:3001/api
-//   App 打包:              http://服务器IP:3001/api  或  https://你的域名/api
+// 后端 API 地址。默认指向已上线生产环境（Nginx 反代 /api）。
+//   - 生产环境（已上线）：http://123.56.160.50/api
+//   - 本地开发可覆盖：    http://localhost:3001/api
 // 优先级：构建环境变量 UNI_APP_API_URL > 下方默认值
 //   命令行打包示例:
-//     H5:   UNI_APP_API_URL=https://youtong.example.com/api npm run build:h5
-//     App:  UNI_APP_API_URL=https://youtong.example.com/api npm run build:app
+//     H5:   UNI_APP_API_URL=https://你的域名/api npm run build:h5
+//     App:  UNI_APP_API_URL=https://你的域名/api npm run build:app
+// 注：微信小程序 / 微信支付要求 HTTPS，正式对外请将默认值替换为 https 域名。
 // ============================================================
 const ENV_API_URL = typeof process !== 'undefined' && process.env && process.env.UNI_APP_API_URL
-export const BASE_URL = ENV_API_URL || 'http://localhost:3001/api'
+export const BASE_URL = ENV_API_URL || 'http://123.56.160.50/api'
 
 // 占位图（本地纯色块，避免使用外部图片素材）
 export const PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(

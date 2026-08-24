@@ -5,6 +5,7 @@ import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_error_retry.dart';
+import '../widgets/app_back_button.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   final int id;
@@ -154,7 +155,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                               Container(
                                 height: 260,
                                 width: double.infinity,
-                                color: const Color(0xFFFFCC80),
+                                color: AppStyles.orangeSoft,
                                 child: _detail?['cover'] != null
                                     ? AppNetworkImage(
                                         url: _detail!['cover']?.toString(),
@@ -167,16 +168,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                               Positioned(
                                 top: MediaQuery.of(context).padding.top + 12,
                                 left: 16,
-                                child: GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    width: 44,
-                                    height: 44,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(22)),
-                                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 20, color: Colors.black87),
-                                  ),
-                                ),
+                                child: AppBackButton(),
                               ),
                               Positioned(
                                 top: MediaQuery.of(context).padding.top + 12,
