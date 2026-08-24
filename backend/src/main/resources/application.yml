@@ -61,3 +61,19 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+# 阿里云短信服务
+# 注意：密钥为敏感凭证，请勿提交真实值到公开仓库。
+# 生产环境务必通过以下环境变量注入（见服务器 systemd 的 Environment）：
+#   ALIYUN_SMS_ACCESS_KEY_ID
+#   ALIYUN_SMS_ACCESS_KEY_SECRET
+#   ALIYUN_SMS_SIGN_NAME
+#   ALIYUN_SMS_TEMPLATE_CODE
+# 未配置时自动降级为「演示模式」（sendCode 直接返回明文验证码），方便开发联调。
+aliyun:
+  sms:
+    access-key-id: ${ALIYUN_SMS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_SMS_ACCESS_KEY_SECRET:}
+    sign-name: ${ALIYUN_SMS_SIGN_NAME:}
+    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:}
+    endpoint: ${ALIYUN_SMS_ENDPOINT:cn-hangzhou}

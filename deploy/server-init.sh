@@ -89,6 +89,18 @@ fi
 if [ -n "$DEEPSEEK_API_KEY" ]; then
   echo "Environment=DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}" >> /etc/systemd/system/youtong.service
 fi
+if [ -n "$ALIYUN_SMS_ACCESS_KEY_ID" ]; then
+  echo "Environment=ALIYUN_SMS_ACCESS_KEY_ID=${ALIYUN_SMS_ACCESS_KEY_ID}" >> /etc/systemd/system/youtong.service
+fi
+if [ -n "$ALIYUN_SMS_ACCESS_KEY_SECRET" ]; then
+  echo "Environment=ALIYUN_SMS_ACCESS_KEY_SECRET=${ALIYUN_SMS_ACCESS_KEY_SECRET}" >> /etc/systemd/system/youtong.service
+fi
+if [ -n "$ALIYUN_SMS_SIGN_NAME" ]; then
+  echo "Environment=ALIYUN_SMS_SIGN_NAME=${ALIYUN_SMS_SIGN_NAME}" >> /etc/systemd/system/youtong.service
+fi
+if [ -n "$ALIYUN_SMS_TEMPLATE_CODE" ]; then
+  echo "Environment=ALIYUN_SMS_TEMPLATE_CODE=${ALIYUN_SMS_TEMPLATE_CODE}" >> /etc/systemd/system/youtong.service
+fi
 
 systemctl daemon-reload
 systemctl enable youtong

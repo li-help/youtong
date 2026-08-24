@@ -194,7 +194,8 @@ public class AuthController {
 
     /**
      * 发送短信验证码（注册 / 忘记密码共用）。
-     * 演示环境直接返回验证码，便于前端提示；接入短信网关后改为不返回明文。
+     * 演示环境（未配置短信网关）直接返回验证码，便于前端提示；
+     * 正式环境经阿里云下发短信，不返回明文（code 字段为 null）。
      */
     @PostMapping("/sendCode")
     public R sendCode(@RequestBody Map<String, String> body) {
@@ -208,7 +209,9 @@ public class AuthController {
         String code = smsCodeService.send(phone.trim());
         Map<String, Object> result = new HashMap<>();
         result.put("phone", phone.trim());
-        result.put("code", code); // 演示环境返回明文，便于联调
+        // 仅演示模式返回明文；正式环境返回 null（验证码已通过短信下发）
+        result.put("code", code);
+        result.put("demo", code != null);
         result.put("expireSeconds", SmsCodeService.EXPIRE_MS / 1000);
         return R.ok(result);
     }
