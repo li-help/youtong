@@ -76,6 +76,10 @@
       "style": { "navigationBarTitleText": "店铺详情", "navigationStyle": "custom" }
     },
     {
+      "path": "pages/store/map",
+      "style": { "navigationBarTitleText": "门店地图", "navigationStyle": "custom" }
+    },
+    {
       "path": "pages/order/list",
       "style": { "navigationBarTitleText": "我的订单", "navigationStyle": "custom" }
     },

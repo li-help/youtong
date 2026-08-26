@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_back_button.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_error_retry.dart';
@@ -101,7 +102,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               Container(
                                 height: 260,
                                 width: double.infinity,
-                                color: const Color(0xFFFFCC80),
+                                color: AppStyles.orangeSoft,
                                 child: _detail?['cover'] != null
                                     ? AppNetworkImage(
                                         url: _detail!['cover']?.toString(),
@@ -114,16 +115,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               Positioned(
                                 top: MediaQuery.of(context).padding.top + 12,
                                 left: 16,
-                                child: GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    width: 44,
-                                    height: 44,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(22)),
-                                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 20, color: Colors.black87),
-                                  ),
-                                ),
+                                child: AppBackButton(),
                               ),
                               Positioned(
                                 right: 16,
@@ -156,7 +148,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               Positioned(
                                 right: 16,
                                 top: 170,
-                                child: Text('¥$price', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFFF6F00))),
+                                child: Text('¥$price', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppStyles.price)),
                               ),
                             ],
                           ),
@@ -194,7 +186,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text('参考价格', style: TextStyle(fontSize: 12, color: AppStyles.textLight)),
-                                Text('¥$price', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFFF6F00))),
+                                Text('¥$price', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppStyles.price)),
                               ],
                             ),
                             const SizedBox(width: 20),

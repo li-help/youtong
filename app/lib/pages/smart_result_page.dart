@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_back_button.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_empty_state.dart';
 import '../widgets/app_error_retry.dart';
@@ -58,16 +59,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
-                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
-                    ),
-                  ),
+                  AppBackButton(),
                 ],
               ),
             ),
@@ -119,7 +111,7 @@ class _SmartResultPageState extends State<SmartResultPage> {
                                         width: 80,
                                         height: 80,
                                         decoration: BoxDecoration(
-                                          color: [const Color(0xFFFFCC80), const Color(0xFFEF9A9A), const Color(0xFFA5D6A7), const Color(0xFFFFF59D)][i % 4],
+                                          color: [AppStyles.orangeSoft, const Color(0xFFEF9A9A), const Color(0xFFA5D6A7), const Color(0xFFFFF59D)][i % 4],
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: const FaIcon(FontAwesomeIcons.graduationCap, color: Colors.white),

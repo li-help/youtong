@@ -46,7 +46,7 @@ class _SmartPageState extends State<SmartPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppStyles.bg, Color(0xFFFFECB3)],
+            colors: [AppStyles.bg, AppStyles.amberSoft],
           ),
         ),
         child: SafeArea(
@@ -101,7 +101,7 @@ class _SmartPageState extends State<SmartPage> {
                           onTap: () => setState(() => _selectedAge = i),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: _selectedAge == i ? const Color(0xFFFFECB3) : AppStyles.bg,
+                              color: _selectedAge == i ? AppStyles.amberSoft : AppStyles.bg,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: _selectedAge == i ? AppStyles.primary : Colors.transparent, width: 2),
                             ),

@@ -71,7 +71,7 @@ class _MinePageState extends State<MinePage> {
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [Color(0xFFFFECB3), AppStyles.primaryLight]),
+                  gradient: LinearGradient(colors: [AppStyles.amberSoft, AppStyles.primaryLight]),
                   borderRadius: BorderRadius.all(Radius.circular(24)),
                 ),
                 child: Row(
@@ -92,7 +92,7 @@ class _MinePageState extends State<MinePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(nickname, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFB86E00))),
+                          Text(nickname, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppStyles.primaryText)),
                           Text(username, style: const TextStyle(fontSize: 13, color: Color(0xFF9E7E3A))),
                         ],
                       ),
@@ -128,10 +128,10 @@ class _MinePageState extends State<MinePage> {
               child: Row(
                 children: [
                   _statItem('📦', _stats?['orderCount']?.toString() ?? '0', '我的订单', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const OrdersPage()))),
-                  Container(width: 1, height: 36, color: const Color(0xFFF0F0F0)),
+                  Container(width: 1, height: 36, color: AppStyles.line),
                   _statItem('❤️', _stats?['favoriteCount']?.toString() ?? '0', '我的收藏', _user == null ? () => Navigator.of(context).push(AppPageRoute(builder: (_) => const LoginPage())) : () => Navigator.of(context).push(AppPageRoute(builder: (_) => const FavoritePage()))),
-                  Container(width: 1, height: 36, color: const Color(0xFFF0F0F0)),
-                  _statItem('⭐', '100', '成长值', null),
+                  Container(width: 1, height: 36, color: AppStyles.line),
+                  _statItem('⭐', _stats?['growth']?.toString() ?? '0', '成长值', null),
                 ],
               ),
             ),

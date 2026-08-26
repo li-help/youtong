@@ -154,7 +154,7 @@ class _AddressListPageState extends State<AddressListPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(color: AppStyles.primaryLight, borderRadius: BorderRadius.circular(8)),
-                  child: const Text('默认', style: TextStyle(fontSize: 12, color: Color(0xFFB86E00))),
+                  child: const Text('默认', style: TextStyle(fontSize: 12, color: AppStyles.primaryText)),
                 ),
             ],
           ),

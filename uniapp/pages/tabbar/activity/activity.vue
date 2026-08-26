@@ -1,11 +1,7 @@
 <template>
   <view class="activity">
-    <!-- 顶部标题 -->
-    <view class="app-nav">
-      <view class="app-nav__inner">
-        <text class="app-nav__title">活动</text>
-      </view>
-    </view>
+    <!-- 顶部标题（统一导航栏组件） -->
+    <AppNav title="活动" />
 
     <scroll-view scroll-y class="scroll" @refresherrefresh="onRefresh" :refresher-enabled="true" :refresher-triggered="refreshing">
       <!-- 分类筛选 -->
@@ -19,7 +15,7 @@
       <view class="act-list">
         <view class="act-card" v-for="item in list" :key="item.id" @click="goDetail(item)">
           <image :src="coverOf(item)" mode="aspectFill" class="act-cover" />
-          <view class="act-tag" v-if="item.status">{{ item.status }}</view>
+          <view class="act-tag" v-if="item.status">{{ statusText(item.status) }}</view>
           <view class="act-info">
             <text class="act-name">{{ item.title }}</text>
             <text class="act-time">🕐 {{ item.time || item.startTime || '时间待定' }}</text>
@@ -33,6 +29,7 @@
       </view>
 
       <view v-if="!list.length" class="empty">
+        <text class="empty__icon">🎈</text>
         <text>暂无活动～</text>
       </view>
 
@@ -47,6 +44,10 @@ import { onShow, onHide } from '@dcloudio/uni-app'
 import { activityApi } from '../../../api/index.js'
 import { coverOf } from '../../../config.js'
 import { useRealtime } from '../../../utils/realtime.js'
+import { activityStatusText } from '../../../utils/dict.js'
+import AppNav from '../../../components/AppNav.vue'
+
+const statusText = activityStatusText
 
 const list = ref([])
 const curFilter = ref('')
@@ -84,56 +85,56 @@ onHide(() => realtime.stop())
 </script>
 
 <style scoped>
-.activity { min-height: 100vh; background: #F5F6FA; }
+.activity { min-height: 100vh; background: var(--c-bg); }
 .scroll { height: calc(100vh - 88rpx); }
 
 /* 筛选栏 */
-.filter-bar { display: flex; gap: 16rpx; padding: 24rpx 32rpx; }
+.filter-bar { display: flex; gap: 16rpx; padding: var(--gap) var(--pad); }
 .filter-tag {
   padding: 14rpx 36rpx;
   border-radius: 30rpx;
   background: #fff;
-  font-size: 26rpx; color: #777;
-  border: 2rpx solid #EEEFF3;
-  box-shadow: 0 2rpx 10rpx rgba(0,0,0,.03);
+  font-size: 26rpx; color: var(--c-text-2);
+  border: 2rpx solid var(--c-line);
+  box-shadow: var(--shadow-card);
 }
 .filter-tag.active {
-  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
   color: #fff; border-color: transparent;
   font-weight: bold;
   box-shadow: 0 6rpx 20rpx rgba(246,181,30,.28);
 }
 
 /* 活动列表 */
-.act-list { padding: 0 32rpx; }
+.act-list { padding: 0 var(--pad); }
 .act-card {
   position: relative;
   background: #fff;
-  border-radius: 24rpx;
+  border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 28rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.05);
+  box-shadow: var(--shadow-card);
 }
 .act-cover { width: 100%; height: 280rpx; background: #EEEFF3; }
 .act-tag {
   position: absolute; top: 16rpx; left: 16rpx;
-  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
   color: #fff; font-size: 22rpx;
   padding: 6rpx 20rpx; border-radius: 20rpx;
-  box-shadow: 0 4rpx 14rpx rgba(246,181,30,.30);
+  box-shadow: var(--shadow-float);
 }
 .act-info { padding: 24rpx 28rpx; }
-.act-name { font-size: 32rpx; font-weight: bold; color: #2D2D2D; display: block; }
-.act-time { font-size: 25rpx; color: #888; margin-top: 14rpx; display: block; }
-.act-loc { font-size: 25rpx; color: #888; margin-top: 8rpx; display: block; }
+.act-name { font-size: 32rpx; font-weight: bold; color: var(--c-text); display: block; }
+.act-time { font-size: 25rpx; color: var(--c-text-3); margin-top: 14rpx; display: block; }
+.act-loc { font-size: 25rpx; color: var(--c-text-3); margin-top: 8rpx; display: block; }
 .act-bottom {
   display: flex; align-items: center; justify-content: space-between;
   margin-top: 18rpx; padding-top: 18rpx;
-  border-top: 2rpx solid #F5F6FA;
+  border-top: 2rpx solid var(--c-bg);
 }
-.act-price { font-size: 34rpx; font-weight: bold; color: #FF7043; }
-.act-join { font-size: 23rpx; color: #bbb; }
+.act-price { font-size: 34rpx; font-weight: bold; color: var(--c-primary-text); }
+.act-join { font-size: 23rpx; color: var(--c-text-3); }
 
-.empty { text-align: center; padding: 80rpx 0; color: #bbb; font-size: 28rpx; }
+.empty { text-align: center; padding: 80rpx 0; color: var(--c-text-3); font-size: 28rpx; }
 .bottom-space { height: 40rpx; }
 </style>

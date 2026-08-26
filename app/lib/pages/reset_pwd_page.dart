@@ -121,7 +121,7 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppStyles.bg, Color(0xFFFFECB3)],
+            colors: [AppStyles.bg, AppStyles.amberSoft],
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -151,7 +151,7 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
                           onPressed: _counting ? null : _sendCode,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppStyles.bg,
-                            foregroundColor: const Color(0xFFB86E00),
+                            foregroundColor: AppStyles.primaryText,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           child: Text(_counting ? '$_count秒' : '获取验证码'),
@@ -184,15 +184,5 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
     );
   }
 
-  InputDecoration _input(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFFFE082))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFFFE082))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppStyles.primary)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    );
-  }
+  InputDecoration _input(String hint) => AppStyles.inputDecoration(hintText: hint);
 }

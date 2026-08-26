@@ -1,11 +1,7 @@
 <template>
   <view class="home">
-    <!-- 顶部标题 -->
-    <view class="app-nav">
-      <view class="app-nav__inner">
-        <text class="app-nav__title">优童成长</text>
-      </view>
-    </view>
+    <!-- 顶部标题（统一导航栏组件） -->
+    <AppNav title="优童成长" />
 
     <scroll-view scroll-y class="scroll" @refresherrefresh="onRefresh" :refresher-enabled="true" :refresher-triggered="refreshing">
       <!-- Banner 轮播 -->
@@ -25,10 +21,9 @@
 
       <!-- 学习天地入口 -->
       <view class="section">
-        <view class="section-header">
-          <view class="section-icon">🎯</view>
-          <text class="section-title">学习天地</text>
-          <view class="deco-star-small">⭐</view>
+        <view class="section-head">
+          <text class="section-head__title">学习天地</text>
+          <text class="section-head__more" @click="goArticleList">更多 ›</text>
         </view>
         <view class="grid">
           <view class="grid-item" v-for="g in categories" :key="g.id" @click="goArticle(g)">
@@ -42,10 +37,9 @@
 
       <!-- 精选视频 -->
       <view class="section">
-        <view class="section-header">
-          <view class="section-icon">📦</view>
-          <text class="section-title">精选视频</text>
-          <view class="deco-star-small">⭐</view>
+        <view class="section-head">
+          <text class="section-head__title">精选视频</text>
+          <text class="section-head__more" @click="goVideoList">更多 ›</text>
         </view>
         <scroll-view scroll-x class="h-scroll">
           <view class="video-card" v-for="v in videos" :key="v.id" @click="goVideo(v)">
@@ -61,7 +55,7 @@
 
       <!-- 小宇宙计划 -->
       <view class="section">
-        <view class="plan-card">
+        <view class="plan-card" @click="goPlan">
           <text class="plan-deco">🚀</text>
           <view class="plan-header">
             <view class="plan-left">
@@ -69,28 +63,27 @@
               <text class="plan-desc">养育宝宝学习<br />发现兴趣与方向</text>
             </view>
             <view class="plan-right">
-              <text class="plan-more">查看更多 ›</text>
+              <text class="plan-more">了解更多 ›</text>
             </view>
           </view>
-          
+
           <!-- 年龄选择 -->
           <view class="age-row">
             <view class="age-tag hot">🔥 热门</view>
             <view class="age-tag" v-for="a in ages" :key="a.key">{{ a.label }}</view>
           </view>
-          
-          <button class="btn-plan" @click="goPlan">了解详情</button>
+
+          <view class="btn-plan">了解详情</view>
         </view>
       </view>
 
       <!-- 优质店铺 -->
       <view class="section">
-        <view class="section-header-row">
-          <view class="section-icon">🏪</view>
-          <text class="section-title">优质店铺</text>
-          <text class="more-link" @click="goMoreStore">查看更多 ›</text>
+        <view class="section-head">
+          <text class="section-head__title">优质店铺</text>
+          <text class="section-head__more" @click="goMoreStore">更多 ›</text>
         </view>
-        
+
         <view class="store-grid">
           <view class="store-item" v-for="s in stores" :key="s.id" @click="goStore(s)">
             <image :src="coverOf(s)" mode="aspectFill" class="store-logo" />
@@ -114,6 +107,7 @@ import { ref, onMounted } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { videoApi, categoryApi, storeApi, bannerApi } from '../../../api/index.js'
 import { coverOf, resolveImg } from '../../../config.js'
+import AppNav from '../../../components/AppNav.vue'
 
 const banners = ref([])
 const fallbackBanners = [
@@ -233,7 +227,9 @@ function bannerUrlToPage(url) {
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
 function goPlan() { uni.switchTab({ url: '/pages/tabbar/ai/ai' }) }
-function goMoreStore() { uni.showToast({ title: '查看更多店铺', icon: 'none' }) }
+function goMoreStore() { uni.navigateTo({ url: '/pages/store/map' }) }
+function goArticleList() { uni.navigateTo({ url: '/pages/article/list' }) }
+function goVideoList() { uni.navigateTo({ url: '/pages/video/list' }) }
 
 // 进入页面：拉取数据并开启实时监听（轮询兜底 + H5 SSE 推送）
 onMounted(() => {
@@ -269,26 +265,9 @@ onUnload(() => {
 .deco-2 { top: 64rpx; right: 52rpx; font-size: 46rpx; transform: rotate(16deg); }
 .deco-3 { bottom: 40rpx; left: 64rpx; font-size: 36rpx; transform: rotate(8deg); }
 
-/* Section通用 */
-.section { padding: 0 32rpx; margin-top: 40rpx; }
-.section-header { display: flex; align-items: center; margin-bottom: 24rpx; }
-.section-icon { font-size: 32rpx; margin-right: 10rpx; }
-.section-title { font-size: 34rpx; font-weight: bold; color: #2D2D2D; position: relative; padding-left: 24rpx; }
-.section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 8rpx; height: 32rpx; border-radius: 4rpx; background: linear-gradient(180deg, #FF9F2E, #F6B51E); }
-.deco-star-small { font-size: 24rpx; margin-left: auto; opacity: 0.35; }
-.section-header-row { display: flex; align-items: center; margin-bottom: 24rpx; }
-.more-link { font-size: 26rpx; color: #E89B00; margin-left: auto; }
-
-/* 学习天地网格 */
-.grid { display: flex; flex-wrap: wrap; gap: 24rpx; }
-.grid-item { width: calc(25% - 18rpx); display: flex; flex-direction: column; align-items: center; }
-.tile {
-  width: 100rpx; height: 100rpx; border-radius: 24rpx;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,.06);
-}
-.tile__emoji { font-size: 48rpx; }
-.grid-text { font-size: 24rpx; color: #777; margin-top: 14rpx; }
+/* Section 间距沿用全局 .section；网格/title 复用全局类，仅保留首页特有微调 */
+.grid-item { width: calc(25% - 18rpx); }
+.grid-text { color: var(--c-text-2); }
 
 /* 精选视频 */
 .h-scroll { white-space: nowrap; }
@@ -313,8 +292,8 @@ onUnload(() => {
 /* 小宇宙计划 */
 .plan-card {
   position: relative;
-  background: linear-gradient(135deg, #FFB300, #FF7A00);
-  border-radius: 28rpx;
+  background: var(--grad-primary);
+  border-radius: var(--radius-lg);
   padding: 36rpx 32rpx;
   overflow: hidden;
   box-shadow: 0 12rpx 36rpx rgba(255,122,0,.25);
@@ -333,31 +312,31 @@ onUnload(() => {
   font-size: 24rpx; color: #fff;
   border: 2rpx solid rgba(255,255,255,.35);
 }
-.age-tag.hot { background: #fff; color: #E89B00; border-color: transparent; font-weight: bold; }
+.age-tag.hot { background: #fff; color: var(--c-primary-text); border-color: transparent; font-weight: bold; }
 .btn-plan {
-  width: 220rpx; height: 64rpx; line-height: 64rpx;
+  width: 220rpx; height: 64rpx; line-height: 64rpx; text-align: center;
   background: #fff; border-radius: 32rpx;
-  font-size: 28rpx; font-weight: 600; color: #E89B00;
+  font-size: 28rpx; font-weight: 600; color: var(--c-primary-text);
   border: none; margin-top: 6rpx;
   box-shadow: 0 6rpx 20rpx rgba(0,0,0,.10);
 }
 
 /* 优质店铺 */
-.store-grid { display: flex; flex-wrap: wrap; gap: 24rpx; }
+.store-grid { display: flex; flex-wrap: wrap; gap: var(--gap); }
 .store-item {
   width: calc(50% - 12rpx);
   background: #fff;
-  border-radius: 20rpx;
-  padding: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,.04);
+  border-radius: var(--radius-sm);
+  padding: var(--gap);
+  box-shadow: var(--shadow-card);
 }
 .store-logo { width: 100%; height: 190rpx; border-radius: 16rpx; background: #EEEFF3; }
-.store-name { display: block; font-size: 28rpx; font-weight: bold; color: #2D2D2D; margin-top: 16rpx; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.store-name { display: block; font-size: 28rpx; font-weight: bold; color: var(--c-text); margin-top: 16rpx; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .store-score-row { margin-top: 10rpx; }
-.store-score { font-size: 24rpx; color: #F6B51E; font-weight: 600; }
+.store-score { font-size: 24rpx; color: var(--c-primary-light); font-weight: 600; }
 .store-badge {
   display: inline-block; font-size: 20rpx; color: #fff;
-  background: linear-gradient(135deg, #FF9F2E, #F6B51E);
+  background: var(--grad-primary);
   padding: 4rpx 14rpx; border-radius: 20rpx; margin-top: 10rpx;
 }
 

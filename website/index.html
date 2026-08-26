@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>优童成长社 · 0-6 岁儿童成长陪伴平台</title>
+  <meta name="description" content="优童成长社——面向 0-6 岁儿童家庭的母婴服务与成长陪伴平台。App、小程序、H5 三端覆盖，AI 育儿助手，管理后台一处掌控，全自动部署上线。" />
+  <style>
+    :root {
+      --brand: #FF8F00;
+      --brand-2: #FFC107;
+      --ink: #1f2430;
+      --muted: #6b7280;
+      --bg: #fffdf8;
+      --card: #ffffff;
+      --line: #f0e6d8;
+      --radius: 18px;
+      --shadow: 0 10px 40px rgba(255, 143, 0, 0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .btn {
+      display: inline-block; padding: 14px 30px; border-radius: 999px;
+      font-weight: 600; font-size: 16px; transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--brand-2), var(--brand)); color: #fff; box-shadow: var(--shadow); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-ghost { border: 1.5px solid var(--line); color: var(--ink); }
+    .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+
+    /* Nav */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255, 253, 248, 0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+    .logo { font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+    .logo .dot { width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-2), var(--brand)); }
+    .nav-links { display: flex; gap: 28px; font-size: 15px; color: var(--muted); }
+    .nav-links a:hover { color: var(--brand); }
+
+    /* Hero */
+    .hero { padding: 90px 0 70px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before {
+      content: ""; position: absolute; inset: 0; z-index: -1;
+      background:
+        radial-gradient(520px 320px at 15% 10%, rgba(255,193,7,.18), transparent 70%),
+        radial-gradient(520px 320px at 85% 20%, rgba(255,143,0,.16), transparent 70%);
+    }
+    .hero h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.2; font-weight: 800; letter-spacing: -0.5px; }
+    .hero h1 .accent { background: linear-gradient(135deg, var(--brand-2), var(--brand)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero p { max-width: 640px; margin: 22px auto 0; font-size: 18px; color: var(--muted); }
+    .hero-cta { margin-top: 36px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .badges { margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .badge { font-size: 13px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }
+
+    /* Section */
+    section { padding: 76px 0; }
+    .sec-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+    .sec-head .eyebrow { color: var(--brand); font-weight: 700; letter-spacing: 2px; font-size: 13px; text-transform: uppercase; }
+    .sec-head h2 { font-size: clamp(26px, 3.4vw, 38px); margin-top: 10px; font-weight: 800; }
+    .sec-head p { color: var(--muted); margin-top: 14px; font-size: 17px; }
+
+    /* Pain points */
+    .pain { background: #fff; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .pain-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+    .pain-card h3 { font-size: 19px; margin-bottom: 12px; }
+    .pain-card ul { list-style: none; color: var(--muted); }
+    .pain-card li { padding-left: 22px; position: relative; margin: 8px 0; }
+    .pain-card li::before { content: "•"; position: absolute; left: 6px; color: var(--brand); font-weight: 700; }
+
+    /* Features */
+    .features { background: linear-gradient(180deg, #fffdf8, #fff); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .feat {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 28px; transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .feat:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .feat .icon { font-size: 30px; margin-bottom: 12px; }
+    .feat h3 { font-size: 19px; margin-bottom: 8px; }
+    .feat p { color: var(--muted); font-size: 15px; }
+
+    /* Platform / architecture */
+    .arch { background: #fff; }
+    .arch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .arch-card {
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; text-align: center; background: var(--card);
+    }
+    .arch-card .tag { font-size: 12px; color: var(--brand); font-weight: 700; letter-spacing: 1px; }
+    .arch-card h4 { margin: 8px 0 6px; font-size: 18px; }
+    .arch-card p { color: var(--muted); font-size: 14px; }
+    .arch-note { text-align: center; margin-top: 30px; color: var(--muted); font-size: 15px; }
+
+    /* Stats */
+    .stats { background: linear-gradient(135deg, #2b2f3a, #1f2430); color: #fff; }
+    .stats .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
+    .stat .num { font-size: 40px; font-weight: 800; background: linear-gradient(135deg, var(--brand-2), var(--brand)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .stat .label { color: #c9cdd6; margin-top: 6px; font-size: 15px; }
+
+    /* CTA */
+    .cta { text-align: center; }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(255,193,7,.12), rgba(255,143,0,.12));
+      border: 1px solid var(--line); border-radius: 28px; padding: 56px 24px;
+    }
+    .cta-box h2 { font-size: clamp(26px, 3vw, 36px); }
+    .cta-box p { color: var(--muted); margin: 14px auto 30px; max-width: 560px; }
+    .qr-block { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .qr-img { background: #fff; padding: 12px; border-radius: 16px; box-shadow: var(--shadow); line-height: 0; }
+    .qr-img img, .qr-img canvas { display: block; width: 168px; height: 168px; }
+    .qr-tip { color: var(--ink); font-weight: 600; font-size: 15px; }
+
+    footer { border-top: 1px solid var(--line); padding: 36px 0; color: var(--muted); font-size: 14px; }
+    .foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .grid-3, .arch-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .grid-2, .grid-3, .arch-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 0 50px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap">
+      <nav>
+        <div class="logo"><span class="dot"></span>优童成长社</div>
+        <div class="nav-links">
+          <a href="#pain">解决什么</a>
+          <a href="#features">核心功能</a>
+          <a href="#platform">技术架构</a>
+          <a href="#stats">真实运行</a>
+          <a href="#start">立即体验</a>
+        </div>
+        <a class="btn btn-primary" href="#start" style="padding:10px 22px;font-size:14px;">下载 App</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <h1>让年轻父母<span class="accent">养娃不焦虑</span><br/>让运营方<span class="accent">管理不费力</span></h1>
+      <p>优童成长社——面向 0~6 岁儿童家庭的母婴服务与成长陪伴平台。从内容、互动、交易到管理，四端一体的完整数字化产品。</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#features">了解产品</a>
+        <a class="btn btn-ghost" href="#platform">查看技术架构</a>
+      </div>
+      <div class="badges">
+        <span class="badge">Flutter App</span>
+        <span class="badge">微信小程序 / H5</span>
+        <span class="badge">Vue3 管理后台</span>
+        <span class="badge">Spring Boot 后端</span>
+        <span class="badge">AI 育儿助手</span>
+        <span class="badge">全自动 CI/CD</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAIN -->
+  <section class="pain" id="pain">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Why Youtong</div>
+        <h2>我们解决什么？</h2>
+        <p>家长的信息焦虑，与运营方的管理低效，是母婴服务行业最普遍的两道裂缝。</p>
+      </div>
+      <div class="grid-2">
+        <div class="pain-card">
+          <h3>🍼 作为家长的你</h3>
+          <ul>
+            <li>宝宝该上什么早教课？网上信息五花八门，越查越乱</li>
+            <li>周末想参加亲子活动，却不知道哪里有、什么时候有</li>
+            <li>看中课程还要反复电话咨询、线下报名，麻烦</li>
+            <li>育儿知识碎片化，遇到喂养、发育问题不知该信谁</li>
+          </ul>
+        </div>
+        <div class="pain-card">
+          <h3>🧩 作为运营方的你</h3>
+          <ul>
+            <li>课程、活动、内容靠表格和微信群管理，一团乱麻</li>
+            <li>想改宣传图、上一门新课，要等程序员改代码</li>
+            <li>用户数据、订单数据散落各处，无法统计</li>
+            <li>家长反馈问题只能靠人工，效率极低</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Product</div>
+        <h2>五大核心板块</h2>
+        <p>从发现内容到完成交易，家长端一站式闭环；运营端可视化掌控全局。</p>
+      </div>
+      <div class="grid-3">
+        <div class="feat">
+          <div class="icon">🏠</div>
+          <h3>首页 · 逛得明白</h3>
+          <p>轮播 Banner、主题分类导航、精选育儿视频，配合 AI 驱动的「小宇宙计划」个性化推荐。</p>
+        </div>
+        <div class="feat">
+          <div class="icon">🤖</div>
+          <h3>智能助手 · 问得放心</h3>
+          <p>真正接入大模型（DeepSeek）的育儿问答，结合宝宝年龄与兴趣做内容推荐，异常自动降级兜底。</p>
+        </div>
+        <div class="feat">
+          <div class="icon">🛒</div>
+          <h3>课程 & 活动 · 买得顺畅</h3>
+          <p>在线浏览、下单、报名，订单生成二维码到场核销，形成「线上购买—线下核销」完整闭环。</p>
+        </div>
+        <div class="feat">
+          <div class="icon">👤</div>
+          <h3>我的 · 管得省心</h3>
+          <p>收藏、订单、收货地址、宝宝信息、订单统计与帮助中心，所有行为沉淀在一个账号下。</p>
+        </div>
+        <div class="feat">
+          <div class="icon">🖥️</div>
+          <h3>管理后台 · 管得轻松</h3>
+          <p>12 个可视化模块：课程、活动、视频、广告、订单、用户、门店、客服，无需写一行代码。</p>
+        </div>
+        <div class="feat">
+          <div class="icon">📍</div>
+          <h3>门店定位 · 一键导航</h3>
+          <p>每个门店在详情页展示地图位置与到店距离，支持一键唤起系统地图导航前往。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATFORM / ARCH -->
+  <section class="arch" id="platform">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Architecture</div>
+        <h2>一套后端，四端复用</h2>
+        <p>App、小程序、H5 共用同一套 API 与数据库，功能开发一次、三端同时可用，运营数据完全打通。</p>
+      </div>
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="tag">C 端 APP</div>
+          <h4>Flutter</h4>
+          <p>一套代码构建 Android 安装包，原生体验</p>
+        </div>
+        <div class="arch-card">
+          <div class="tag">C 端 H5 / 小程序</div>
+          <h4>uni-app (Vue3)</h4>
+          <p>一套代码发布微信小程序 + H5 网页</p>
+        </div>
+        <div class="arch-card">
+          <div class="tag">运营端</div>
+          <h4>Vue3 后台</h4>
+          <p>Element Plus + Pinia 的管理后台</p>
+        </div>
+        <div class="arch-card">
+          <div class="tag">服务端</div>
+          <h4>PHP</h4>
+          <p>Laravel + JWT + MySQL 8.0</p>
+        </div>
+      </div>
+      <p class="arch-note">工程亮点：三端共享后端 · 全自动 CI/CD（提交即上线）· AI 与业务数据深度结合 · JWT 鉴权 + 密码加密 + 接口白名单</p>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" id="stats">
+    <div class="wrap">
+      <div class="grid-4">
+        <div class="stat"><div class="num">4</div><div class="label">端一体数字化产品</div></div>
+        <div class="stat"><div class="num">12+</div><div class="label">后台可视化运营模块</div></div>
+        <div class="stat"><div class="num">10</div><div class="label">份线上版本自动备份回滚</div></div>
+        <div class="stat"><div class="num">24h</div><div class="label">AI 育儿顾问在线</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="start">
+    <div class="wrap">
+      <div class="cta-box">
+        <h2>已经上线跑起来了</h2>
+        <p>后端由 systemd 守护、Nginx 统一入口托管 API / 图片 / H5 / 后台，Android 安装包由 CI 自动构建，运营改动内容家长端实时同步刷新。</p>
+        <div class="qr-block">
+          <div id="qrcode" class="qr-img"></div>
+          <div class="qr-tip">📱 扫码下载 Android App</div>
+          <a class="btn btn-ghost" href="#start">打开管理后台</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap foot">
+      <div>© 2026 优童成长社 · 把「育儿服务」数字化、智能化、可运营化</div>
+      <div>技术栈：Flutter · uni-app · Vue3 · Spring Boot 3</div>
+    </div>
+  </footer>
+
+  <!-- 二维码生成库（轻量，约 20KB） -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    // 生成「下载 App」二维码，扫码直达 APK 安装包
+    (function () {
+      var apkUrl = 'http://123.56.160.50/download/app-release.apk';
+      var box = document.getElementById('qrcode');
+      if (box && window.QRCode) {
+        new QRCode(box, {
+          text: apkUrl,
+          width: 168,
+          height: 168,
+          colorDark: '#1f2430',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

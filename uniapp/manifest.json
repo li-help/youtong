@@ -19,7 +19,12 @@
         "modules" : {},
         "distribute" : {
             "android" : {
-                "permissions" : [ "<uses-permission android:name=\"android.permission.INTERNET\"/>" ]
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>"
+                ]
             },
             "ios" : {},
             "sdkConfigs" : {}
@@ -28,6 +33,12 @@
     "quickapp" : {},
     "mp-weixin" : {
         "appid" : "wx4b9c2156878deb40",
+        "requiredPrivateInfos" : [ "getLocation", "chooseLocation", "onLocationChange" ],
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "获取位置信息"
+            }
+        },
         "setting" : {
             "urlCheck" : false,
             "es6" : true

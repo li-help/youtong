@@ -82,17 +82,19 @@ CREATE TABLE `order` (
 -- ------------------------------------------------------------
 DROP TABLE IF EXISTS `store`;
 CREATE TABLE `store` (
-  `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '店铺ID',
-  `name`        VARCHAR(128) NOT NULL COMMENT '门店名称',
-  `address`     VARCHAR(255) DEFAULT '' COMMENT '地址',
-  `logo`        VARCHAR(255) DEFAULT '' COMMENT 'Logo URL',
-  `score`       DECIMAL(2,1) DEFAULT 5.0 COMMENT '评分(0-5)',
-  `intro`       VARCHAR(512) DEFAULT '' COMMENT '简介',
-  `lng`         DECIMAL(10,6) DEFAULT NULL COMMENT '经度',
-  `lat`         DECIMAL(10,6) DEFAULT NULL COMMENT '纬度',
-  `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态: 1营业 0歇业',
-  `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '店铺ID',
+  `name`            VARCHAR(128)  NOT NULL COMMENT '门店名称',
+  `address`         VARCHAR(255)  DEFAULT '' COMMENT '地址',
+  `phone`           VARCHAR(20)   DEFAULT '' COMMENT '门店电话',
+  `logo`            VARCHAR(255)  DEFAULT '' COMMENT 'Logo URL',
+  `score`           DECIMAL(2,1)  DEFAULT 5.0 COMMENT '评分(0-5)',
+  `intro`           VARCHAR(512)  DEFAULT '' COMMENT '简介',
+  `business_hours`  VARCHAR(64)   DEFAULT '09:00 - 21:00' COMMENT '营业时间',
+  `lng`             DECIMAL(10,6) DEFAULT NULL COMMENT '经度',
+  `lat`             DECIMAL(10,6) DEFAULT NULL COMMENT '纬度',
+  `status`          TINYINT       NOT NULL DEFAULT 1 COMMENT '状态: 1营业 0歇业',
+  `created_at`      DATETIME      DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at`      DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='店铺';
 
@@ -219,6 +221,8 @@ CREATE TABLE `article` (
 DROP TABLE IF EXISTS `customer_service`;
 CREATE TABLE `customer_service` (
   `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '客服ID',
+  `account_id`  BIGINT       DEFAULT NULL COMMENT '关联sys_account的ID',
+  `store_id`    BIGINT       DEFAULT 0 COMMENT '所属店铺ID(0为平台通用客服)',
   `name`        VARCHAR(64)  NOT NULL COMMENT '客服名称',
   `avatar`      VARCHAR(255) DEFAULT '' COMMENT '头像URL',
   `phone`       VARCHAR(20)  DEFAULT '' COMMENT '联系电话',
@@ -226,7 +230,75 @@ CREATE TABLE `customer_service` (
   `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态: 1启用 0禁用',
   `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_store_id` (`store_id`),
+  KEY `idx_account_id` (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客服';
+
+-- ------------------------------------------------------------
+-- 12. FAQ 知识库管理 - FAQ知识库
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `faq_knowledge`;
+CREATE TABLE `faq_knowledge` (
+  `id`          BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'FAQ ID',
+  `category`    VARCHAR(64)   DEFAULT '通用' COMMENT '分类(如: 课程咨询/入园指导/退改规则)',
+  `question`    VARCHAR(255)  NOT NULL COMMENT '标准问题',
+  `keywords`    VARCHAR(255)  DEFAULT '' COMMENT '匹配关键词(逗号分隔)',
+  `answer`      TEXT          NOT NULL COMMENT '标准回答内容',
+  `sort`        INT           DEFAULT 0 COMMENT '排序权重',
+  `status`      TINYINT       NOT NULL DEFAULT 1 COMMENT '状态: 1启用 0禁用',
+  `hit_count`   BIGINT        DEFAULT 0 COMMENT '命中次数统计',
+  `created_at`  DATETIME      DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at`  DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_keywords` (`keywords`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='业务FAQ知识库';
+
+-- ------------------------------------------------------------
+-- 13. 即时通信 IM - 会话列表
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `im_session`;
+CREATE TABLE `im_session` (
+  `id`                 BIGINT       NOT NULL AUTO_INCREMENT COMMENT '会话ID',
+  `session_no`         VARCHAR(64)  NOT NULL COMMENT '会话唯一标识(如 sess_uid_storeId)',
+  `user_id`            BIGINT       NOT NULL COMMENT '用户ID(关联sys_account.id)',
+  `store_id`           BIGINT       DEFAULT 0 COMMENT '店铺ID(0为平台客服)',
+  `cs_id`              BIGINT       DEFAULT NULL COMMENT '接待客服ID(关联customer_service.id)',
+  `session_type`       TINYINT      NOT NULL DEFAULT 1 COMMENT '会话类型: 1-AI客服会话, 2-人工客服会话',
+  `last_msg_content`   VARCHAR(512) DEFAULT '' COMMENT '最新消息预览',
+  `last_msg_time`      DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '最新消息时间',
+  `unread_count_user`  INT          DEFAULT 0 COMMENT '用户侧未读数',
+  `unread_count_cs`    INT          DEFAULT 0 COMMENT '客服侧未读数',
+  `status`             TINYINT      DEFAULT 1 COMMENT '状态: 1-进行中, 2-已结束',
+  `created_at`         DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at`         DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_session_no` (`session_no`),
+  KEY `idx_user_store` (`user_id`, `store_id`),
+  KEY `idx_cs_id` (`cs_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='IM聊天会话';
+
+-- ------------------------------------------------------------
+-- 14. 即时通信 IM - 聊天消息记录
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `im_message`;
+CREATE TABLE `im_message` (
+  `id`             BIGINT        NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+  `session_id`     BIGINT        NOT NULL COMMENT '会话ID',
+  `client_msg_id`  VARCHAR(64)   NOT NULL COMMENT '客户端生成防重ID(UUID/时间戳)',
+  `sender_type`    TINYINT       NOT NULL COMMENT '发送方: 1-用户, 2-客服, 3-AI机器人, 4-系统通知',
+  `sender_id`      BIGINT        NOT NULL COMMENT '发送方ID(用户ID/客服ID/0)',
+  `receiver_id`    BIGINT        NOT NULL COMMENT '接收方ID',
+  `msg_type`       VARCHAR(20)   DEFAULT 'text' COMMENT '消息类型: text/image/faq/transfer_notice',
+  `content`        TEXT          NOT NULL COMMENT '消息文本或JSON数据',
+  `is_read`        TINYINT       DEFAULT 0 COMMENT '是否已读: 0-未读, 1-已读',
+  `status`         TINYINT       DEFAULT 1 COMMENT '发送状态: 1-成功, 2-发送中, 3-失败',
+  `created_at`     DATETIME      DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_client_msg` (`client_msg_id`),
+  KEY `idx_session_time` (`session_id`, `created_at`),
+  KEY `idx_receiver_read` (`receiver_id`, `is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='IM聊天消息记录';
 
 SET FOREIGN_KEY_CHECKS = 1;

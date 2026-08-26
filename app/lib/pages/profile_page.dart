@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_back_button.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/app_skeleton.dart';
 
@@ -101,16 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
-                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
-                    ),
-                  ),
+                  AppBackButton(),
                 ],
               ),
             ),
@@ -162,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       height: 56,
                                       child: _avatar != null && _avatar!.isNotEmpty
                                           ? AppNetworkImage(url: _avatar!, fit: BoxFit.cover)
-                                          : const ColoredBox(color: Color(0xFFFFECB3), child: FaIcon(FontAwesomeIcons.user, size: 32)),
+                                          : const ColoredBox(color: AppStyles.amberSoft, child: FaIcon(FontAwesomeIcons.user, size: 32)),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

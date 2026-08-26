@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
+import '../widgets/app_back_button.dart';
 import '../widgets/app_skeleton.dart';
 
 class QrcodePage extends StatefulWidget {
@@ -44,16 +45,7 @@ class _QrcodePageState extends State<QrcodePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
-                      child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
-                    ),
-                  ),
+                  AppBackButton(),
                 ],
               ),
             ),
@@ -67,7 +59,7 @@ class _QrcodePageState extends State<QrcodePage> {
                   Container(
                     width: 70,
                     height: 70,
-                    decoration: const BoxDecoration(color: Color(0xFFFFECB3), shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: AppStyles.amberSoft, shape: BoxShape.circle),
                     child: const FaIcon(FontAwesomeIcons.user, size: 40),
                   ),
                   const SizedBox(height: 12),

@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppStyles.bg, Color(0xFFFFECB3)],
+            colors: [AppStyles.bg, AppStyles.amberSoft],
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -386,15 +386,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  InputDecoration _input(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFFFE082))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFFFE082))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppStyles.primary)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    );
-  }
+  InputDecoration _input(String hint) => AppStyles.inputDecoration(hintText: hint);
 }

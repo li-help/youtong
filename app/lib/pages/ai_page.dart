@@ -126,13 +126,13 @@ class _AiPageState extends State<AiPage> {
                       textInputAction: TextInputAction.send,
                       maxLines: 4,
                       minLines: 1,
-                      decoration: InputDecoration(
+                      decoration: AppStyles.inputDecoration(
                         hintText: '输入宝宝年龄、兴趣或问题...',
-                        hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFBBBBBB)),
-                        filled: true,
-                        fillColor: const Color(0xFFF5F6FA),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ).copyWith(
+                        fillColor: AppStyles.bg,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                       ),
                       onSubmitted: (_) => _send(),
                     ),
@@ -145,7 +145,7 @@ class _AiPageState extends State<AiPage> {
                       height: 46,
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        gradient: LinearGradient(colors: [Color(0xFFFF9F2E), AppStyles.primary]),
+                        gradient: LinearGradient(colors: [AppStyles.primary, AppStyles.primaryLight]),
                         shape: BoxShape.circle,
                         boxShadow: [BoxShadow(color: Color(0x33F6B51E), blurRadius: 12, offset: Offset(0, 4))],
                       ),
@@ -170,7 +170,7 @@ class _AiPageState extends State<AiPage> {
             width: 90,
             height: 90,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFFFF9F2E), AppStyles.primary]),
+              gradient: LinearGradient(colors: [AppStyles.primary, AppStyles.primaryLight]),
               shape: BoxShape.circle,
               boxShadow: [BoxShadow(color: Color(0x33F6B51E), blurRadius: 20, offset: Offset(0, 8))],
             ),
@@ -231,7 +231,7 @@ class _AiPageState extends State<AiPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xFFFF9F2E), AppStyles.primary]),
+                gradient: LinearGradient(colors: [AppStyles.primary, AppStyles.primaryLight]),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(18),
                   bottomLeft: Radius.circular(18),

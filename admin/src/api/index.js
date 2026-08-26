@@ -77,6 +77,19 @@ export const serviceApi = {
   remove: (id) => request.delete(`/service/${id}`),
 }
 
+export const faqApi = {
+  list: (p) => request.get('/faq', { params: p }),
+  save: (d) => request.post('/faq', d),
+  remove: (id) => request.delete(`/faq/${id}`),
+}
+
+export const imApi = {
+  sessionList: () => request.get('/im/session/list'),
+  history: (sessionId, page = 1, pageSize = 50) => request.get('/im/message/history', { params: { sessionId, page, pageSize } }),
+  markRead: (sessionId) => request.post('/im/message/read', { sessionId }),
+  transfer: (sessionId) => request.post('/im/session/transfer', { sessionId }),
+}
+
 export const uploadApi = {
   upload: (file) => {
     const fd = new FormData()
