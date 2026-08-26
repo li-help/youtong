@@ -64,36 +64,47 @@ function initWebSocket() {
   if (!token) return
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  // 连接后端 WebSocket 端口 3001
-  const wsUrl = `${protocol}//${window.location.hostname}:3001/ws/im?token=${token}`
+  // 智能适配端口：如果当前通过 5173/8080 等前端端口访问，指向 3001；若线上统一端口部署则走同源
+  const wsHost = (window.location.port && window.location.port !== '80' && window.location.port !== '443' && window.location.port !== '3001')
+    ? `${window.location.hostname}:3001`
+    : `${window.location.host}`
+  const wsUrl = `${protocol}//${wsHost}/ws/im?token=${token}`
 
-  ws = new WebSocket(wsUrl)
-  ws.onopen = () => {
-    pingTimer = setInterval(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ping' }))
-      }
-    }, 25000)
-  }
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data)
-      if (data.type === 'chat' && data.message) {
-        const msg = data.message
-        if (activeSession.value && msg.sessionId === activeSession.value.id) {
-          messages.value.push(msg)
-          scrollToBottom()
-          // 标记已读
-          imApi.markRead(activeSession.value.id)
+  try {
+    ws = new WebSocket(wsUrl)
+    ws.onopen = () => {
+      pingTimer = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }))
         }
-        // 刷新会话列表
-        loadSessions()
-      } else if (data.type === 'transfer') {
-        ElMessage.info('收到新的用户转人工接入请求！')
-        loadSessions()
-      }
-    } catch (e) {}
+      }, 25000)
+    }
+
+    ws.onerror = (err) => {
+      console.warn('WebSocket 连接未建立，当前使用轮询刷新机制:', err)
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.type === 'chat' && data.message) {
+          const msg = data.message
+          if (activeSession.value && msg.sessionId === activeSession.value.id) {
+            messages.value.push(msg)
+            scrollToBottom()
+            // 标记已读
+            imApi.markRead(activeSession.value.id)
+          }
+          // 刷新会话列表
+          loadSessions()
+        } else if (data.type === 'transfer') {
+          ElMessage.info('收到新的用户转人工接入请求！')
+          loadSessions()
+        }
+      } catch (e) {}
+    }
+  } catch (e) {
+    console.warn('WebSocket 初始化异常:', e)
   }
 }
 
