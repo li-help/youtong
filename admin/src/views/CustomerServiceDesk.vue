@@ -64,11 +64,9 @@ function initWebSocket() {
   if (!token) return
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  // 智能适配端口：如果当前通过 5173/8080 等前端端口访问，指向 3001；若线上统一端口部署则走同源
-  const wsHost = (window.location.port && window.location.port !== '80' && window.location.port !== '443' && window.location.port !== '3001')
-    ? `${window.location.hostname}:3001`
-    : `${window.location.host}`
-  const wsUrl = `${protocol}//${wsHost}/ws/im?token=${token}`
+  // WebSocket 统一走 Nginx 代理（80/443 端口），避免直连后端 3001 端口
+  // 开发环境（非 80/443）也走当前 host，由 devServer proxy 或 Nginx 统一代理
+  const wsUrl = `${protocol}//${window.location.host}/ws/im?token=${token}`
 
   try {
     ws = new WebSocket(wsUrl)

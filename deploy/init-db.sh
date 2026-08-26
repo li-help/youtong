@@ -48,7 +48,9 @@ if [ "$FORCE" = "1" ]; then
   $MYSQL_CMD "$DB" < "$SCHEMA"
   $MYSQL_CMD "$DB" < "$SEED"
 elif [ "$TABLE_COUNT" -gt 0 ]; then
-  echo "==> 检测到 $DB 库已有 $TABLE_COUNT 张表，跳过初始化（保留现有数据）"
+  echo "==> 检测到 $DB 库已有 $TABLE_COUNT 张表，尝试增量创建新表..."
+  # 利用 CREATE TABLE IF NOT EXISTS 跳过已存在表，自动创建新增表（如 faq_knowledge/im_session/im_message）
+  $MYSQL_CMD "$DB" < "$SCHEMA"
   echo "   如需强制重建: FORCE=1 bash init-db.sh <schema.sql> <seed.sql>"
 else
   echo "==> 首次初始化：导入表结构 schema.sql 与种子数据 seed.sql"
