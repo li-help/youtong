@@ -31,38 +31,45 @@ public class ImHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                   WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        if (request instanceof ServletServerHttpRequest servletRequest) {
-            String token = servletRequest.getServletRequest().getParameter("token");
-            if (token == null || token.isBlank()) {
-                String auth = servletRequest.getServletRequest().getHeader("Authorization");
-                if (auth != null && auth.startsWith("Bearer ")) {
-                    token = auth.substring(7);
+        try {
+            if (request instanceof ServletServerHttpRequest servletRequest) {
+                String token = servletRequest.getServletRequest().getParameter("token");
+                if (token == null || token.isBlank()) {
+                    String auth = servletRequest.getServletRequest().getHeader("Authorization");
+                    if (auth != null && auth.startsWith("Bearer ")) {
+                        token = auth.substring(7);
+                    }
                 }
-            }
-            if (token != null && !token.isBlank()) {
-                Map<String, Object> claims = JwtUtil.parse(token);
-                if (claims != null) {
-                    String username = (String) claims.get("sub");
-                    SysAccount account = accountService.getOne(
-                            new QueryWrapper<SysAccount>().eq("username", username));
-                    if (account != null) {
-                        attributes.put("userId", account.getId());
-                        attributes.put("username", username);
-                        attributes.put("role", account.getRole());
+                if (token != null && !token.isBlank()) {
+                    Map<String, Object> claims = JwtUtil.parse(token);
+                    if (claims != null) {
+                        String username = (String) claims.get("sub");
+                        try {
+                            SysAccount account = accountService.getOne(
+                                    new QueryWrapper<SysAccount>().eq("username", username));
+                            if (account != null) {
+                                attributes.put("userId", account.getId());
+                                attributes.put("username", username);
+                                attributes.put("role", account.getRole());
 
-                        // 若是客服角色，关联 customer_service.id
-                        CustomerService cs = customerServiceService.getOne(
-                                new QueryWrapper<CustomerService>().eq("account_id", account.getId()));
-                        if (cs != null) {
-                            attributes.put("csId", cs.getId());
-                            attributes.put("storeId", cs.getStoreId());
+                                // 若是客服角色，关联 customer_service.id
+                                try {
+                                    CustomerService cs = customerServiceService.getOne(
+                                            new QueryWrapper<CustomerService>().eq("account_id", account.getId()));
+                                    if (cs != null) {
+                                        attributes.put("csId", cs.getId());
+                                        attributes.put("storeId", cs.getStoreId());
+                                    }
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        } catch (Exception ignored) {
                         }
-                        return true;
                     }
                 }
             }
+        } catch (Exception ignored) {
         }
-        // 允许未传有效 token 时以游客方式连接（测试/演示场景）或根据需求拦截
         return true;
     }
 
