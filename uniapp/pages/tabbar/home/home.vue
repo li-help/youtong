@@ -227,7 +227,7 @@ function bannerUrlToPage(url) {
 function goVideo(v) { uni.navigateTo({ url: '/pages/video/play?id=' + v.id }) }
 function goStore(s) { uni.navigateTo({ url: '/pages/store/detail?id=' + s.id }) }
 function goPlan() { uni.switchTab({ url: '/pages/tabbar/ai/ai' }) }
-function goMoreStore() { uni.navigateTo({ url: '/pages/store/list' }) }
+function goMoreStore() { uni.navigateTo({ url: '/pages/store/map' }) }
 function goArticleList() { uni.navigateTo({ url: '/pages/article/list' }) }
 function goVideoList() { uni.navigateTo({ url: '/pages/video/list' }) }
 

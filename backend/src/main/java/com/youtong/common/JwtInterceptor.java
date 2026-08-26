@@ -54,6 +54,10 @@ public class JwtInterceptor implements HandlerInterceptor {
             "GET:/api/category/*",
             "/api/ai/**",
             "/api/sync/*",
+            "GET:/api/faq/*",
+            "/api/faq/hot",
+            "/api/faq/list",
+            "/api/store/nearby",
     };
 
     @Override

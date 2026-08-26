@@ -11,6 +11,7 @@
 // ============================================================
 const ENV_API_URL = typeof process !== 'undefined' && process.env && process.env.UNI_APP_API_URL
 export const BASE_URL = ENV_API_URL || 'http://123.56.160.50/api'
+export const WS_URL = BASE_URL.replace(/^http/, 'ws').replace(/\/api$/, '')
 
 // 占位图（本地纯色块，避免使用外部图片素材）
 export const PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(

@@ -32,6 +32,8 @@ export const menus = [
   ]},
   { path: '/service', title: '客服管理', icon: 'Service', children: [
     { path: '/service/list', title: '客服列表' },
+    { path: '/service/desk', title: '客服工作台' },
+    { path: '/service/faq', title: 'FAQ 知识库' },
   ]},
 ]
 

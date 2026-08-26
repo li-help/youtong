@@ -1,20 +1,76 @@
+/* ============================================================
+   优童管理后台 - 现代化商业主题变量系统 (Light Theme Only)
+   ============================================================ */
 :root {
-  /* 优童成长社 主题色 - 粉白配色 */
-  --brand: #ff7a9c;
-  --brand-light: #ffd9e3;
-  --brand-dark: #f25c84;
-  --brand-bg: #fff5f8;
-  --text: #4a4453;
-  --text-secondary: #8a8493;
-  --text-heading: #2b2632;
-  --bg: #f7f8fa;
-  --bg-white: #ffffff;
-  --border: #f0e6ec;
-  --sidebar-bg: #ffffff;
-  --sidebar-active: #ffe4ec;
-  --success: #52c41a;
-  --warning: #faad14;
-  --danger: #ff4d4f;
+  /* 品牌主色系 - 阳光暖橙 */
+  --brand-primary: #FF7A18;
+  --brand-hover: #FF9138;
+  --brand-active: #E66305;
+  --brand-light: #FFF4EB;
+  --brand-focus-ring: rgba(255, 122, 24, 0.2);
+
+  /* 辅助与功能状态色 */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
+
+  /* 文字四级色阶 */
+  --text-heading: #1F2937;
+  --text-body: #4B5563;
+  --text-secondary: #9CA3AF;
+  --text-placeholder: #D1D5DB;
+
+  /* 背景体系 */
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-input: #F8FAFC;
+  --bg-hover: #F1F5F9;
+
+  /* 边框与分割线 */
+  --border-color: #E2E8F0;
+  --border-light: #F1F5F9;
+
+  /* 统一间距尺度 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* 统一圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+
+  /* 统一立体投影 */
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-dialog: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+  /* Element Plus 核心组件变量覆盖 */
+  --el-color-primary: var(--brand-primary);
+  --el-color-primary-light-3: #FFA15C;
+  --el-color-primary-light-5: #FFC499;
+  --el-color-primary-light-7: #FFE1CC;
+  --el-color-primary-light-8: #FFF0E5;
+  --el-color-primary-light-9: var(--brand-light);
+  --el-color-primary-dark-2: var(--brand-active);
+
+  --el-color-success: var(--color-success);
+  --el-color-warning: var(--color-warning);
+  --el-color-danger: var(--color-danger);
+
+  --el-bg-color: var(--bg-card);
+  --el-bg-color-page: var(--bg-page);
+  --el-border-color: var(--border-color);
+  --el-border-color-light: var(--border-light);
+  --el-border-radius-base: var(--radius-md);
+  --el-text-color-primary: var(--text-heading);
+  --el-text-color-regular: var(--text-body);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-placeholder);
 }
 
 * {
@@ -30,20 +86,9 @@ body,
 }
 
 body {
-  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-body);
+  background-color: var(--bg-page);
   font-size: 14px;
-}
-
-/* Element Plus 主题覆盖 */
-:root {
-  --el-color-primary: var(--brand);
-  --el-color-primary-light-3: #ff9bb4;
-  --el-color-primary-light-5: var(--brand-light);
-  --el-color-primary-light-7: #ffe4ec;
-  --el-color-primary-light-8: #fff0f5;
-  --el-color-primary-light-9: var(--brand-bg);
-  --el-color-primary-dark-2: var(--brand-dark);
-  --el-border-radius-base: 8px;
+  -webkit-font-smoothing: antialiased;
 }

@@ -1,48 +1,83 @@
 /* ============================================
-   优童成长 —— 全局设计系统
-   设计原则：统一色板 / 圆角 / 间距 / 阴影，所有页面优先复用下方公共类，
-   禁止在各页写死与以下相同的色值与结构（避免风格分裂）。
+   优童成长 —— 全局设计系统 (Light Theme)
+   设计原则：8点网格间距 / 高对比度阳光暖橙 / 层次分明
    ============================================ */
 
-/* —— 设计变量（CSS 变量，小程序已验证兼容，便于统一调控）—— */
+/* —— 设计变量（CSS 变量，小程序与 H5 深度兼容）—— */
 page {
-  --c-primary: #FF9F2E;
-  --c-primary-light: #F6B51E;
-  --c-primary-soft: #FFF6E5;   /* 主色浅底 */
-  --c-primary-text: #E89B00;   /* 主色文字 */
-  --c-bg: #F5F6FA;             /* 页面背景 */
-  --c-bg-warm: #FFF9EC;        /* 暖黄背景 */
+  /* 品牌主色系 */
+  --c-primary: #FF7A18;
+  --c-primary-hover: #FF9138;
+  --c-primary-soft: #FFF4EB;   /* 主色浅底 */
+  --c-primary-text: #FF7A18;   /* 主色文字 */
+  --c-primary-gradient: linear-gradient(135deg, #FF9138 0%, #FF640A 100%);
+
+  /* 功能状态色 */
+  --c-success: #10B981;
+  --c-warning: #F59E0B;
+  --c-danger: #EF4444;
+  --c-info: #3B82F6;
+
+  /* 背景色体系 */
+  --c-bg: #F8FAFC;             /* 页面背景（冷微灰，衬托白卡片） */
+  --c-bg-page: #F8FAFC;
+  --c-bg-warm: #FFF9F2;        /* 暖黄辅助底 */
   --c-card: #FFFFFF;
-  --c-text: #2D2D2D;
-  --c-text-2: #666666;
-  --c-text-3: #999999;
-  --c-line: #F0F0F0;
-  --radius-sm: 16rpx;
-  --radius: 24rpx;
-  --radius-lg: 28rpx;
+  --c-bg-input: #F1F5F9;
+
+  /* 文本四级色阶 */
+  --c-text: #1F2937;           /* 一级主标题 */
+  --c-text-title: #1F2937;
+  --c-text-2: #4B5563;         /* 二级主要正文 */
+  --c-text-main: #4B5563;
+  --c-text-3: #9CA3AF;         /* 三级次要文字/说明 */
+  --c-text-muted: #9CA3AF;
+  --c-text-placeholder: #D1D5DB;
+
+  /* 边框与线 */
+  --c-line: #E2E8F0;
+  --c-border: #E2E8F0;
+
+  /* 8点网格间距尺度 */
+  --space-1: 8rpx;
+  --space-2: 16rpx;
+  --space-3: 24rpx;
+  --space-4: 32rpx;
+  --space-5: 40rpx;
   --gap: 24rpx;
-  --pad: 32rpx;
-  --grad-primary: linear-gradient(135deg, #FF9F2E, #F6B51E);
-  --shadow-card: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
-  --shadow-float: 0 8rpx 24rpx rgba(246, 181, 30, 0.30);
+  --pad: 28rpx;
+
+  /* 统一圆角 */
+  --radius-sm: 12rpx;
+  --radius: 20rpx;
+  --radius-md: 20rpx;
+  --radius-lg: 28rpx;
+  --radius-full: 9999rpx;
+
+  /* 渐变与阴影 */
+  --grad-primary: linear-gradient(135deg, #FF9138 0%, #FF640A 100%);
+  --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4rpx 16rpx rgba(31, 41, 55, 0.05);
+  --shadow-float: 0 8rpx 24rpx rgba(255, 122, 24, 0.25);
+  --shadow-glow: 0 8rpx 20rpx rgba(255, 122, 24, 0.25);
 
   background: var(--c-bg);
-  color: var(--c-text);
+  color: var(--c-text-2);
   font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
   font-size: 28rpx;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 view, text, input, button, image, scroll-view, swiper, swiper-item {
   box-sizing: border-box;
 }
 
-/* ===== 统一顶部栏（推荐用 components/AppNav 组件）===== */
+/* ===== 统一顶部栏 ===== */
 .app-nav {
   position: relative;
   z-index: 100;
   padding-top: var(--status-bar-height, 20rpx);
-  background: #fff;
+  background: #FFFFFF;
   border-bottom: 1rpx solid var(--c-line);
 }
 .app-nav--gradient {
@@ -53,16 +88,16 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   height: 88rpx;
   display: flex;
   align-items: center;
-  padding: 0 32rpx;
+  padding: 0 28rpx;
 }
 .app-nav__title {
   color: var(--c-text);
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
 }
 .app-nav--gradient .app-nav__title {
-  color: #fff;
+  color: #FFFFFF;
 }
 .app-nav__back {
   width: 64rpx;
@@ -70,13 +105,13 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 64rpx;
+  font-size: 56rpx;
   line-height: 1;
   color: var(--c-text);
   margin-right: 8rpx;
 }
 .app-nav--gradient .app-nav__back {
-  color: #fff;
+  color: #FFFFFF;
 }
 
 /* ===== 页面容器 ===== */
@@ -91,28 +126,29 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   padding: var(--pad);
+  border: 1rpx solid var(--c-line);
 }
 
-/* ===== 区块标题（全站统一，替代各页自写的 .section-header / .section-title）===== */
+/* ===== 区块标题 ===== */
 .section {
   padding: 0 var(--pad);
-  margin-top: 40rpx;
+  margin-top: 32rpx;
 }
 .section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx 0 20rpx;
+  padding: 24rpx 0 16rpx;
 }
 .section-head--inset {
-  padding: 32rpx var(--pad) 20rpx;
+  padding: 24rpx var(--pad) 16rpx;
 }
 .section-head__title {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
   color: var(--c-text);
   position: relative;
-  padding-left: 24rpx;
+  padding-left: 20rpx;
 }
 .section-head__title::before {
   content: "";
@@ -121,18 +157,19 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
   top: 50%;
   transform: translateY(-50%);
   width: 8rpx;
-  height: 32rpx;
+  height: 28rpx;
   border-radius: 4rpx;
   background: var(--grad-primary);
 }
 .section-head__more {
-  font-size: 26rpx;
-  color: var(--c-primary-text);
+  font-size: 24rpx;
+  color: var(--c-primary);
   display: flex;
   align-items: center;
+  font-weight: 500;
 }
 
-/* ===== 网格（分类/图标入口通用）===== */
+/* ===== 网格 ===== */
 .grid {
   display: flex;
   flex-wrap: wrap;
@@ -147,25 +184,26 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
 .grid-text {
   font-size: 24rpx;
   color: var(--c-text-2);
-  margin-top: 14rpx;
+  margin-top: 12rpx;
 }
 .tile {
-  width: 100rpx;
-  height: 100rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, .06);
+  box-shadow: var(--shadow-sm);
 }
-.tile__emoji { font-size: 48rpx; }
+.tile__emoji { font-size: 44rpx; }
 
-/* ===== 列表项卡片（门店/课程等通用）===== */
+/* ===== 列表项卡片 ===== */
 .list-card {
-  background: #fff;
+  background: #FFFFFF;
   border-radius: var(--radius);
   padding: var(--gap);
   box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--c-line);
 }
 .list-card + .list-card { margin-top: var(--gap); }
 
@@ -173,56 +211,56 @@ view, text, input, button, image, scroll-view, swiper, swiper-item {
 .tag {
   display: inline-block;
   padding: 6rpx 18rpx;
-  border-radius: 20rpx;
+  border-radius: var(--radius-full);
   font-size: 22rpx;
   background: var(--c-primary-soft);
-  color: var(--c-primary-text);
+  color: var(--c-primary);
+  font-weight: 500;
 }
 .tag--ghost {
-  background: #fff;
-  color: var(--c-primary-text);
-  border: 2rpx solid var(--c-primary-light);
+  background: #FFFFFF;
+  color: var(--c-primary);
+  border: 2rpx solid var(--c-primary-hover);
 }
 
-/* ===== 按钮（全站统一，替代各页自写按钮）===== */
+/* ===== 按钮 ===== */
 .btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 92rpx;
-  border-radius: 46rpx;
-  font-size: 32rpx;
+  height: 88rpx;
+  border-radius: var(--radius-full);
+  font-size: 30rpx;
   font-weight: 600;
-  letter-spacing: 2rpx;
   border: none;
 }
 .btn::after { border: none; }
 .btn--primary {
   background: var(--grad-primary);
-  color: #fff;
+  color: #FFFFFF;
   box-shadow: var(--shadow-float);
 }
 .btn--ghost {
-  background: #fff;
-  color: var(--c-primary-text);
-  border: 2rpx solid var(--c-primary-light);
+  background: #FFFFFF;
+  color: var(--c-primary);
+  border: 2rpx solid var(--c-primary);
 }
 .btn--block { width: 100%; }
 .btn--sm {
   height: 64rpx;
-  border-radius: 32rpx;
-  font-size: 28rpx;
-  padding: 0 28rpx;
+  border-radius: var(--radius-full);
+  font-size: 26rpx;
+  padding: 0 24rpx;
 }
 
 /* ===== 空态 ===== */
 .empty {
   text-align: center;
-  color: #bbb;
+  color: var(--c-text-3);
   padding: 80rpx 0;
-  font-size: 28rpx;
+  font-size: 26rpx;
 }
-.empty__icon { font-size: 72rpx; display: block; margin-bottom: 16rpx; }
+.empty__icon { font-size: 64rpx; display: block; margin-bottom: 12rpx; }
 
 /* ===== 通用文字辅助 ===== */
 .text-2 { color: var(--c-text-2); }

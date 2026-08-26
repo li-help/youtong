@@ -213,8 +213,8 @@ defineExpose({ load })
       </el-form>
     </el-card>
 
-    <el-card shadow="never">
-      <el-table :data="list" row-key="id" v-loading="loading" stripe style="width: 100%" header-cell-class-name="pink-header">
+    <el-card shadow="never" class="table-card">
+      <el-table :data="list" row-key="id" v-loading="loading" stripe style="width: 100%" header-cell-class-name="table-custom-header">
         <template #empty>
           <span v-if="loading">加载中…</span>
           <span v-else>暂无数据</span>
@@ -358,38 +358,126 @@ defineExpose({ load })
 </template>
 
 <style scoped>
-.list-page { display: flex; flex-direction: column; gap: 12px; }
-.page-title { margin: 0; font-size: 20px; color: var(--text-heading); }
-.filter-card :deep(.el-card__body) { padding: 12px 16px; }
-.pager { margin-top: 12px; justify-content: flex-end; display: flex; }
-/* 表头文字粉色加粗 */
-.list-page :deep(.pink-header) {
-  color: var(--brand) !important;
-  font-weight: 700 !important;
-  background: var(--brand-bg) !important;
+.list-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: -4px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+/* 过滤筛选卡片重构 */
+.filter-card {
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  background: var(--bg-card) !important;
+}
+
+.filter-card :deep(.el-card__body) {
+  padding: 16px 20px;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 表格卡片重构 */
+.table-card {
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+/* 表头重构：中性微灰背景 + 高对比度深色粗体 */
+.list-page :deep(.table-custom-header) {
+  background-color: var(--bg-page) !important;
+  color: var(--text-heading) !important;
+  font-weight: 600 !important;
+  font-size: 13px;
+  height: 46px;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.list-page :deep(.el-table__row) {
+  font-size: 14px;
+  color: var(--text-body);
+}
+
+.list-page :deep(.el-table__row:hover) {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 操作列按钮平滑化 */
+.list-page :deep(.el-table__cell .el-button--link) {
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.list-page :deep(.el-table__cell .el-button--link:hover) {
+  background-color: var(--brand-light);
+}
+
+/* 分页器 */
+.pager {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+  justify-content: flex-end;
+  display: flex;
+}
+
 .image-upload-preview {
   width: 120px;
   height: 120px;
-  border-radius: 4px;
-  border: 1px solid var(--el-border-color);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
   object-fit: cover;
   cursor: pointer;
 }
+
 .image-upload-tip {
   margin-top: 8px;
   font-size: 12px;
   color: var(--el-color-primary);
 }
+
 .image-upload-placeholder {
   width: 120px;
   height: 120px;
-  border: 1px dashed var(--el-border-color);
-  border-radius: 4px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--el-text-color-placeholder);
+  color: var(--text-placeholder);
   cursor: pointer;
+  transition: border-color .2s;
+}
+.image-upload-placeholder:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
 }
 </style>

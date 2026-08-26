@@ -7,6 +7,8 @@ import lombok.Data;
 @TableName("customer_service")
 public class CustomerService {
     private Long id;
+    private Long accountId;
+    private Long storeId;
     private String name;
     private String avatar;
     private String phone;

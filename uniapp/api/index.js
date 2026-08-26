@@ -67,6 +67,7 @@ export const courseApi = {
 // 门店（公开列表 / 详情需登录）
 export const storeApi = {
   list: (params) => request.get('/store/list', params).then(parsePage),
+  nearby: (params) => request.get('/store/nearby', params),
   detail: (id) => request.get('/store/' + id, {}),
   channel: 'store',
   version: () => request.get('/sync/version?channel=store', {})
@@ -140,10 +141,27 @@ export const orderApi = {
   verify: (id) => request.post('/order/' + id + '/verify', {})
 }
 
-// AI 智能助手（公开问答 / 个性化推荐）
+// AI 智能助手与智能客服
 export const aiApi = {
   chat: (messages) => request.post('/ai/chat', { messages }, { timeout: 60000 }),
+  serviceChat: (data) => request.post('/ai/service-chat', data, { timeout: 60000 }),
+  transferHuman: (sessionId) => request.post('/im/session/transfer', { sessionId }),
   recommend: (payload) => request.post('/ai/recommend', payload, { timeout: 60000 })
+}
+
+// FAQ 知识库
+export const faqApi = {
+  hot: (limit = 6) => request.get('/faq/hot', { limit }),
+  list: (params) => request.get('/faq', params).then(parsePage)
+}
+
+// IM 即时通信
+export const imApi = {
+  initSession: (storeId = 0) => request.get('/im/session/init', { storeId }),
+  sessionList: () => request.get('/im/session/list', {}),
+  history: (sessionId, page = 1, pageSize = 30) => request.get('/im/message/history', { sessionId, page, pageSize }),
+  markRead: (sessionId) => request.post('/im/message/read', { sessionId }),
+  transfer: (sessionId) => request.post('/im/session/transfer', { sessionId })
 }
 
 // 文件上传
@@ -177,5 +195,5 @@ export const uploadApi = {
 
 export default {
   authApi, userApi, addressApi, favoriteApi, courseApi, storeApi, serviceApi,
-  activityApi, videoApi, articleApi, categoryApi, bannerApi, orderApi, aiApi, uploadApi
+  activityApi, videoApi, articleApi, categoryApi, bannerApi, orderApi, aiApi, faqApi, imApi, uploadApi
 }

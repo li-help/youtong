@@ -19,6 +19,8 @@ const routes = [
       { path: '/user/list', name: '用户列表', component: () => import('../views/UserList.vue') },
       { path: '/order/list', name: '订单列表', component: () => import('../views/OrderList.vue') },
       { path: '/service/list', name: '客服列表', component: () => import('../views/ServiceList.vue') },
+      { path: '/service/desk', name: '客服工作台', component: () => import('../views/CustomerServiceDesk.vue') },
+      { path: '/service/faq', name: 'FAQ 知识库', component: () => import('../views/FaqList.vue') },
     ],
   },
   { path: '/login', name: '登录', component: () => import('../views/Login.vue') },
