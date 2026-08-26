@@ -24,6 +24,16 @@ public class FaqKnowledgeController extends CrudController<FaqKnowledge, Long> {
         this.faqKnowledgeService = service;
     }
 
+    /** C 端公开 FAQ 列表 */
+    @GetMapping("/list")
+    public R listForC() {
+        List<FaqKnowledge> list = faqKnowledgeService.list(new QueryWrapper<FaqKnowledge>()
+                .eq("status", 1)
+                .orderByDesc("sort")
+                .orderByDesc("id"));
+        return R.ok(list);
+    }
+
     /** C 端公开热门 FAQ 列表 */
     @GetMapping("/hot")
     public R hotList(@RequestParam(defaultValue = "6") Integer limit) {
