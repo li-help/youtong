@@ -312,29 +312,42 @@ class _HomePageState extends State<HomePage> {
         ),
         _sectionTitle('🔥 为你推荐'),
         SizedBox(
-          height: 160,
+          height: 188,
           child: _recommends.isEmpty
               ? const AppEmptyState(title: '暂无推荐')
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _recommends.length,
                   itemBuilder: (context, i) => GestureDetector(
                     onTap: () => pushAppPage(context,
                         page: CourseDetailPage(id: (_recommends[i]['id'] as num).toInt())),
                     child: Container(
-                      width: 150,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      width: 160,
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                             child: AppNetworkImage(
                               url: _recommends[i]['cover']?.toString(),
-                              width: 150,
+                              width: 140,
                               height: 110,
-                              borderRadius: BorderRadius.circular(16),
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           const SizedBox(height: 8),
