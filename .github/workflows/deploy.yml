@@ -234,6 +234,10 @@ jobs:
           # 用 --chmod 统一权限，避免 Nginx(www-data) 因属主/权限问题无法读取静态资源
           rsync -avz -e "ssh $SSH_OPTS" --delete --chmod=D755,F644 ./app-web/ $SSH_TARGET:$APP_DIR/web/
 
+          # 5.9) 上传官方网站（项目介绍落地页，部署在 /site/ 子路径）
+          ssh $SSH_OPTS $SSH_TARGET "mkdir -p $APP_DIR/site && chmod 755 $APP_DIR/site"
+          rsync -avz -e "ssh $SSH_OPTS" --delete --chmod=D755,F644 ./website/ $SSH_TARGET:$APP_DIR/site/
+
           # 5.7) 应用 Nginx 配置（以仓库 deploy/youtong.conf 为准，始终同步并校验重载）
           rsync -avz -e "ssh $SSH_OPTS" deploy/youtong.conf $SSH_TARGET:/opt/youtong/youtong.conf.new
           ssh $SSH_OPTS $SSH_TARGET \
