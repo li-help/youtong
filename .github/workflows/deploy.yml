@@ -271,4 +271,38 @@ jobs:
           fi
           echo "健康检查通过：后端已就绪"
 
+          # 8.5) 数据库表结构校验
+          #     注意: /api/sync/version 是纯内存实现(不查库)，上面的健康检查通过不代表数据库可用！
+          #     用服务器上的 MySQL 客户端直接验证表数量与核心表完整性，
+          #     防止"健康检查通过但管理后台接口全部 500"被掩盖。
+          if [ -n "$MYSQL_PASSWORD" ]; then
+            set +e
+            DB_TABLES=$(ssh $SSH_OPTS $SSH_TARGET \
+              "MYSQL_PWD='$MYSQL_PASSWORD' mysql -uyoutong -h127.0.0.1 -N -e \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='youtong'\"" 2>/dev/null)
+            DB_TABLES=${DB_TABLES:-CONNECT_ERROR}
+            set -e
+            echo "线上 youtong 库当前表数量: $DB_TABLES"
+            if [ "$DB_TABLES" = "0" ] || [ "$DB_TABLES" = "CONNECT_ERROR" ]; then
+              echo "!! 警告: 数据库连接失败或表数量为 0，管理后台接口将全部报错！"
+              echo "!! 请检查: 1) GitHub Secret MYSQL_PASSWORD 是否与服务器 youtong 账号一致"
+              echo "!!          2) MySQL 服务是否正常 (systemctl status mysql)"
+              rm -f ~/.ssh/id_rsa
+              exit 1
+            fi
+            # 校验 14 张核心业务表是否齐全（缺表会导致对应模块接口 500）
+            set +e
+            MISSING=$(ssh $SSH_OPTS $SSH_TARGET \
+              "MYSQL_PWD='$MYSQL_PASSWORD' mysql -uyoutong -h127.0.0.1 -N -e \"SELECT GROUP_CONCAT(t.table_name) FROM (SELECT 'sys_account' AS table_name UNION SELECT 'user' UNION SELECT 'order' UNION SELECT 'store' UNION SELECT 'category' UNION SELECT 'ad' UNION SELECT 'video' UNION SELECT 'course' UNION SELECT 'activity' UNION SELECT 'article' UNION SELECT 'customer_service' UNION SELECT 'faq_knowledge' UNION SELECT 'im_session' UNION SELECT 'im_message') t LEFT JOIN information_schema.tables x ON x.table_schema='youtong' AND x.table_name=t.table_name WHERE x.table_name IS NULL\"" 2>/dev/null)
+            set -e
+            # GROUP_CONCAT 无匹配时 MySQL 输出 NULL 字符串，需排除
+            if [ -n "$MISSING" ] && [ "$MISSING" != "NULL" ]; then
+              echo "!! 警告: 数据库缺少以下核心表，对应模块接口将报 500: $MISSING"
+              echo "!! 请确认 init-db.sh 已成功执行（表创建失败通常因 MySQL 账号无建表权限或密码错误）"
+            else
+              echo "数据库表结构校验通过：14 张核心表齐全"
+            fi
+          else
+            echo "警告: 未配置 MYSQL_PASSWORD，跳过数据库表结构校验"
+          fi
+
           rm -f ~/.ssh/id_rsa

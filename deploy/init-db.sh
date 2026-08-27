@@ -48,9 +48,14 @@ if [ "$FORCE" = "1" ]; then
   $MYSQL_CMD "$DB" < "$SCHEMA"
   $MYSQL_CMD "$DB" < "$SEED"
 elif [ "$TABLE_COUNT" -gt 0 ]; then
-  echo "==> 检测到 $DB 库已有 $TABLE_COUNT 张表，尝试增量创建新表..."
-  # 利用 CREATE TABLE IF NOT EXISTS 跳过已存在表，自动创建新增表（如 faq_knowledge/im_session/im_message）
-  $MYSQL_CMD "$DB" < "$SCHEMA"
+  echo "==> 检测到 $DB 库已有 $TABLE_COUNT 张表，仅增量创建缺失的新表（不清空已有数据）..."
+  # 重要：schema.sql 中每个表都是 DROP TABLE IF EXISTS + CREATE TABLE（用于本地从零重建），
+  # 直接导入会把线上已有表全部删除重建、清空线上数据（且不会补 seed.sql，连 admin 账号都会丢失）！
+  # 因此这里先做安全转换：剔除 DROP 语句、CREATE 改为 IF NOT EXISTS，只补建缺失的表。
+  SAFE_SCHEMA="$(mktemp)"
+  sed '/^DROP TABLE IF EXISTS/I d' "$SCHEMA" | sed 's/^CREATE TABLE /CREATE TABLE IF NOT EXISTS /I' > "$SAFE_SCHEMA"
+  $MYSQL_CMD "$DB" < "$SAFE_SCHEMA"
+  rm -f "$SAFE_SCHEMA"
   echo "   如需强制重建: FORCE=1 bash init-db.sh <schema.sql> <seed.sql>"
 else
   echo "==> 首次初始化：导入表结构 schema.sql 与种子数据 seed.sql"

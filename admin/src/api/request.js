@@ -4,7 +4,9 @@ import router from '../router'
 
 const service = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  // 线上经 Nginx 反代 + 公网链路，且后端部分接口（AI、大数据量列表）处理较慢，
+  // 本地 10s 够用但线上容易超时，放宽到 30s
+  timeout: 30000,
 })
 
 // 请求拦截：自动携带 JWT
