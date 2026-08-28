@@ -12,7 +12,16 @@ class ApiService {
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('API_BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (kIsWeb) return '/api';
+    if (kIsWeb) {
+      // Web 端：线上部署用相对路径 /api（由 Nginx 反代到后端），
+      // 本地调试（flutter run -d chrome）时 Flutter 开发服务器跑在 localhost，
+      // 相对路径 /api 会指向 localhost 导致 404，需回退到真实后端地址
+      final host = Uri.base.host;
+      if (host == 'localhost' || host == '127.0.0.1') {
+        return 'http://123.56.160.50/api';
+      }
+      return '/api';
+    }
     if (defaultTargetPlatform == TargetPlatform.android) {
       // 安卓模拟器访问宿主机：优先本地联调地址，联调时仍可通过 --dart-define 覆盖
       return 'http://123.56.160.50/api';
@@ -70,7 +79,8 @@ class ApiService {
     if (method == 'GET') {
       resp = await http.get(uri, headers: headers);
     } else if (method == 'POST') {
-      resp = await http.post(uri, headers: headers, body: body == null ? null : jsonEncode(body));
+      resp = await http.post(uri,
+          headers: headers, body: body == null ? null : jsonEncode(body));
     } else if (method == 'DELETE') {
       resp = await http.delete(uri, headers: headers);
     } else {
@@ -81,22 +91,29 @@ class ApiService {
       await clearToken();
       throw Exception('登录已过期');
     }
-    final data = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
     return data;
   }
 
-  static Future<Map<String, dynamic>> get(String path, {Map<String, String>? query}) =>
+  static Future<Map<String, dynamic>> get(String path,
+          {Map<String, String>? query}) =>
       request('GET', path, query: query);
-  static Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? body}) =>
+  static Future<Map<String, dynamic>> post(String path,
+          {Map<String, dynamic>? body}) =>
       request('POST', path, body: body);
-  static Future<Map<String, dynamic>> delete(String path) => request('DELETE', path);
+  static Future<Map<String, dynamic>> delete(String path) =>
+      request('DELETE', path);
 
   // Auth
-  static Future<Map<String, dynamic>> login(String username, String password) async {
-    return post('/auth/login', body: {'username': username, 'password': password});
+  static Future<Map<String, dynamic>> login(
+      String username, String password) async {
+    return post('/auth/login',
+        body: {'username': username, 'password': password});
   }
 
-  static Future<Map<String, dynamic>> register(String username, String password, {String? nickname, String? code}) async {
+  static Future<Map<String, dynamic>> register(String username, String password,
+      {String? nickname, String? code}) async {
     return post('/auth/register', body: {
       'username': username,
       'password': password,
@@ -111,13 +128,16 @@ class ApiService {
   }
 
   /// 校验验证码
-  static Future<Map<String, dynamic>> checkCode(String phone, String code) async {
+  static Future<Map<String, dynamic>> checkCode(
+      String phone, String code) async {
     return post('/auth/checkCode', body: {'phone': phone, 'code': code});
   }
 
   /// 通过手机号 + 验证码重置密码（忘记密码，无需原密码）
-  static Future<Map<String, dynamic>> resetPwdByCode(String phone, String code, String newPassword) async {
-    return post('/auth/resetPwdByCode', body: {'phone': phone, 'code': code, 'newPassword': newPassword});
+  static Future<Map<String, dynamic>> resetPwdByCode(
+      String phone, String code, String newPassword) async {
+    return post('/auth/resetPwdByCode',
+        body: {'phone': phone, 'code': code, 'newPassword': newPassword});
   }
 
   static Future<Map<String, dynamic>> logout() => post('/auth/logout');
@@ -128,94 +148,151 @@ class ApiService {
       post('/auth/phoneLogin', body: {'phone': phone, 'code': code});
 
   // Resources（C 端列表统一走公开的 /list 接口，仅返回已上线内容）
-  static Future<Map<String, dynamic>> listVideos({int page = 1, int pageSize = 20}) =>
-      get('/video/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
+  static Future<Map<String, dynamic>> listVideos(
+          {int page = 1, int pageSize = 20}) =>
+      get('/video/list',
+          query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
   static Future<Map<String, dynamic>> videoDetail(int id) => get('/video/$id');
 
-  static Future<Map<String, dynamic>> listCourses({int page = 1, int pageSize = 20, String? keyword, int? categoryId}) =>
-      get('/course/list',
-          query: {
-            'page': '$page',
-            'pageSize': '$pageSize',
-            if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
-            if (categoryId != null) 'categoryId': '$categoryId',
-          });
-  static Future<Map<String, dynamic>> courseDetail(int id) => get('/course/$id');
+  static Future<Map<String, dynamic>> listCourses(
+          {int page = 1,
+          int pageSize = 20,
+          String? keyword,
+          int? categoryId}) =>
+      get('/course/list', query: {
+        'page': '$page',
+        'pageSize': '$pageSize',
+        if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
+        if (categoryId != null) 'categoryId': '$categoryId',
+      });
+  static Future<Map<String, dynamic>> courseDetail(int id) =>
+      get('/course/$id');
 
-  static Future<Map<String, dynamic>> listActivities({int page = 1, int pageSize = 20}) =>
-      get('/activity/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
-  static Future<Map<String, dynamic>> activityDetail(int id) => get('/activity/$id');
+  static Future<Map<String, dynamic>> listActivities(
+          {int page = 1, int pageSize = 20}) =>
+      get('/activity/list',
+          query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
+  static Future<Map<String, dynamic>> activityDetail(int id) =>
+      get('/activity/$id');
 
-  static Future<Map<String, dynamic>> listStores({int page = 1, int pageSize = 20}) =>
+  static Future<Map<String, dynamic>> listStores(
+          {int page = 1, int pageSize = 20}) =>
       get('/store/list', query: {'page': '$page', 'pageSize': '$pageSize'});
 
-  static Future<Map<String, dynamic>> listServices({int page = 1, int pageSize = 20}) =>
+  static Future<Map<String, dynamic>> listServices(
+          {int page = 1, int pageSize = 20}) =>
       get('/service/list', query: {'page': '$page', 'pageSize': '$pageSize'});
 
-  static Future<Map<String, dynamic>> listCategories({int page = 1, int pageSize = 20}) =>
-      get('/category/list', query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
+  static Future<Map<String, dynamic>> listCategories(
+          {int page = 1, int pageSize = 20}) =>
+      get('/category/list',
+          query: {'page': '$page', 'pageSize': '$pageSize', 'status': '1'});
 
   // C 端课程推荐
   static Future<Map<String, dynamic>> recommendCourses({int size = 6}) =>
       get('/course/recommend', query: {'size': '$size'});
 
-
-
   // 当前用户信息 / 修改资料（对接后端 sys_account）
   static Future<Map<String, dynamic>> userMe() => get('/user/me');
-  static Future<Map<String, dynamic>> updateProfile(String nickname, {String? avatar}) =>
-      post('/user/profile', body: {'nickname': nickname, if (avatar != null) 'avatar': avatar});
+  static Future<Map<String, dynamic>> updateProfile(String nickname,
+          {String? avatar}) =>
+      post('/user/profile',
+          body: {'nickname': nickname, if (avatar != null) 'avatar': avatar});
+
+  /// 上传文件（multipart/form-data），对接后端 POST /api/upload。
+  /// 返回 {code, msg, data: {url, type}}，url 为 /uploads/... 相对路径，
+  /// 展示时经 AppNetworkImage.resolveUrl 自动拼接为完整地址。
+  static Future<Map<String, dynamic>> uploadFile({
+    required String filename,
+    required List<int> bytes,
+  }) async {
+    final headers = <String, String>{};
+    final token = await getToken();
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    final req = http.MultipartRequest('POST', Uri.parse(baseUrl + '/upload'))
+      ..headers.addAll(headers)
+      ..files
+          .add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+    final resp = await req.send();
+    if (resp.statusCode == 401) {
+      await clearToken();
+      throw Exception('登录已过期');
+    }
+    final data = jsonDecode(utf8.decode(await resp.stream.toBytes()))
+        as Map<String, dynamic>;
+    return data;
+  }
 
   // 用户统计（订单数/收藏数）
   static Future<Map<String, dynamic>> userStats() => get('/user/stats');
 
   // AI 智能助手
-  static Future<Map<String, dynamic>> aiChat(List<Map<String, String>> messages) async {
-    return post('/ai/chat', body: {'messages': messages}).timeout(const Duration(seconds: 60));
+  static Future<Map<String, dynamic>> aiChat(
+      List<Map<String, String>> messages) async {
+    return post('/ai/chat', body: {'messages': messages})
+        .timeout(const Duration(seconds: 60));
   }
 
   // 收藏
   static Future<Map<String, dynamic>> listFavorites({String? targetType}) =>
-      get('/favorite/list', query: {if (targetType != null && targetType.isNotEmpty) 'targetType': targetType});
+      get('/favorite/list', query: {
+        if (targetType != null && targetType.isNotEmpty)
+          'targetType': targetType
+      });
   static Future<Map<String, dynamic>> addFavorite(Map<String, dynamic> body) =>
       post('/favorite/add', body: body);
-  static Future<Map<String, dynamic>> removeFavorite(Map<String, dynamic> body) =>
+  static Future<Map<String, dynamic>> removeFavorite(
+          Map<String, dynamic> body) =>
       post('/favorite/remove', body: body);
-  static Future<Map<String, dynamic>> favoriteStatus(String targetType, int targetId) =>
-      get('/favorite/status', query: {'targetType': targetType, 'targetId': '$targetId'});
+  static Future<Map<String, dynamic>> favoriteStatus(
+          String targetType, int targetId) =>
+      get('/favorite/status',
+          query: {'targetType': targetType, 'targetId': '$targetId'});
 
   // 收货地址
   static Future<Map<String, dynamic>> listAddresses() => get('/address/list');
   static Future<Map<String, dynamic>> saveAddress(Map<String, dynamic> body) =>
       post('/address/save', body: body);
-  static Future<Map<String, dynamic>> deleteAddress(int id) => delete('/address/$id');
-  static Future<Map<String, dynamic>> setDefaultAddress(int id) => post('/address/$id/default');
+  static Future<Map<String, dynamic>> deleteAddress(int id) =>
+      delete('/address/$id');
+  static Future<Map<String, dynamic>> setDefaultAddress(int id) =>
+      post('/address/$id/default');
 
   // 资讯文章
-  static Future<Map<String, dynamic>> listArticles({int page = 1, int pageSize = 20, int? categoryId}) =>
-      get('/article/published',
-          query: {
-            'page': '$page',
-            'pageSize': '$pageSize',
-            if (categoryId != null) 'categoryId': '$categoryId',
-          });
-  static Future<Map<String, dynamic>> articleDetail(int id) => get('/article/view/$id');
+  static Future<Map<String, dynamic>> listArticles(
+          {int page = 1, int pageSize = 20, int? categoryId}) =>
+      get('/article/published', query: {
+        'page': '$page',
+        'pageSize': '$pageSize',
+        if (categoryId != null) 'categoryId': '$categoryId',
+      });
+  static Future<Map<String, dynamic>> articleDetail(int id) =>
+      get('/article/view/$id');
 
   // 首页轮播：后台广告位 home_banner（统一走 /api/ad，与 uniapp 端一致）
   static Future<Map<String, dynamic>> listBanners() =>
       get('/ad/list', query: {'positionId': '1', 'status': '1'});
 
-  static Future<Map<String, dynamic>> listOrders({int page = 1, int pageSize = 20, String? status}) =>
-      get('/order/list', query: {'page': '$page', 'pageSize': '$pageSize', if (status != null) 'status': status});
+  static Future<Map<String, dynamic>> listOrders(
+          {int page = 1, int pageSize = 20, String? status}) =>
+      get('/order/list', query: {
+        'page': '$page',
+        'pageSize': '$pageSize',
+        if (status != null) 'status': status
+      });
 
   static Future<Map<String, dynamic>> createOrder(Map<String, dynamic> body) =>
       post('/order/create', body: body);
 
   /// 订单核销（商家端）
-  static Future<Map<String, dynamic>> verifyOrder(int id) => post('/order/$id/verify');
+  static Future<Map<String, dynamic>> verifyOrder(int id) =>
+      post('/order/$id/verify');
 
   /// 模拟支付（待支付 -> 已支付）
-  static Future<Map<String, dynamic>> payOrder(int id) => post('/order/$id/pay');
+  static Future<Map<String, dynamic>> payOrder(int id) =>
+      post('/order/$id/pay');
 
   // AI 智能推荐（与 uniapp 端一致）
   static Future<Map<String, dynamic>> aiRecommend({

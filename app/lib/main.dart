@@ -26,6 +26,9 @@ class MyApp extends StatelessWidget {
           surface: const Color(0xFFF5F6FA),
         ),
         useMaterial3: true,
+        // 显式指定中文字体：避免 Windows 上系统里安装的试用版字体（带水印）被兜底选中。
+        // 各端无此字体时自动回退系统默认中文字体，不影响正常渲染。
+        fontFamily: 'Microsoft YaHei',
         scaffoldBackgroundColor: const Color(0xFFF5F6FA),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFFF5F6FA),

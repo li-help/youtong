@@ -65,6 +65,7 @@ class _AppRefreshLoadState extends State<AppRefreshLoad> {
           padding: widget.padding,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               widget.child,
               if (_loadingMore)

@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '../layout/Layout.vue'
 
-// 由各菜单动态生成路由（除 layout 外均为懒加载占位页面）
 const routes = [
   {
     path: '/',

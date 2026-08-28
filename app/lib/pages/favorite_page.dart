@@ -7,6 +7,7 @@ import '../widgets/app_skeleton.dart';
 import '../widgets/app_empty_state.dart';
 import '../widgets/app_error_retry.dart';
 import '../widgets/app_page_route.dart';
+import '../widgets/app_page_header.dart';
 import 'course_detail_page.dart';
 import 'activity_detail_page.dart';
 import 'video_page.dart';
@@ -56,7 +57,11 @@ class _FavoritePageState extends State<FavoritePage>
     try {
       final res = await ApiService.listFavorites(targetType: _types[index]);
       final data = res['data'];
-      final list = data is List ? data : (data is Map ? (data['list'] is List ? data['list'] as List : []) : []);
+      final list = data is List
+          ? data
+          : (data is Map
+              ? (data['list'] is List ? data['list'] as List : [])
+              : []);
       setState(() {
         _lists[index] = list;
         _loading[index] = false;
@@ -76,10 +81,12 @@ class _FavoritePageState extends State<FavoritePage>
         'targetId': item['targetId'],
       });
       setState(() => _lists[index].remove(item));
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已取消收藏')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('已取消收藏')));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('操作失败：${e.toString()}')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('操作失败：${e.toString()}')));
       }
     }
   }
@@ -105,23 +112,29 @@ class _FavoritePageState extends State<FavoritePage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppStyles.bg,
-      appBar: AppBar(
-        title: const Text('我的收藏'),
-        backgroundColor: AppStyles.bg,
-        elevation: 0,
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppStyles.primary,
-          unselectedLabelColor: AppStyles.textSub,
-          indicatorColor: AppStyles.primary,
-          indicatorSize: TabBarIndicatorSize.label,
-          tabs: _tabs.map((t) => Tab(text: t)).toList(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const AppPageHeader(title: '我的收藏', showBack: true),
+            Container(
+              color: AppStyles.bg,
+              child: TabBar(
+                controller: _tabController,
+                labelColor: AppStyles.primary,
+                unselectedLabelColor: AppStyles.textSub,
+                indicatorColor: AppStyles.primary,
+                indicatorSize: TabBarIndicatorSize.label,
+                tabs: _tabs.map((t) => Tab(text: t)).toList(),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: List.generate(_tabs.length, (i) => _buildTab(i)),
+              ),
+            ),
+          ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: List.generate(_tabs.length, (i) => _buildTab(i)),
       ),
     );
   }
@@ -130,7 +143,8 @@ class _FavoritePageState extends State<FavoritePage>
     if (_loading[index]) return _skeleton();
     if (_error[index]) return AppErrorRetry(onRetry: () => _load(index));
     final list = _lists[index];
-    if (list.isEmpty) return const AppEmptyState(title: '暂无收藏', subtitle: '去逛逛喜欢的课程和活动吧');
+    if (list.isEmpty)
+      return const AppEmptyState(title: '暂无收藏', subtitle: '去逛逛喜欢的课程和活动吧');
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,
@@ -164,15 +178,24 @@ class _FavoritePageState extends State<FavoritePage>
                           item['title']?.toString() ?? '未命名',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppStyles.textMain),
+                          style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppStyles.textMain),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppStyles.bg, borderRadius: BorderRadius.circular(8)),
-                              child: Text(_typeName(item['targetType']?.toString()), style: const TextStyle(fontSize: 12, color: AppStyles.primary)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                  color: AppStyles.bg,
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Text(
+                                  _typeName(item['targetType']?.toString()),
+                                  style: const TextStyle(
+                                      fontSize: 12, color: AppStyles.primary)),
                             ),
                           ],
                         ),
@@ -183,7 +206,8 @@ class _FavoritePageState extends State<FavoritePage>
                     onTap: () => _remove(index, item),
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      child: const FaIcon(FontAwesomeIcons.solidHeart, size: 22, color: AppStyles.danger),
+                      child: const FaIcon(FontAwesomeIcons.solidHeart,
+                          size: 22, color: AppStyles.danger),
                     ),
                   ),
                 ],

@@ -10,7 +10,7 @@ class AppSkeleton extends StatefulWidget {
   const AppSkeleton({
     super.key,
     this.width = double.infinity,
-    required this.height,
+    this.height = double.infinity,
     this.borderRadius = 8,
   });
 
@@ -127,14 +127,18 @@ class SkeletonGridCard extends StatelessWidget {
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppSkeleton(height: 110, borderRadius: 12),
+          // 与真实卡片结构保持一致：图片区域自适应剩余高度，避免固定高度导致溢出
+          Expanded(
+            child: AppSkeleton(borderRadius: 12),
+          ),
           Padding(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 AppSkeleton(height: 16, borderRadius: 4),
-                SizedBox(height: 8),
+                SizedBox(height: 6),
                 AppSkeleton(width: 80, height: 12, borderRadius: 4),
               ],
             ),
