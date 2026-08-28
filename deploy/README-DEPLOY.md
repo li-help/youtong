@@ -28,6 +28,7 @@ GitHub Actions (CI/CD) ───────────┘
 | `/opt/youtong/app/app.jar` | 后端可执行 jar（CI 覆盖） |
 | `/opt/youtong/admin/` | 后台前端静态文件（CI 覆盖） |
 | `/opt/youtong/app/schema.sql` / `seed.sql` | 数据库脚本（CI 上传） |
+| `/opt/youtong/app/migrate_schema_to_match_entities.sql` | 幂等增量列迁移脚本（CI 上传，给已有表补新增列） |
 | `/opt/youtong/init-db.sh` | 幂等数据库初始化脚本（CI 上传） |
 | `/opt/youtong/backup/app-*.jar` | 历史 jar 备份（自动保留 10 份） |
 | `${APP_UPLOAD_DIR}` | 上传的图片等资源（默认 `/opt/youtong/uploads`） |
@@ -90,7 +91,7 @@ CI 部署流程：
 1. 构建后端 jar、后台 dist
 2. 备份服务器旧 jar（保留最近 10 份）
 3. 上传 jar、后台 dist、SQL 脚本、`init-db.sh`
-4. **幂等初始化数据库**（首次导入 `schema.sql` + `seed.sql`，之后跳过）
+4. **幂等初始化数据库**（首次导入 `schema.sql` + `seed.sql`；之后仅补建缺失的新表，并执行 `migrate_schema_to_match_entities.sql` 给已有表补新增列）
 5. `systemctl restart youtong`
 6. **健康检查**：轮询 `GET /api/sync/version?channel=health`，60 秒内返回 200 视为成功，否则失败并提示日志查看命令
 

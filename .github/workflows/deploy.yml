@@ -216,7 +216,7 @@ jobs:
           rsync -avz -e "ssh $SSH_OPTS" ./backend-jar/youtong-admin-backend-1.0.0.jar $SSH_TARGET:$APP_DIR/app/app.jar
 
           # 4) 上传数据库脚本与初始化工具
-          rsync -avz -e "ssh $SSH_OPTS" backend/schema.sql backend/seed.sql $SSH_TARGET:$APP_DIR/app/
+          rsync -avz -e "ssh $SSH_OPTS" backend/schema.sql backend/seed.sql backend/migrate_schema_to_match_entities.sql $SSH_TARGET:$APP_DIR/app/
           rsync -avz -e "ssh $SSH_OPTS" deploy/init-db.sh $SSH_TARGET:$APP_DIR/init-db.sh
 
           # 5) 上传后台 dist
