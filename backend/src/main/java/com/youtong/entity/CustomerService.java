@@ -1,5 +1,6 @@
 package com.youtong.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -16,4 +17,10 @@ public class CustomerService {
     private Integer status;
     private String createdAt;
     private String updatedAt;
+
+    /** 关联展示字段（非表字段）：所属门店名称 / 绑定工作台账号名 */
+    @TableField(exist = false)
+    private String storeName;
+    @TableField(exist = false)
+    private String accountName;
 }

@@ -34,6 +34,27 @@ class ApiService {
     return prefs.getString('token');
   }
 
+  /// WebSocket 基地址：由 baseUrl 推导（http://xxx/api -> ws://xxx），
+  /// 用于客服 IM 通道 /ws/im。可用 --dart-define=API_WS_URL 覆盖。
+  static String get wsBaseUrl {
+    const fromEnv = String.fromEnvironment('API_WS_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+
+    final base = baseUrl;
+    if (base.startsWith('/')) {
+      // Web 同源相对路径：按当前页面地址推导
+      final u = Uri.base;
+      final scheme = u.scheme == 'https' ? 'wss' : 'ws';
+      final defaultPort = (u.scheme == 'https' && u.port == 443) ||
+          (u.scheme == 'http' && u.port == 80);
+      return '$scheme://${u.host}${defaultPort ? '' : ':${u.port}'}';
+    }
+    if (base.startsWith('https://')) {
+      return base.replaceFirst('https://', 'wss://').replaceFirst(RegExp(r'/api$'), '');
+    }
+    return base.replaceFirst('http://', 'ws://').replaceFirst(RegExp(r'/api$'), '');
+  }
+
   static Future<void> setToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
@@ -234,6 +255,34 @@ class ApiService {
     return post('/ai/chat', body: {'messages': messages})
         .timeout(const Duration(seconds: 60));
   }
+
+  // AI 智能客服（FAQ 知识库匹配 + 多轮对话 + 转人工检测）
+  static Future<Map<String, dynamic>> aiServiceChat({
+    required String message,
+    int? sessionId,
+    String? clientMsgId,
+  }) async {
+    return post('/ai/service-chat', body: {
+      'message': message,
+      if (sessionId != null) 'sessionId': sessionId,
+      if (clientMsgId != null) 'clientMsgId': clientMsgId,
+    }).timeout(const Duration(seconds: 60));
+  }
+
+  // 客服 IM 会话
+  static Future<Map<String, dynamic>> imInitSession({int storeId = 0}) =>
+      get('/im/session/init', query: {'storeId': '$storeId'});
+
+  static Future<Map<String, dynamic>> imHistory(int sessionId,
+          {int page = 1, int pageSize = 30}) =>
+      get('/im/message/history', query: {
+        'sessionId': '$sessionId',
+        'page': '$page',
+        'pageSize': '$pageSize',
+      });
+
+  static Future<Map<String, dynamic>> imTransfer(int sessionId) =>
+      post('/im/session/transfer', body: {'sessionId': sessionId});
 
   // 收藏
   static Future<Map<String, dynamic>> listFavorites({String? targetType}) =>

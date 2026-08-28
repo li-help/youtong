@@ -59,7 +59,12 @@ public class ImController {
 
         QueryWrapper<ImSession> qw = new QueryWrapper<>();
         if ("admin".equalsIgnoreCase(user.getRole()) || "operator".equalsIgnoreCase(user.getRole())) {
-            // 客服/管理员：查询所有会话，或所属客服会话
+            // 客服/管理员：店铺客服（绑定账号且配置了所属门店）只能看到本店会话
+            CustomerService cs = customerServiceService.getOne(new QueryWrapper<CustomerService>()
+                    .eq("account_id", user.getId()).last("LIMIT 1"));
+            if (cs != null && cs.getStoreId() != null && cs.getStoreId() > 0) {
+                qw.eq("store_id", cs.getStoreId());
+            }
             qw.orderByDesc("updated_at");
         } else {
             // 普通用户：查询自己的会话

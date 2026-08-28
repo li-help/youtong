@@ -76,6 +76,10 @@
       "style": { "navigationBarTitleText": "店铺详情", "navigationStyle": "custom" }
     },
     {
+      "path": "pages/store/chat",
+      "style": { "navigationBarTitleText": "门店客服", "navigationStyle": "custom" }
+    },
+    {
       "path": "pages/store/map",
       "style": { "navigationBarTitleText": "门店地图", "navigationStyle": "custom" }
     },

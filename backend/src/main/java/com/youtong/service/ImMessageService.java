@@ -106,8 +106,9 @@ public class ImMessageService extends ServiceImpl<ImMessageMapper, ImMessage> {
                     m.setSenderName(u.getNickname() != null && !u.getNickname().isBlank() ? u.getNickname() : u.getUsername());
                     m.setSenderAvatar(u.getAvatar());
                 }
-            } else if (m.getSenderType() == 2) { // 客服
-                CustomerService cs = customerServiceService.getById(m.getSenderId());
+            } else if (m.getSenderType() == 2) { // 客服（senderId 存的是工作台账号 sys_account.id，需按 account_id 反查）
+                CustomerService cs = customerServiceService.getOne(new QueryWrapper<CustomerService>()
+                        .eq("account_id", m.getSenderId()).last("LIMIT 1"));
                 if (cs != null) {
                     m.setSenderName(cs.getName());
                     m.setSenderAvatar(cs.getAvatar());

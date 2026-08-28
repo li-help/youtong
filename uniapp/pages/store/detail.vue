@@ -39,6 +39,7 @@
           ></map>
         </view>
         <button class="nav-btn" @click="openLocation">🧭 一键导航前往</button>
+        <button class="consult-btn" @click="goConsult">💬 在线咨询门店客服</button>
       </view>
 
       <view class="section">
@@ -72,6 +73,11 @@ const courses = ref([])
 const id = ref('')
 const distanceText = ref('')
 const markers = ref([])
+
+function goConsult() {
+  const name = store.value && store.value.name ? encodeURIComponent(store.value.name) : ''
+  uni.navigateTo({ url: `/pages/store/chat?storeId=${id.value || 0}&name=${name}` })
+}
 
 onMounted(() => {
   const pages = getCurrentPages()
@@ -196,4 +202,10 @@ function goBack() { uni.navigateBack() }
 .map { width: 100%; height: 400rpx; }
 .nav-btn { margin-top: 20rpx; background: var(--c-primary-gradient); color: #fff; border-radius: var(--radius-full); font-size: 30rpx; font-weight: 600; box-shadow: var(--shadow-glow); }
 .nav-btn::after { border: none; }
+.consult-btn {
+  margin-top: 16rpx; background: #FFFFFF; color: var(--c-primary);
+  border: 1rpx solid rgba(255, 122, 24, 0.4);
+  border-radius: var(--radius-full); font-size: 30rpx; font-weight: 600;
+}
+.consult-btn::after { border: none; }
 </style>

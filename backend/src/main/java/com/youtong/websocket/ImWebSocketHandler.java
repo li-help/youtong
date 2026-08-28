@@ -1,7 +1,10 @@
 package com.youtong.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.youtong.entity.CustomerService;
 import com.youtong.entity.ImMessage;
+import com.youtong.entity.ImSession;
+import com.youtong.service.CustomerServiceService;
 import com.youtong.service.ImMessageService;
 import com.youtong.service.ImSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,6 +36,9 @@ public class ImWebSocketHandler extends TextWebSocketHandler {
 
     @Autowired
     private ImSessionService sessionService;
+
+    @Autowired
+    private CustomerServiceService customerServiceService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -86,15 +94,40 @@ public class ImWebSocketHandler extends TextWebSocketHandler {
                 );
                 session.sendMessage(new TextMessage(objectMapper.writeValueAsString(ack)));
 
-                // 转发给接收方（如果在线）
+                // 计算接收方：显式 receiverId 优先；否则按会话自动路由
+                // - 客服发言 -> 会话用户
+                // - 人工会话中的用户发言 -> 会话绑定的客服（店铺客服/官方客服）账号
+                Set<Long> targets = new HashSet<>();
                 if (receiverId != null && receiverId > 0) {
-                    WebSocketSession targetSession = ONLINE_USERS.get(receiverId);
+                    targets.add(receiverId);
+                } else {
+                    ImSession imSession = sessionService.getById(sessionId);
+                    if (imSession != null) {
+                        if (senderType != null && senderType == 2) {
+                            if (imSession.getUserId() != null) {
+                                targets.add(imSession.getUserId());
+                            }
+                        } else if (imSession.getSessionType() != null && imSession.getSessionType() == 2
+                                && imSession.getCsId() != null) {
+                            CustomerService cs = customerServiceService.getById(imSession.getCsId());
+                            if (cs != null && cs.getAccountId() != null) {
+                                targets.add(cs.getAccountId());
+                            }
+                        }
+                    }
+                }
+                targets.remove(senderId);
+
+                // 转发给接收方（如果在线）
+                Map<String, Object> forward = Map.of("type", "chat", "message", saved);
+                String forwardPayload = objectMapper.writeValueAsString(forward);
+                for (Long targetId : targets) {
+                    WebSocketSession targetSession = ONLINE_USERS.get(targetId);
                     if (targetSession != null && targetSession.isOpen()) {
-                        Map<String, Object> forward = Map.of(
-                                "type", "chat",
-                                "message", saved
-                        );
-                        targetSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(forward)));
+                        try {
+                            targetSession.sendMessage(new TextMessage(forwardPayload));
+                        } catch (IOException ignored) {
+                        }
                     }
                 }
             }
