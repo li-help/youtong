@@ -57,7 +57,7 @@ class _SmartPageState extends State<SmartPage> {
               children: [
                 Row(
                   children: [
-                    IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).maybePop()),
+                    IconButton(icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 20), onPressed: () => Navigator.of(context).maybePop()),
                   ],
                 ),
                 Container(

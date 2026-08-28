@@ -116,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
         centerTitle: true,
         title: const Text('注册账号', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 22, color: Colors.black54),
+          icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 20, color: Colors.black54),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../api/api_service.dart';
 import '../widgets/app_styles.dart';
 
@@ -112,7 +113,7 @@ class _ResetPwdPageState extends State<ResetPwdPage> {
         centerTitle: true,
         title: const Text('重置密码', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 22, color: Colors.black54),
+          icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 20, color: Colors.black54),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),

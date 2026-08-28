@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'app_styles.dart';
 
 class AppEmptyState extends StatelessWidget {
@@ -16,7 +17,7 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.inbox_outlined, size: 64, color: AppStyles.textLight.withAlpha(102)),
+            FaIcon(FontAwesomeIcons.inbox, size: 56, color: AppStyles.textLight.withAlpha(102)),
             const SizedBox(height: 16),
             Text(
               title ?? '暂无数据',

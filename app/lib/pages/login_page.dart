@@ -215,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: AppStyles.bg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 22, color: Colors.black54),
+          icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 20, color: Colors.black54),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
