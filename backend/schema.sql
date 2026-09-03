@@ -271,6 +271,7 @@ CREATE TABLE `im_session` (
   `unread_count_user`  INT          DEFAULT 0 COMMENT '用户侧未读数',
   `unread_count_cs`    INT          DEFAULT 0 COMMENT '客服侧未读数',
   `status`             TINYINT      DEFAULT 1 COMMENT '状态: 1-进行中, 2-已结束',
+  `rating`             INT          DEFAULT NULL COMMENT '用户满意度评分 1-5（未评价为 NULL）',
   `created_at`         DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at`         DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),

@@ -161,7 +161,8 @@ export const imApi = {
   sessionList: () => request.get('/im/session/list', {}),
   history: (sessionId, page = 1, pageSize = 30) => request.get('/im/message/history', { sessionId, page, pageSize }),
   markRead: (sessionId) => request.post('/im/message/read', { sessionId }),
-  transfer: (sessionId) => request.post('/im/session/transfer', { sessionId })
+  transfer: (sessionId) => request.post('/im/session/transfer', { sessionId }),
+  rate: (sessionId, score) => request.post('/im/session/rate', { sessionId, score })
 }
 
 // 文件上传

@@ -135,12 +135,22 @@ public class ImController {
         ImSession session = sessionService.getById(sessionId);
         if (session == null) return R.fail("会话不存在");
 
-        // 1. 寻找匹配的在线客服（优先该店铺，其次全局客服）
-        CustomerService cs = customerServiceService.getOne(new QueryWrapper<CustomerService>()
-                .eq(session.getStoreId() != null && session.getStoreId() > 0, "store_id", session.getStoreId())
+        // 1. 寻找接待客服：优先本店铺，其次全平台；真实在线（WebSocket 已连接）优先
+        List<CustomerService> pool = customerServiceService.list(new QueryWrapper<CustomerService>()
                 .eq("status", 1)
                 .orderByDesc("online")
-                .last("LIMIT 1"));
+                .orderByAsc("id"));
+        boolean realOnline = false;
+        CustomerService cs = pickCs(pool, session.getStoreId(), true, false);
+        if (cs == null) {
+            cs = pickCs(pool, session.getStoreId(), false, true);
+        }
+        if (cs == null) {
+            cs = pickCs(pool, session.getStoreId(), false, false);
+        }
+        if (cs != null) {
+            realOnline = cs.getAccountId() != null && webSocketHandler.isUserOnline(cs.getAccountId());
+        }
 
         session.setSessionType(2); // 切换为人工模式
         if (cs != null) {
@@ -149,9 +159,14 @@ public class ImController {
         sessionService.updateById(session);
 
         // 2. 生成系统转接通知消息
-        String tip = (cs != null && cs.getOnline() == 1)
-                ? "【系统提示】已为您转接在线人工客服【" + cs.getName() + "】，请直接输入您的问题。"
-                : "【系统提示】已为您转接人工客服。当前客服离线中，您可以直接留言，我们上线后将第一时间回复。";
+        String tip;
+        if (cs != null && realOnline) {
+            tip = "【系统提示】已为您转接在线人工客服【" + cs.getName() + "】，请直接输入您的问题。";
+        } else if (cs != null) {
+            tip = "【系统提示】已为您转接人工客服【" + cs.getName() + "】。客服当前不在线，您可以直接留言，上线后将第一时间回复您。";
+        } else {
+            tip = "【系统提示】暂无可用人工客服，您可以直接留言，我们上线后将第一时间回复您。";
+        }
 
         ImMessage noticeMsg = messageService.saveMessage(session.getId(), UUID.randomUUID().toString(), 4, 0L, user.getId(), "transfer_notice", tip);
 
@@ -172,5 +187,90 @@ public class ImController {
         res.put("cs", cs);
         res.put("notice", tip);
         return R.ok(res);
+    }
+
+    /**
+     * 从候选客服池中按优先级挑选接待客服
+     *
+     * @param storeFirst 仅匹配会话所属店铺的客服
+     * @param requireReal 仅挑选账号真实在线（WebSocket 已连接）的客服
+     */
+    private CustomerService pickCs(List<CustomerService> pool, Long storeId,
+                                   boolean storeFirst, boolean requireReal) {
+        for (CustomerService cs : pool) {
+            boolean storeMatch = storeId == null || storeId <= 0 || storeId.equals(cs.getStoreId());
+            if (storeFirst && !storeMatch) continue;
+            if (requireReal) {
+                if (cs.getAccountId() == null || !webSocketHandler.isUserOnline(cs.getAccountId())) continue;
+            }
+            return cs;
+        }
+        return null;
+    }
+
+    /**
+     * 结束人工会话：切回 AI 接待，并通知双方
+     */
+    @PostMapping("/session/close")
+    public R closeSession(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        SysAccount user = getCurrentUser(request);
+        if (user == null) return R.fail("未登录");
+
+        Long sessionId = body.get("sessionId") != null ? Long.valueOf(body.get("sessionId").toString()) : null;
+        if (sessionId == null) return R.fail("缺少会话ID");
+
+        ImSession session = sessionService.getById(sessionId);
+        if (session == null) return R.fail("会话不存在");
+
+        Long csAccountId = null;
+        if (session.getCsId() != null) {
+            CustomerService cs = customerServiceService.getById(session.getCsId());
+            if (cs != null) csAccountId = cs.getAccountId();
+        }
+
+        session.setSessionType(1); // 切回 AI 接待
+        session.setCsId(null);
+        sessionService.updateById(session);
+
+        String tip = "【系统提示】人工服务已结束，已为您切回 AI 智能助手。欢迎对本次服务进行评价，如需人工请再次转接。";
+        ImMessage noticeMsg = messageService.saveMessage(session.getId(), UUID.randomUUID().toString(),
+                4, 0L, session.getUserId(), "close_notice", tip);
+
+        Map<String, Object> wsMsg = new HashMap<>();
+        wsMsg.put("type", "session_close");
+        wsMsg.put("sessionId", session.getId());
+        wsMsg.put("sessionType", 1);
+        wsMsg.put("message", noticeMsg);
+        webSocketHandler.sendToUser(session.getUserId(), wsMsg);
+        if (csAccountId != null) {
+            webSocketHandler.sendToUser(csAccountId, wsMsg);
+        }
+        return R.ok(Map.of("sessionType", 1, "notice", tip));
+    }
+
+    /**
+     * 会话满意度评价（1-5 分，用户提交）
+     */
+    @PostMapping("/session/rate")
+    public R rateSession(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        SysAccount user = getCurrentUser(request);
+        if (user == null) return R.fail("未登录");
+
+        Long sessionId = body.get("sessionId") != null ? Long.valueOf(body.get("sessionId").toString()) : null;
+        Integer score = body.get("score") != null ? Integer.valueOf(body.get("score").toString()) : null;
+        if (sessionId == null || score == null || score < 1 || score > 5) {
+            return R.fail("评分需为 1-5 的整数");
+        }
+        ImSession session = sessionService.getById(sessionId);
+        if (session == null) return R.fail("会话不存在");
+        if (!user.getId().equals(session.getUserId())) return R.fail("只能评价自己的会话");
+
+        session.setRating(score);
+        sessionService.updateById(session);
+
+        // 系统消息落库，客服端可见评价结果
+        messageService.saveMessage(session.getId(), UUID.randomUUID().toString(),
+                4, 0L, session.getUserId(), "rate_notice", "【系统提示】用户对本次服务评价：" + score + " 星。");
+        return R.ok(Map.of("rating", score));
     }
 }

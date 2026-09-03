@@ -1,8 +1,17 @@
+// 阿里云镜像仅用于本地网络环境；CI（GitHub Actions 等）海外网络访问镜像不稳定，
+// 会导致依赖下载失败（assembleRelease 报 error while downloading artifacts），CI 上直接走官方仓库。
+// 本地如需强制走官方仓库，可设环境变量 ALIYUN_MIRROR=false。
+val useAliyunMirror: Boolean =
+    System.getenv("ALIYUN_MIRROR")?.let { it != "false" }
+        ?: !java.lang.Boolean.parseBoolean(System.getenv("CI"))
+
 allprojects {
     repositories {
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        if (useAliyunMirror) {
+            maven { url = uri("https://maven.aliyun.com/repository/google") }
+            maven { url = uri("https://maven.aliyun.com/repository/public") }
+            maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        }
         google()
         mavenCentral()
     }

@@ -88,6 +88,8 @@ export const imApi = {
   history: (sessionId, page = 1, pageSize = 50) => request.get('/im/message/history', { params: { sessionId, page, pageSize } }),
   markRead: (sessionId) => request.post('/im/message/read', { sessionId }),
   transfer: (sessionId) => request.post('/im/session/transfer', { sessionId }),
+  close: (sessionId) => request.post('/im/session/close', { sessionId }),
+  rate: (sessionId, score) => request.post('/im/session/rate', { sessionId, score }),
 }
 
 export const uploadApi = {

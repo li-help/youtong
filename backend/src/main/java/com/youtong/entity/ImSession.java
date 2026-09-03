@@ -23,6 +23,8 @@ public class ImSession {
     private Integer unreadCountCs;
     /** 1-进行中, 2-已结束 */
     private Integer status;
+    /** 用户满意度评分 1-5（未评价为 null） */
+    private Integer rating;
     private String createdAt;
     private String updatedAt;
 

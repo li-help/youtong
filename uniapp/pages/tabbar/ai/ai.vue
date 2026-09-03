@@ -90,6 +90,15 @@
       <view class="bottom-space"></view>
     </scroll-view>
 
+    <!-- 满意度评价条 -->
+    <view v-if="showRating" class="rating-bar">
+      <text class="rating-label">请为本次人工服务评分：</text>
+      <view class="rating-stars">
+        <text v-for="n in 5" :key="n" class="star" @click="submitRating(n)">⭐</text>
+      </view>
+      <text class="rating-skip" @click="showRating = false">跳过</text>
+    </view>
+
     <!-- 底部输入栏 -->
     <view class="input-bar">
       <input
@@ -109,6 +118,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { aiApi, faqApi, imApi } from '@/api/index.js'
 import { imChat } from '@/utils/imChatService.js'
+import { refreshUnreadBadge } from '@/utils/badge.js'
 
 const messages = ref([
   {
@@ -125,6 +135,8 @@ const sessionType = ref(1) // 1-AI, 2-人工
 const sessionId = ref(null)
 const csInfo = ref(null)
 const hotFaqs = ref([])
+const showRating = ref(false)
+const rated = ref(false)
 let unsubscribeWs = null
 
 onMounted(async () => {
@@ -135,6 +147,7 @@ onMounted(async () => {
 
 onShow(() => {
   imChat.connect()
+  refreshUnreadBadge()
 })
 
 onUnmounted(() => {
@@ -192,8 +205,34 @@ function initWs() {
         messages.value.push(data.message)
         scrollBottom()
       }
+    } else if (data.type === 'session_close') {
+      if (data.sessionId && data.sessionId !== sessionId.value) return
+      sessionType.value = 1
+      showRating.value = !rated.value
+      if (data.message) {
+        messages.value.push(data.message)
+        scrollBottom()
+      }
     }
   })
+}
+
+// 提交满意度评分
+async function submitRating(score) {
+  try {
+    await imApi.rate(sessionId.value, score)
+    rated.value = true
+    showRating.value = false
+    messages.value.push({
+      senderType: 4,
+      type: 'rate_notice',
+      content: `已提交评价：${score} 星，感谢您的反馈！`,
+      status: 'success'
+    })
+    scrollBottom()
+  } catch (e) {
+    uni.showToast({ title: '评价失败，请重试', icon: 'none' })
+  }
 }
 
 function askFaq(q) {
@@ -506,6 +545,16 @@ function scrollBottom() {
 }
 
 /* 输入栏 */
+.rating-bar {
+  display: flex; align-items: center; gap: 12rpx;
+  padding: 14rpx var(--space-3);
+  background: #FFF9F2; border-top: 1rpx solid #FFE7D1;
+}
+.rating-label { font-size: 24rpx; color: var(--c-text-main); }
+.rating-stars { display: flex; gap: 8rpx; flex: 1; }
+.star { font-size: 36rpx; }
+.rating-skip { font-size: 22rpx; color: var(--c-text-muted); padding: 0 10rpx; }
+
 .input-bar {
   position: fixed;
   bottom: var(--window-bottom);

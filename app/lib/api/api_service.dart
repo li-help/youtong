@@ -284,6 +284,10 @@ class ApiService {
   static Future<Map<String, dynamic>> imTransfer(int sessionId) =>
       post('/im/session/transfer', body: {'sessionId': sessionId});
 
+  /// 会话满意度评价（1-5 分）
+  static Future<Map<String, dynamic>> imRate(int sessionId, int score) =>
+      post('/im/session/rate', body: {'sessionId': sessionId, 'score': score});
+
   // 收藏
   static Future<Map<String, dynamic>> listFavorites({String? targetType}) =>
       get('/favorite/list', query: {

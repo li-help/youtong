@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { imApi, faqApi } from '../api'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const sessions = ref([])
 const activeSession = ref(null)
@@ -11,11 +11,37 @@ const inputContent = ref('')
 const faqList = ref([])
 let ws = null
 let pingTimer = null
+let audioCtx = null
+
+// 客服侧未读总数 -> 浏览器标签标题提醒
+const totalUnread = computed(() =>
+  sessions.value.reduce((sum, s) => sum + (Number(s.unreadCountCs) || 0), 0)
+)
+
+function updateTitle() {
+  document.title = totalUnread.value > 0 ? `(${totalUnread.value}) 客服工作台 - 优童后台` : '客服工作台 - 优童后台'
+}
+
+// 新消息提示音（WebAudio 短促滴声，无需音频文件）
+function beep() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.frequency.value = 880
+    gain.gain.value = 0.08
+    osc.start()
+    setTimeout(() => osc.stop(), 180)
+  } catch (e) {}
+}
 
 onMounted(async () => {
   await loadSessions()
   await loadFaqs()
   initWebSocket()
+  updateTitle()
 })
 
 onUnmounted(() => {
@@ -27,6 +53,7 @@ async function loadSessions() {
   try {
     const res = await imApi.sessionList()
     sessions.value = res.data || []
+    updateTitle()
     if (sessions.value.length > 0 && !activeSession.value) {
       selectSession(sessions.value[0])
     }
@@ -92,11 +119,25 @@ function initWebSocket() {
             scrollToBottom()
             // 标记已读
             imApi.markRead(activeSession.value.id)
+          } else if (msg.senderType !== 2) {
+            // 其他会话来了新消息，提醒客服
+            beep()
+            ElMessage.info('收到新的客户消息，请查看会话列表')
           }
           // 刷新会话列表
           loadSessions()
         } else if (data.type === 'transfer') {
+          beep()
           ElMessage.info('收到新的用户转人工接入请求！')
+          loadSessions()
+        } else if (data.type === 'session_close') {
+          if (activeSession.value && data.sessionId === activeSession.value.id) {
+            activeSession.value.sessionType = 1
+            if (data.message) {
+              messages.value.push(data.message)
+              scrollToBottom()
+            }
+          }
           loadSessions()
         }
       } catch (e) {}
@@ -144,6 +185,35 @@ function send() {
 
 function quickReply(faq) {
   inputContent.value = faq.answer
+}
+
+// 结束人工会话：用户切回 AI 接待，双方收到系统通知
+async function closeSession() {
+  if (!activeSession.value) return
+  try {
+    await ElMessageBox.confirm('确认结束该会话的人工服务？用户将被切回 AI 智能助手接待。', '结束会话', {
+      type: 'warning',
+      confirmButtonText: '结束会话',
+      cancelButtonText: '取消',
+    })
+  } catch (e) {
+    return // 用户取消
+  }
+  try {
+    const res = await imApi.close(activeSession.value.id)
+    activeSession.value.sessionType = 1
+    activeSession.value.csId = null
+    messages.value.push({
+      senderType: 4,
+      content: (res.data && res.data.notice) || '【系统提示】人工服务已结束。',
+      createdAt: new Date().toISOString(),
+    })
+    scrollToBottom()
+    loadSessions()
+    ElMessage.success('会话已结束，已切回 AI 接待')
+  } catch (e) {
+    ElMessage.error('操作失败，请重试')
+  }
 }
 
 function scrollToBottom() {
@@ -200,21 +270,35 @@ function scrollToBottom() {
           <el-tag size="small" :type="activeSession.sessionType === 2 ? 'danger' : 'warning'">
             {{ activeSession.sessionType === 2 ? '人工对话' : 'AI 对话（已同步历史记录）' }}
           </el-tag>
+          <el-tooltip v-if="activeSession.rating" :content="`用户满意度：${activeSession.rating} 星`">
+            <span class="rating-badge">⭐ {{ activeSession.rating }}</span>
+          </el-tooltip>
           <span class="store-name">🏢 所属门店：{{ activeSession.storeName }}</span>
         </div>
-        <div class="quick-faq">
-          <el-dropdown trigger="click">
-            <el-button type="primary" plain size="small">
-              常用快捷回复 <el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item v-for="faq in faqList" :key="faq.id" @click="quickReply(faq)">
-                  【{{ faq.category }}】{{ faq.question }}
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+        <div class="header-actions">
+          <div class="quick-faq">
+            <el-dropdown trigger="click">
+              <el-button type="primary" plain size="small">
+                常用快捷回复 <el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-for="faq in faqList" :key="faq.id" @click="quickReply(faq)">
+                    【{{ faq.category }}】{{ faq.question }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+          <el-button
+            v-if="activeSession.sessionType === 2"
+            type="danger"
+            plain
+            size="small"
+            @click="closeSession"
+          >
+            结束会话
+          </el-button>
         </div>
       </div>
 
@@ -361,6 +445,12 @@ function scrollToBottom() {
 .user-info { display: flex; align-items: center; gap: 10px; }
 .user-info .name { font-size: 15px; font-weight: 700; color: var(--text-heading); }
 .user-info .store-name { font-size: 12px; color: var(--text-secondary); }
+.rating-badge {
+  font-size: 12px; font-weight: 600; color: #B45309;
+  background: #FEF3C7; border: 1px solid #FDE68A;
+  padding: 1px 8px; border-radius: 999px; cursor: default;
+}
+.header-actions { display: flex; align-items: center; gap: 10px; }
 
 .chat-body {
   flex: 1;

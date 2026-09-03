@@ -5,6 +5,7 @@ import '../widgets/app_styles.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/app_skeleton.dart';
 import '../widgets/app_error_retry.dart';
+import 'store_chat_page.dart';
 
 class StoreDetailPage extends StatefulWidget {
   final int id;
@@ -113,6 +114,35 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                               ),
                             ],
                             const SizedBox(height: 20),
+                            // 在线咨询门店客服
+                            SizedBox(
+                              width: double.infinity,
+                              height: 46,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(23),
+                                  border: Border.all(color: AppStyles.primary.withOpacity(0.4)),
+                                  color: Colors.white,
+                                ),
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (_) => StoreChatPage(
+                                        storeId: int.tryParse(_store?['id']?.toString() ?? '') ?? 0,
+                                        storeName: _store?['name']?.toString(),
+                                      ),
+                                    ));
+                                  },
+                                  icon: const Text('💬', style: TextStyle(fontSize: 16)),
+                                  label: const Text('在线咨询门店客服',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppStyles.primary)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                             const Text('门店服务', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppStyles.textMain)),
                             const SizedBox(height: 12),
                             ..._services.map((s) {

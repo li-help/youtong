@@ -1,13 +1,13 @@
 package com.youtong.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.youtong.entity.CustomerService;
 import com.youtong.entity.ImMessage;
 import com.youtong.entity.ImSession;
 import com.youtong.service.CustomerServiceService;
 import com.youtong.service.ImMessageService;
-import com.youtong.service.ImSessionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.youtong.service.ImSessionService;import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -45,6 +45,7 @@ public class ImWebSocketHandler extends TextWebSocketHandler {
         Long userId = (Long) session.getAttributes().get("userId");
         if (userId != null) {
             ONLINE_USERS.put(userId, session);
+            syncCsOnline(userId, 1);
         }
     }
 
@@ -141,6 +142,32 @@ public class ImWebSocketHandler extends TextWebSocketHandler {
         Long userId = (Long) session.getAttributes().get("userId");
         if (userId != null) {
             ONLINE_USERS.remove(userId);
+            syncCsOnline(userId, 0);
+        }
+    }
+
+    /**
+     * 指定账号是否持有活跃 WebSocket 连接（真实在线）
+     */
+    public boolean isUserOnline(Long userId) {
+        if (userId == null) return false;
+        WebSocketSession s = ONLINE_USERS.get(userId);
+        return s != null && s.isOpen();
+    }
+
+    /**
+     * 客服账号 WebSocket 上下线时，同步 customer_service.online 标记，
+     * 使后台配置的“在线”开关与真实在线状态保持一致
+     */
+    private void syncCsOnline(Long accountId, Integer online) {
+        try {
+            CustomerService cs = customerServiceService.getOne(
+                    new QueryWrapper<CustomerService>().eq("account_id", accountId).last("LIMIT 1"));
+            if (cs != null && !online.equals(cs.getOnline())) {
+                cs.setOnline(online);
+                customerServiceService.updateById(cs);
+            }
+        } catch (Exception ignored) {
         }
     }
 

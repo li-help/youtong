@@ -87,13 +87,16 @@ jobs:
           channel: stable
           cache: true
 
-      # 缓存 Gradle 依赖，避免每次构建重新下载（网络波动导致 assembleRelease 失败）
-      - uses: actions/cache@v4
+      # 缓存 Gradle 依赖，避免每次构建重新下载（网络波动导致 assembleRelease 失败）。
+      # 拆成 restore + save 两步：actions/cache 的自动保存只在 job 成功后执行，
+      # 构建失败时已下载的依赖会全部丢弃；用 save + if: always() 让失败的构建
+      # 也能保留已下载的部分，下次构建不用从零开始（Gradle 对不完整条目会校验重下）。
+      - name: 恢复 Gradle 缓存
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            app/android/.gradle
           key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
@@ -112,11 +115,26 @@ jobs:
       - name: 构建 release APK（API 指向生产服务器，失败自动重试一次）
         env:
           GRADLE_OPTS: -Dorg.gradle.vfs.watch=false -Dorg.gradle.daemon=false
-          GRADLE_USER_HOME: ~/.gradle
+          # 注意：不要在这里设置 GRADLE_USER_HOME=~/.gradle！
+          # GitHub Actions 的 env 块不会展开 ~（原样当字面量传给 Gradle），
+          # 导致 Gradle 把缓存写到工作区下的 "~" 目录，上面 actions/cache 保存的
+          # ~/.gradle 始终是空缓存（0MB），每次 CI 都要全量重新下载所有依赖，
+          # 网络一抖就报 "error while downloading artifacts"（run #46/#49 均因此失败）。
+          # 不设置时 Gradle 默认用 $HOME/.gradle，正好就是上面缓存的路径。
         run: |
           cd app
           flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api \
             || flutter build apk --release --dart-define=API_BASE_URL=http://${{ secrets.SERVER_HOST }}/api
+
+      # 构建失败也保存缓存：key 与上面 restore 完全一致；若缓存已存在会自动跳过（仅警告不报错）
+      - name: 保存 Gradle 缓存
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
